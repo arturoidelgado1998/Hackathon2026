@@ -34,12 +34,12 @@
   --pp-unknown: #454c55;
   --pp-unknown-soft: #eceff2;
 
-  /* Type scale (fixed, ratio about 1.14) */
-  --pp-text-xs: 0.75rem;
-  --pp-text-sm: 0.8125rem;
-  --pp-text-md: 0.875rem;
-  --pp-text-lg: 1rem;
-  --pp-text-xl: 1.125rem;
+  /* Body 16px, secondary text at least 14px. */
+  --pp-text-xs: 0.875rem;
+  --pp-text-sm: 0.875rem;
+  --pp-text-md: 1rem;
+  --pp-text-lg: 1.125rem;
+  --pp-text-xl: 1.25rem;
 
   /* Spacing scale (4px base) */
   --pp-space-1: 0.25rem;

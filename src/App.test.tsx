@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import App from './App.tsx'
-import { REFERENCE_SHIPMENT_ID } from './data/index.ts'
+import { getShipmentAssessment, REFERENCE_SHIPMENT_ID } from './data/index.ts'
 
 const region = (name: string) => screen.getByRole('region', { name })
 const cardFor = (shipmentId: string) => {
@@ -26,6 +26,27 @@ describe('App', () => {
     expect(region('Response options')).toHaveTextContent('Select a shipment to compare responses.')
   })
 
+  it('shows engine deadlines on every affected card and explains shipment urgency order', () => {
+    render(<App />)
+    const review = region('Needs review')
+    expect(review).toHaveTextContent(
+      'Earliest reroute deadline first; missing deadlines after known ones. No currently feasible response last. Ties: shipment ID.',
+    )
+    expect(Array.from(review.querySelectorAll('[data-shipment-id]'), (card) =>
+      card.getAttribute('data-shipment-id'),
+    )).toEqual(['S-04', 'S-01', 'S-07', 'S-02', 'S-05', 'S-03'])
+    expect(cardFor('S-01')).toHaveTextContent('Wait works only if NB-03 reopens by 10:28')
+    expect(cardFor('S-01')).toHaveTextContent('Reroute must be chosen by 10:02')
+    for (const card of review.querySelectorAll<HTMLElement>('[data-shipment-id]')) {
+      const assessment = getShipmentAssessment(card.dataset.shipmentId!, 'disrupted')
+      expect(card).toHaveTextContent(`Wait works only if NB-03 reopens by ${assessment.reopen_needed_by}`)
+      expect(card).toHaveTextContent(`Reroute must be chosen by ${assessment.reroute_decide_by}`)
+    }
+    expect(cardFor('S-06')).not.toHaveTextContent('Reroute must be chosen')
+    fireEvent.click(cardFor('S-04'))
+    expect(region('Response options')).not.toHaveTextContent('No currently feasible response:')
+  })
+
   it('keeps Normal available with all ten shipments in Monitoring', () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: 'Normal' }))
@@ -35,6 +56,32 @@ describe('App', () => {
     expect(region('Current situation')).toHaveTextContent('No active incident.')
     expect(region('Map panel')).toHaveTextContent('Select a shipment to see its routes')
     expect(region('Response options')).toHaveTextContent('Select a shipment to compare responses.')
+    expect(region('Triage board')).toHaveTextContent('No shipments affected by the current incident')
+  })
+
+  it('announces interpretation and AI failure without changing the plan or enabling incident entry', () => {
+    const { rerender } = render(<App incidentInterpretationStatus="loading" />)
+    const situation = region('Current situation')
+    expect(within(situation).getByRole('status')).toHaveTextContent('Interpreting incident…')
+    expect(screen.getByRole('button', { name: 'Report incident' })).toBeDisabled()
+    fireEvent.click(cardFor(REFERENCE_SHIPMENT_ID))
+    const totals = region('Indicators').textContent
+    fireEvent.click(screen.getByRole('button', { name: 'Preview Reroute' }))
+
+    rerender(<App incidentInterpretationStatus="unavailable" />)
+
+    expect(within(situation).queryByRole('status')).not.toBeInTheDocument()
+    expect(within(situation).getByRole('alert')).toHaveTextContent('AI unavailable: use manual entry')
+    expect(cardFor(REFERENCE_SHIPMENT_ID)).toHaveAttribute('aria-pressed', 'true')
+    expect(region('Response options')).toHaveTextContent('Preview only: Reroute.')
+    expect(region('Indicators').textContent).toBe(totals)
+    expect(screen.getByRole('button', { name: 'Report incident' })).toBeDisabled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Use reroute' }))
+    expect(region('Response options')).toHaveTextContent('Reroute recorded for S-01.')
+    rerender(<App />)
+    expect(within(situation).queryByRole('alert')).not.toBeInTheDocument()
+    expect(region('Response options')).toHaveTextContent('Reroute recorded for S-01.')
   })
 
   it('moves only affected shipments to Needs review in the disrupted scenario', () => {
@@ -166,7 +213,7 @@ describe('App', () => {
   it('restores a fresh dashboard after decisions, previews and an open explanation', () => {
     const { container } = render(<App />)
     const freshDashboard = container.cloneNode(true)
-    fireEvent.click(screen.getByRole('button', { name: 'Expand assumptions & sources' }))
+    fireEvent.click(screen.getByRole('button', { name: /Assumptions & sources.*Expand panel/ }))
     fireEvent.click(screen.getByRole('button', { name: 'Disrupted' }))
     fireEvent.click(cardFor(REFERENCE_SHIPMENT_ID))
     fireEvent.click(screen.getByRole('button', { name: 'Use reroute' }))

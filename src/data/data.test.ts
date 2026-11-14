@@ -266,7 +266,7 @@ describe('reference shipment S-01', () => {
     expect(slot).toMatchObject({
       kind: 'request_slot', arrival_min: null, arrival_max: null, lateness_min: null, lateness_max: null,
       miles: null, cost: null, co2_kg: null, driver_duty_min: null, requires_confirmation: true,
-      status: 'Pending confirmation; original deadline still applies', risk: 'LATE',
+      status: 'pending_confirmation', risk: 'LATE',
     })
     expect(getShipmentSummary(s.id, 'disrupted')).toMatchObject({ risk: 'LATE', arrival_max: '12:12', affected: true })
   })
@@ -319,7 +319,7 @@ describe('summaries and options', () => {
         if (o.kind === 'request_slot') {
           expect(o.risk).toBe(summary.risk)
           expect(o.requires_confirmation).toBe(true)
-          expect(o.status).toBe('Pending confirmation; original deadline still applies')
+          expect(o.status).toBe('pending_confirmation')
           expect([o.miles, o.cost, o.co2_kg, o.arrival_min, o.driver_duty_min]).toEqual([null, null, null, null, null])
         }
         if (o.kind === 'reroute') {

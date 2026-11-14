@@ -126,16 +126,17 @@
   background: var(--pp-surface-muted);
 }
 
-.shipment-card:focus-visible {
-  outline-offset: -2px;
-}
-
 /* Selected: filled row, an inner outline and a "Selected" tag. */
 .shipment-card--selected,
 .shipment-card--selected:hover {
   background: var(--pp-accent-soft);
   outline: 2px solid var(--pp-accent);
   outline-offset: -2px;
+}
+
+.shipment-card:focus-visible {
+  outline: 3px dashed var(--pp-focus);
+  outline-offset: -5px;
 }
 
 .shipment-card__top {
@@ -187,10 +188,15 @@
 }
 
 .shipment-card__decision,
-.shipment-card__rejection {
+.shipment-card__rejection,
+.shipment-card__deadline {
   font-size: var(--pp-text-xs);
   font-weight: 600;
   line-height: 1.4;
+}
+
+.shipment-card__deadline {
+  overflow-wrap: anywhere;
 }
 
 .shipment-card__actions {

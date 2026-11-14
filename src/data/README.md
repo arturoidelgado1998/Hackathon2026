@@ -14,9 +14,12 @@ Do not edit the JSON files by hand. Change the feature service, then run:
 python3 scripts/import_map_data.py
 ```
 
-The script rebuilds every file here except the values in `assumptions.json`, pre-calculates the sample responses, and compares its results with the service's own rows for all three scenarios. It exits with an error if anything disagrees. `python3 scripts/import_map_data.py --check` verifies without writing.
+The script rebuilds the generated JSON files except the values in `assumptions.json`, pre-calculates the test-fixture responses, and compares its results with the service's own rows for all three scenarios. It exits with an error if anything disagrees. `python3 scripts/import_map_data.py --check` verifies without writing. It does not generate `demoIncident.ts`.
 
-Import from `index.ts`, never from the JSON files directly.
+Application code imports from `index.ts`, never from the JSON files directly.
+Its summary, baseline and response helpers calculate fresh engine estimates from
+the raw inputs; stored route totals are not calculation inputs. The Node evaluation
+CLI reads raw JSON via `fs` and imports the pure engine, without a Vite loader.
 
 ## Files
 
@@ -29,7 +32,8 @@ Import from `index.ts`, never from the JSON files directly.
 | `assumptions.json` | Cost, fuel economy and emission factor placeholders, each with a source |
 | `corridor.json` | The corridor analysis: REAL schools and disadvantaged tracts within 150 m of each ILLUSTRATIVE route, with sources and dates. Written by `scripts/corridor_analysis.py` |
 | `corridor-layers.json` | The places counted in `corridor.json` (school points, tract outlines), for the map only |
-| `sample-responses.json` | For both scenarios: a summary per shipment, normal baselines, and Wait / Reroute / Request later slot for affected shipments. Replaced by engine output in E3 and E4 |
+| `sample-responses.json` | Generated regression test fixture only: summaries, baselines and options. Never imported by the app or evaluation exporter |
+| `demoIncident.ts` | Independent typed SIMULATED NB-03 incident input; not generated |
 
 Each file has a top-level `label` of `SIMULATED`. List files wrap their records as `{ "label", "source", "items" }`.
 
@@ -58,6 +62,10 @@ The team plan's reference table ($121 normal, $161 wait, $158 reroute) is the mi
 ## Sample incident
 
 `NB-03` closed from 10:00, reported reopening 11:10 (an estimate, not a guarantee).
+This fixed demo input lives in `demoIncident.ts`, independently of the generated
+response fixture. `npm run evaluate` regenerates the nine-row estimated SIMULATED
+comparison in `docs/evaluation.csv` and `.json`; see the root README for its
+evaluation-only selection rule and export metadata.
 
 ## Facilities
 

@@ -62,6 +62,16 @@ export function ShipmentCard({ card, selected = false, onSelectShipment }: Shipm
         </span>
       </span>
       <span className="shipment-card__reason">{summary.reason}</span>
+      {summary.affected && card.incidentSegmentId && card.reopen_needed_by && (
+        <span className="shipment-card__deadline">
+          Wait works only if {card.incidentSegmentId} reopens by {card.reopen_needed_by}
+        </span>
+      )}
+      {summary.affected && card.reroute_decide_by && (
+        <span className="shipment-card__deadline">
+          Reroute must be chosen by {card.reroute_decide_by}
+        </span>
+      )}
       {decision && (
         <span className="shipment-card__decision">
           {OPTION_TITLES[decision.option_kind]} —{' '}

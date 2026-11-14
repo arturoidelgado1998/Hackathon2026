@@ -21,6 +21,7 @@ npm test            # run the test suite once (Vitest)
 npm run build       # type-check and build to dist/
 npm run typecheck   # type-check only
 npm run lint        # ESLint
+npm run evaluate    # Node 24: regenerate SIMULATED docs/evaluation.csv + .json
 npm run sanity      # build, then run the sanity checks (see below)
 npm run server      # start the incident server for the AI step (http://127.0.0.1:8787)
 npm run ai:tests    # ask the real model the five test reports and record its answers
@@ -59,17 +60,62 @@ The browser check needs Chromium once per machine: `npx playwright install --onl
   Other shipments are unchanged. Undo is one step, not a decision history or an external
   cancellation; switching scenarios or Reset clears it.
 - **Reject all** keeps a shipment in Needs review with the dispatcher's rejection note.
-- The indicators sum supplied sample values through `getTotals(state)`; no engine calculations
-  run in this phase. Switching scenarios clears scenario-specific decisions.
+- Cards, response estimates, explanations and `getTotals(state)` use the pure engine
+  against the current raw shipment, segment and assumption inputs, never the generated
+  response fixture. Switching scenarios clears scenario-specific decisions.
+- Every affected card shows available estimated reopen/reroute decision deadlines.
+  Needs review sorts by earliest reroute deadline, missing deadlines after known ones,
+  and shipments with no currently feasible response last (including S-03, not TIGHT S-04).
+  Equal deadlines use shipment ID. This is shipment urgency, not response ranking.
 - **Reset** restores the initial Disrupted scenario with no decisions or selected shipment,
   collapses empty groups, and clears preview and Undo state.
 - **Why?** opens and focuses the option's supplied explanation inputs. Use **Close**
   or Escape to return focus to its Why button. **Assumptions & sources**
-  lists placeholder values, citations, value-type labels and the eleven limitations from
+  lists placeholder values, citations, value-type labels and the twelve limitations from
   issue #9. Use **Expand panel** in the bottom bar to read the full, scrollable panel;
   collapse it or press Escape to return to the dashboard. On mobile the bar stays within
   reach at the bottom of the screen. Reset also closes the panel. The reusable limitations
   text lives in `src/data/limitations.ts`.
+
+### Accessibility and degraded states
+
+- Normal operations show **No shipments affected by the current incident**. With no
+  selection, the comparison prompts for a shipment; an affected shipment without a
+  feasible response retains the warehouse/customer review warning.
+- `App` accepts an optional `incidentInterpretationStatus` prop: `'idle'` (default),
+  `'loading'`, or `'unavailable'`. These presentation-only sample/integration states
+  announce **Interpreting incident…** or **AI unavailable: use manual entry**, without
+  clearing selection, preview, decisions or totals. `AIUnavailableBanner` is reusable
+  by the future incident-entry flow. This does not implement A2, a request endpoint,
+  or a manual-entry form; **Report incident** remains disabled.
+- `src/App.accessibility.test.tsx` uses `vitest-axe` on the main dashboard, comparison,
+  explanations, empty and degraded states, asserting no serious/critical violations.
+  The ArcGIS canvas is replaced by the existing test stand-in. jsdom cannot compute
+  layout/color contrast; the axe color-contrast rule is explicitly disabled there.
+  Browser contrast and keyboard checks remain separate from this automated DOM check.
+- `npm run test:sanity -- sanity/accessibility.sanity.test.ts` runs the focused
+  Chromium keyboard, responsive and computed-contrast checks against a local source
+  server (no build required). Contrast is measured at desktop width: axe cannot
+  measure partially clipped mobile table cells. It isolates the ArcGIS map/network
+  like the existing dashboard browser checks. Physical-device and screen-reader
+  testing are still manual.
+
+### Reproducible evaluation
+
+From a clean checkout with Node 24 and npm 11, run `npm run evaluate` (no install,
+build, Vite loader, network data or response fixture required). It regenerates
+[`docs/evaluation.csv`](docs/evaluation.csv) and
+[`docs/evaluation.json`](docs/evaluation.json) from raw JSON inputs and the typed
+SIMULATED incident in `src/data/demoIncident.ts`.
+
+Both exports contain all nine engine rows with units, estimation/SIMULATED labels,
+row rules and deterministic selection metadata, comparing **Normal**, **Disrupted —
+no action** and **Disrupted — selected responses**. JSON preserves the engine row
+shape; CSV flattens the three scenario values and includes simulation metadata
+(nested metadata uses quoted JSON fields). Unknown estimates are `null`, never zero.
+The evaluation-only rule chooses an available ON_TRACK driving response with the
+fewest added miles (Wait wins ties), or requests a later slot while retaining
+current Wait metrics. It never auto-selects or ranks responses in the app.
 
 ## Impeccable design skill
 
