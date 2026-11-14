@@ -1,11 +1,21 @@
 import { useState } from 'react'
+import { TriageBoard } from './components/board/index.ts'
+import { ResponsePanel } from './components/responses/index.ts'
 import { AppShell } from './components/shell/AppShell.tsx'
 import { IndicatorsBar } from './components/shell/IndicatorsBar.tsx'
+import { facilities, routes, segments } from './data/index.ts'
 import { MapPanel } from './map/MapPanel.tsx'
+import {
+  buildCards,
+  buildHighlightedRoutes,
+  buildResponseView,
+  incidentSegmentFor,
+} from './state/selectors.ts'
 import type { Scenario } from './viewModels.ts'
 
-// Slot contents are placeholders until the board (D4), response cards (D5)
-// and sample data (D2) are wired in.
+// Scenario and selection live in local state for now. D6 replaces this with
+// the app store (decisions, preview, select); D7 binds the indicators and
+// Reset; A2 wires Report incident.
 function App() {
   const [scenario, setScenario] = useState<Scenario>('normal')
   const [selectedShipmentId, setSelectedShipmentId] = useState<string | null>(null)
@@ -20,19 +30,25 @@ function App() {
       }}
       onReportIncident={() => {}}
       indicators={<IndicatorsBar atRisk={null} cost={null} co2Kg={null} />}
-      board={<p>Triage board</p>}
+      board={
+        <TriageBoard
+          cards={buildCards(scenario)}
+          selectedShipmentId={selectedShipmentId}
+          onSelectShipment={setSelectedShipmentId}
+        />
+      }
       map={
         <MapPanel
-          facilities={[]}
-          segments={[]}
-          routes={[]}
+          facilities={facilities}
+          segments={segments}
+          routes={routes}
           selectedShipmentId={selectedShipmentId}
-          highlightedRouteIds={{}}
-          incidentSegmentId={null}
+          highlightedRouteIds={buildHighlightedRoutes(selectedShipmentId)}
+          incidentSegmentId={incidentSegmentFor(scenario)}
           candidateSegmentId={null}
         />
       }
-      responses={<p>Response options</p>}
+      responses={<ResponsePanel view={buildResponseView(selectedShipmentId, scenario)} />}
     />
   )
 }

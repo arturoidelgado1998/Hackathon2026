@@ -23,9 +23,9 @@ function hasFeasibleOption(options: ResponseOption[]): boolean {
 export function ResponsePanel({ view, onWhy, renderActions }: ResponsePanelProps) {
   if (view === null) {
     return (
-      <section className="responses-panel" aria-label="Response options">
+      <div className="responses-panel">
         <p className="responses-empty">Select a shipment to compare responses.</p>
-      </section>
+      </div>
     )
   }
 
@@ -33,19 +33,19 @@ export function ResponsePanel({ view, onWhy, renderActions }: ResponsePanelProps
 
   if (view.options.length === 0) {
     return (
-      <section className="responses-panel" aria-labelledby="responses-heading">
+      <div className="responses-panel">
         <h2 id="responses-heading" className="responses-heading">
           {heading}
         </h2>
         <p className="responses-empty">
           No response needed: this shipment is not affected by the current incident.
         </p>
-      </section>
+      </div>
     )
   }
 
   return (
-    <section className="responses-panel" aria-labelledby="responses-heading">
+    <div className="responses-panel">
       <h2 id="responses-heading" className="responses-heading">
         {heading}
       </h2>
@@ -72,6 +72,6 @@ export function ResponsePanel({ view, onWhy, renderActions }: ResponsePanelProps
           />
         ))}
       </div>
-    </section>
+    </div>
   )
 }
