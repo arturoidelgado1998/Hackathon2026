@@ -11,6 +11,12 @@ export const OPTION_TITLES: Record<ResponseOptionKind, string> = {
   request_slot: 'Request later slot',
 }
 
+export const OPTION_ACTION_LABELS: Record<ResponseOptionKind, string> = {
+  wait: 'Choose wait',
+  reroute: 'Use reroute',
+  request_slot: 'Request slot',
+}
+
 export const PENDING_STRIP_TEXT = 'n/a until a new slot is confirmed'
 export const NOT_MODELED_TEXT = 'noise, local air quality, driver pay/hours rules'
 

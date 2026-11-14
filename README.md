@@ -25,14 +25,27 @@ npm run lint        # ESLint
 
 ## Sample dashboard workflow
 
-- Switch to **Disrupted** to show the simulated NB-03 closure, then select a shipment.
+- The dashboard starts in **Disrupted**, showing the simulated NB-03 closure. Select a
+  shipment under **Needs review** to compare responses. **Normal** remains available.
+- A first-use prompt explains this path in the Normal scenario. On small screens,
+  empty board groups are collapsed behind **Show empty groups**; select a shipment and
+  use **View responses** to jump to its comparison, or **Back to shipments** to return.
 - **Preview** highlights an option's route without changing decisions or totals.
-- **Select** records Wait or Reroute. Request later slot stays **Awaiting confirmation**,
+  A **Preview only** notice distinguishes it from the recorded choice; **Cancel preview**
+  returns to the current plan.
+- **Choose wait** or **Use reroute** records the response and shows a confirmation.
+  **Request slot** records a simulated request that stays **Awaiting confirmation**,
   retaining the shipment's original risk and current-plan totals.
+- Before a slot is requested, its status is **Requires confirmation**, not pending.
+- **Undo last choice** reverses the most recent response choice, restoring the prior
+  decision or Needs review state, any prior rejection note, routes, risk and totals.
+  Other shipments are unchanged. Undo is one step, not a decision history or an external
+  cancellation; switching scenarios or Reset clears it.
 - **Reject all** keeps a shipment in Needs review with the dispatcher's rejection note.
 - The indicators sum supplied sample values through `getTotals(state)`; no engine calculations
   run in this phase. Switching scenarios clears scenario-specific decisions.
-- **Reset** restores the initial Normal scenario with no decisions or selected shipment.
+- **Reset** restores the initial Disrupted scenario with no decisions or selected shipment,
+  collapses empty groups, and clears preview and Undo state.
 - **Why?** opens and focuses the option's supplied explanation inputs. Use **Close**
   or Escape to return focus to its Why button. **Assumptions & sources**
   lists placeholder values, citations, value-type labels and the eleven limitations from

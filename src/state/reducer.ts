@@ -10,22 +10,33 @@ export interface AppState {
   decisions: Record<string, Decision>
   previewDecision: Decision | null
   rejectedShipmentIds: string[]
+  lastDecisionChange: {
+    shipmentId: string
+    previousDecision: Decision | null
+    wasRejected: boolean
+  } | null
+  showEmptyGroups: boolean
 }
 
 export type AppAction =
   | { type: 'select_shipment'; shipmentId: string }
   | { type: 'preview'; shipmentId: string; optionKind: ResponseOptionKind; timestamp: string }
+  | { type: 'cancel_preview' }
   | { type: 'select_option'; shipmentId: string; optionKind: ResponseOptionKind; timestamp: string }
+  | { type: 'undo_decision' }
   | { type: 'reject_all'; shipmentId: string }
+  | { type: 'toggle_empty_groups' }
   | { type: 'set_scenario'; scenario: Scenario }
   | { type: 'reset' }
 
 export const initialState: AppState = {
-  scenario: 'normal',
+  scenario: 'disrupted',
   selectedShipmentId: null,
   decisions: {},
   previewDecision: null,
   rejectedShipmentIds: [],
+  lastDecisionChange: null,
+  showEmptyGroups: false,
 }
 
 function requireShipment(shipmentId: string): void {
@@ -70,6 +81,8 @@ export function appReducer(state: AppState, action: AppAction): AppState {
           timestamp: action.timestamp,
         },
       }
+    case 'cancel_preview':
+      return { ...state, previewDecision: null }
     case 'select_option': {
       requireOption(action.shipmentId, action.optionKind, state.scenario)
       requireTimestamp(action.timestamp)
@@ -84,6 +97,27 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         decisions: { ...state.decisions, [action.shipmentId]: decision },
         previewDecision: null,
         rejectedShipmentIds: state.rejectedShipmentIds.filter((id) => id !== action.shipmentId),
+        lastDecisionChange: {
+          shipmentId: action.shipmentId,
+          previousDecision: state.decisions[action.shipmentId] ?? null,
+          wasRejected: state.rejectedShipmentIds.includes(action.shipmentId),
+        },
+      }
+    }
+    case 'undo_decision': {
+      if (!state.lastDecisionChange) throw new Error('No decision available to undo')
+      const { shipmentId, previousDecision, wasRejected } = state.lastDecisionChange
+      const decisions = { ...state.decisions }
+      if (previousDecision) decisions[shipmentId] = previousDecision
+      else delete decisions[shipmentId]
+      return {
+        ...state,
+        decisions,
+        previewDecision: null,
+        rejectedShipmentIds: wasRejected
+          ? [...state.rejectedShipmentIds, shipmentId]
+          : state.rejectedShipmentIds,
+        lastDecisionChange: null,
       }
     }
     case 'reject_all': {
@@ -103,6 +137,8 @@ export function appReducer(state: AppState, action: AppAction): AppState {
           : [...state.rejectedShipmentIds, action.shipmentId],
       }
     }
+    case 'toggle_empty_groups':
+      return { ...state, showEmptyGroups: !state.showEmptyGroups }
     case 'set_scenario':
       if (action.scenario !== 'normal' && action.scenario !== 'disrupted') {
         throw new Error(`Unknown scenario: ${action.scenario}`)

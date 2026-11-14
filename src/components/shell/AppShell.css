@@ -119,6 +119,17 @@
   overflow: hidden;
 }
 
+.pp-shell__guidance {
+  padding: var(--pp-space-3) var(--pp-space-5);
+  border-top: 1px solid var(--pp-border);
+  color: var(--pp-text-muted);
+  font-size: var(--pp-text-sm);
+}
+
+.pp-shell__back-link {
+  display: none;
+}
+
 .pp-shell__region {
   min-width: 0;
   min-height: 0;
@@ -264,6 +275,19 @@
 
 /* Narrow screens: one column, and the page scrolls. */
 @media (max-width: 760px) {
+  .pp-shell__guidance {
+    padding-inline: var(--pp-space-4);
+  }
+
+  .pp-shell__back-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--pp-control-height);
+    margin-bottom: var(--pp-space-3);
+    color: var(--pp-accent);
+    text-underline-offset: 0.2em;
+  }
+
   .pp-shell {
     height: auto;
     min-height: 100dvh;
@@ -281,11 +305,6 @@
     border-left: 0;
     border-right: 0;
     border-top: 1px solid var(--pp-border);
-  }
-
-  /* The comparison table keeps its width and scrolls sideways in its own box. */
-  .pp-shell__responses {
-    overflow-x: auto;
   }
 
   .pp-shell__assumptions {

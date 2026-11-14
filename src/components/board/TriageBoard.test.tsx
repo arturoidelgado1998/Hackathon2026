@@ -187,7 +187,7 @@ describe('TriageBoard', () => {
     expect(screen.getByText('Dispatcher rejected all options')).toBeInTheDocument()
     const request = within(screen.getByRole('button', { name: /SH-105/ }))
     expect(request.getByText('LATE')).toBeInTheDocument()
-    expect(request.getByText(/Pending confirmation; original risk retained/)).toBeInTheDocument()
+    expect(request.getByText(/Awaiting confirmation; original risk retained/)).toBeInTheDocument()
     expect(request.queryByText(/saved/i)).toBeNull()
     expect(request.getByTitle(/scenario bounds, not a statistical interval/))
       .toHaveTextContent('10:05–10:40')

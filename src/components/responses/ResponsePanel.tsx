@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
-import type { ResponseOption, ResponseOptionKind } from '../../types'
+import type { Decision, ResponseOption, ResponseOptionKind } from '../../types'
 import type { Baseline, CommunityInfo, ResponsePanelView } from '../../viewModels'
 import { RiskBadge } from '../board/RiskBadge'
 import { AlertIcon, ClockIcon } from '../icons'
@@ -23,6 +23,10 @@ import './responses.css'
 
 export interface ResponsePanelProps {
   view: ResponsePanelView | null
+  decision?: Decision
+  previewDecision?: Decision | null
+  onUndo?: () => void
+  onCancelPreview?: () => void
   /** Optional notification when an option's explanation is toggled. */
   onWhy?: (kind: ResponseOptionKind) => void
   /** Slot for response actions, such as Preview and Select. */
@@ -153,15 +157,14 @@ const IMPACT_ROWS: Row[] = [
  * keep the order they are given in and are never ranked or scored.
  * Key by scenario to reset explanations when switching scenarios.
  */
-export function ResponsePanel({ view, onWhy, renderActions }: ResponsePanelProps) {
+export function ResponsePanel({ view, ...props }: ResponsePanelProps) {
   if (view === null) {
     return (
       <div className="responses-panel responses-panel--empty">
         <h2 className="responses-heading">Compare responses</h2>
         <p className="responses-empty">Select a shipment to compare responses.</p>
         <p className="responses-hint">
-          Shipments under Needs review are affected by the current incident and have options to
-          compare.
+          Choose a shipment under Needs review to see the available responses and their trade-offs.
         </p>
       </div>
     )
@@ -171,8 +174,7 @@ export function ResponsePanel({ view, onWhy, renderActions }: ResponsePanelProps
     <ShipmentResponses
       key={view.shipment.id}
       view={view}
-      onWhy={onWhy}
-      renderActions={renderActions}
+      {...props}
     />
   )
 }
@@ -181,17 +183,37 @@ function ShipmentResponses({
   view,
   onWhy,
   renderActions,
+  decision,
+  previewDecision,
+  onUndo,
+  onCancelPreview,
 }: Omit<ResponsePanelProps, 'view'> & { view: ResponsePanelView }) {
   const explanationId = useId()
   const [expanded, setExpanded] = useState<ResponseOptionKind[]>([])
   const [explanationToFocus, setExplanationToFocus] = useState<ResponseOptionKind | null>(null)
   const explanationRefs = useRef<Partial<Record<ResponseOptionKind, HTMLElement>>>({})
   const whyRefs = useRef<Partial<Record<ResponseOptionKind, HTMLButtonElement>>>({})
+  const headingRef = useRef<HTMLHeadingElement>(null)
+  const feedbackRef = useRef<HTMLDivElement>(null)
   const { shipment, destinationName, summary, options, baseline, community } = view
+  const preview = previewDecision?.shipment_id === shipment.id ? previewDecision : null
+  const awaitingConfirmation = decision?.status === 'pending_confirmation'
+  const previousFeedback = useRef({ decision, preview })
 
   useEffect(() => {
     if (explanationToFocus) explanationRefs.current[explanationToFocus]?.focus()
   }, [explanationToFocus])
+
+  useEffect(() => {
+    const previous = previousFeedback.current
+    if (
+      (decision && decision !== previous.decision) ||
+      (preview && preview !== previous.preview)
+    ) {
+      feedbackRef.current?.focus()
+    }
+    previousFeedback.current = { decision, preview }
+  }, [decision, preview])
 
   function toggleWhy(kind: ResponseOptionKind) {
     setExplanationToFocus(expanded.includes(kind) ? null : kind)
@@ -208,7 +230,7 @@ function ShipmentResponses({
 
   const header = (
     <header className="responses-header">
-      <h2 id="responses-heading" className="responses-heading">
+      <h2 ref={headingRef} id="responses-heading" className="responses-heading" tabIndex={-1}>
         Responses for {shipment.id} to {destinationName}
       </h2>
       <p className="responses-context">
@@ -249,12 +271,71 @@ function ShipmentResponses({
   return (
     <div className="responses-panel">
       {header}
+      <div
+        ref={feedbackRef}
+        className="responses-feedback"
+        role="status"
+        aria-atomic="true"
+        tabIndex={-1}
+      >
+        {decision && (
+          <div className="responses-notice">
+            <p>
+              <strong>
+                {awaitingConfirmation ? 'Slot request' : OPTION_TITLES[decision.option_kind]}{' '}
+                recorded for {shipment.id}.
+              </strong>{' '}
+              {awaitingConfirmation
+                ? 'Awaiting confirmation. Original risk and current-plan totals are retained.'
+                : 'Sample plan updated. Estimates are not confirmed outcomes.'}
+            </p>
+            {onUndo && (
+              <button
+                type="button"
+                className="pp-button"
+                onClick={() => {
+                  onUndo()
+                  headingRef.current?.focus()
+                }}
+              >
+                Undo last choice
+              </button>
+            )}
+          </div>
+        )}
+        {preview && (
+          <div className="responses-notice responses-notice--preview">
+            <p>
+              <strong>Preview only: {OPTION_TITLES[preview.option_kind]}.</strong>{' '}
+              No decision or totals changed.
+            </p>
+            {onCancelPreview && (
+              <button
+                type="button"
+                className="pp-button"
+                onClick={() => {
+                  onCancelPreview()
+                  headingRef.current?.focus()
+                }}
+              >
+                Cancel preview
+              </button>
+            )}
+          </div>
+        )}
+      </div>
       {!hasFeasibleOption(options) && (
         <p className="responses-banner" role="alert">
           <AlertIcon size={14} label="Warning" />
           <span>No currently feasible response: review with warehouse or customer.</span>
         </p>
       )}
+      <div
+        className="responses-table-scroll"
+        role="region"
+        aria-label="Response comparison (scroll horizontally for all options)"
+        tabIndex={0}
+      >
       <table className="responses-table" aria-labelledby="responses-heading">
         <caption className="responses-note">
           All values are estimates. Options are shown in a fixed order and are not ranked.
@@ -298,7 +379,9 @@ function ShipmentResponses({
               >
                 {isPending(o) ? (
                   <span className="responses-pending">
-                    <ClockIcon size={13} /> {o.status || NA}
+                    <ClockIcon size={13} />{' '}
+                    {awaitingConfirmation ? 'Awaiting confirmation' : 'Requires confirmation'};
+                    {' '}original deadline still applies
                   </span>
                 ) : (
                   o.status || NA
@@ -358,6 +441,7 @@ function ShipmentResponses({
           </tr>
         </tfoot>
       </table>
+      </div>
       {options.map((option) => (
         <section
           ref={(element) => {

@@ -3,6 +3,7 @@ import { getShipmentSummary, shipments } from '../data/index.ts'
 import type { ResponseOptionKind } from '../types.ts'
 import { appReducer, initialState, type AppAction, type AppState } from './reducer.ts'
 import { buildCards, buildHighlightedRoutes } from './selectors.ts'
+import { getTotals } from './totals.ts'
 
 const TIMESTAMP = '2026-11-14T19:46:36.081Z'
 const NEXT_TIMESTAMP = '2026-11-14T19:47:01.000Z'
@@ -164,11 +165,76 @@ describe('dispatcher reducer', () => {
     expect(next.decisions['SHP-001'].status).toBe('pending_confirmation')
   })
 
+  it.each(['wait', 'reroute', 'request_slot'] as const)(
+    'undoes the first %s choice without retaining decision history',
+    (kind) => {
+      const state = disruptedState()
+      const selected = choose(state, kind)
+      const undone = appReducer(selected, { type: 'undo_decision' })
+
+      expect(undone).toEqual(state)
+      expect(getTotals(undone)).toEqual(getTotals(state))
+      expect(findCard(undone)).toEqual(findCard(state))
+      expect(() => appReducer(undone, { type: 'undo_decision' }))
+        .toThrow('No decision available to undo')
+    },
+  )
+
+  it('undoes a replacement back to the original decision and clears a later preview', () => {
+    const state = choose(choose(disruptedState(), 'reroute'), 'wait', 'SHP-003')
+    const replacement = choose(state, 'request_slot')
+    const previewed = appReducer(replacement, {
+      type: 'preview', shipmentId: 'SHP-001', optionKind: 'wait', timestamp: NEXT_TIMESTAMP,
+    })
+    const undone = appReducer(previewed, { type: 'undo_decision' })
+
+    expect(undone.decisions).toEqual(state.decisions)
+    expect(undone.previewDecision).toBeNull()
+    expect(getTotals(undone)).toEqual(getTotals(state))
+    expect(buildHighlightedRoutes('SHP-001', undone.previewDecision, undone.decisions))
+      .toMatchObject({ chosen: 'R-A-ALT' })
+  })
+
+  it('restores a prior rejection note without discarding later unrelated rejections', () => {
+    const rejected = appReducer(disruptedState(), { type: 'reject_all', shipmentId: 'SHP-001' })
+    const selected = choose(rejected, 'reroute')
+    const unrelated = appReducer(selected, { type: 'reject_all', shipmentId: 'SHP-004' })
+    const undone = appReducer(unrelated, { type: 'undo_decision' })
+
+    expect(findCard(undone).rejectionNote).toBe('Dispatcher rejected all options')
+    expect(findCard(undone, 'SHP-004').rejectionNote).toBe('Dispatcher rejected all options')
+    expect(undone.decisions).toEqual({})
+  })
+
+  it('cancels a preview without changing the recorded plan or its undo snapshot', () => {
+    const selected = choose(disruptedState(), 'reroute')
+    const previewed = appReducer(selected, {
+      type: 'preview', shipmentId: 'SHP-001', optionKind: 'wait', timestamp: NEXT_TIMESTAMP,
+    })
+    const cancelled = appReducer(previewed, { type: 'cancel_preview' })
+
+    expect(cancelled).toEqual(selected)
+    expect(buildHighlightedRoutes('SHP-001', cancelled.previewDecision, cancelled.decisions))
+      .toMatchObject({ chosen: 'R-A-ALT' })
+  })
+
+  it('clears undo when switching scenarios or resetting the dashboard', () => {
+    const selected = choose(disruptedState(), 'reroute')
+    const cleared = [
+      appReducer(selected, { type: 'set_scenario', scenario: 'normal' }),
+      appReducer(selected, { type: 'reset' }),
+    ]
+    for (const state of cleared) {
+      expect(() => appReducer(state, { type: 'undo_decision' }))
+        .toThrow('No decision available to undo')
+    }
+  })
+
   it('throws explicit errors for invalid shipments, options, workflow actions, and timestamps', () => {
     const state = disruptedState()
     expect(() => appReducer(state, { type: 'select_shipment', shipmentId: 'missing' }))
       .toThrow('Unknown shipment')
-    expect(() => choose(initialState, 'wait')).toThrow('No wait option')
+    expect(() => choose({ ...initialState, scenario: 'normal' }, 'wait')).toThrow('No wait option')
     expect(() => choose(state, 'reroute', 'SHP-006')).toThrow('Unavailable reroute option')
     expect(() => appReducer(state, {
       type: 'preview',

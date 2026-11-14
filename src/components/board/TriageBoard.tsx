@@ -9,6 +9,8 @@ export interface TriageBoardProps {
   selectedShipmentId?: string | null
   onSelectShipment?: (shipmentId: string) => void
   onRejectAll?: (shipmentId: string) => void
+  showEmptyGroups?: boolean
+  onToggleEmptyGroups?: () => void
 }
 
 /** Workflow wording per group. "Decision recorded" is the dispatcher's choice, not an outcome. */
@@ -26,14 +28,34 @@ export function TriageBoard({
   selectedShipmentId = null,
   onSelectShipment,
   onRejectAll,
+  showEmptyGroups = false,
+  onToggleEmptyGroups,
 }: TriageBoardProps) {
   const idPrefix = useId()
+  const emptyColumns = BOARD_COLUMNS.filter(({ id }) => !cards.some((card) => card.column === id))
   return (
-    <div className="triage-board" role="group" aria-label="Triage board">
+    <div
+      className="triage-board"
+      role="group"
+      aria-label="Triage board"
+      data-collapse-empty={Boolean(onToggleEmptyGroups) && !showEmptyGroups}
+    >
       <div className="triage-board__header">
         <h2 className="triage-board__title">Shipments</h2>
         <span className="triage-board__total pp-num">{cards.length} today</span>
       </div>
+      {emptyColumns.length > 0 && onToggleEmptyGroups && (
+        <button
+          type="button"
+          className="pp-button triage-board__empty-toggle"
+          aria-expanded={showEmptyGroups}
+          aria-controls={emptyColumns.map(({ id }) => `${idPrefix}-${id}`).join(' ')}
+          onClick={onToggleEmptyGroups}
+        >
+          {showEmptyGroups ? 'Hide' : 'Show'} {emptyColumns.length} empty{' '}
+          {emptyColumns.length === 1 ? 'group' : 'groups'}
+        </button>
+      )}
       {BOARD_COLUMNS.map(({ id, title }) => {
         const columnCards = cards.filter((card) => card.column === id)
         const titleId = `${idPrefix}-${id}-title`
@@ -41,6 +63,7 @@ export function TriageBoard({
         return (
           <section
             key={id}
+            id={`${idPrefix}-${id}`}
             className={`board-column${columnCards.length === 0 ? ' board-column--empty' : ''}`}
             aria-labelledby={titleId}
             data-column={id}
@@ -72,16 +95,28 @@ export function TriageBoard({
                       selected={card.shipment.id === selectedShipmentId}
                       onSelectShipment={onSelectShipment}
                     />
-                    {id === 'needs_review' && onRejectAll && (
+                    {(card.shipment.id === selectedShipmentId ||
+                      (id === 'needs_review' && onRejectAll)) && (
                       <div className="shipment-card__actions">
-                        <button
-                          type="button"
-                          className="shipment-card__reject"
-                          aria-label={`Reject all options for ${card.shipment.id}`}
-                          onClick={() => onRejectAll(card.shipment.id)}
-                        >
-                          Reject all
-                        </button>
+                        {card.shipment.id === selectedShipmentId && (
+                          <a
+                            className="pp-button shipment-card__view-responses"
+                            href="#response-options"
+                            aria-label={`View responses for ${card.shipment.id}`}
+                          >
+                            View responses
+                          </a>
+                        )}
+                        {id === 'needs_review' && onRejectAll && (
+                          <button
+                            type="button"
+                            className="shipment-card__reject"
+                            aria-label={`Reject all options for ${card.shipment.id}`}
+                            onClick={() => onRejectAll(card.shipment.id)}
+                          >
+                            Reject all
+                          </button>
+                        )}
                       </div>
                     )}
                   </li>

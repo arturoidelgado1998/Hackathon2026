@@ -44,6 +44,36 @@
   font-size: var(--pp-text-sm);
 }
 
+.responses-feedback:empty {
+  display: none;
+}
+
+.responses-feedback {
+  display: grid;
+  gap: var(--pp-space-2);
+}
+
+.responses-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--pp-space-2) var(--pp-space-3);
+  padding: var(--pp-space-3);
+  border: 1px solid var(--pp-border-strong);
+  border-radius: var(--pp-radius);
+  background: var(--pp-surface-muted);
+  font-size: var(--pp-text-sm);
+}
+
+.responses-notice p {
+  flex: 1 1 18rem;
+}
+
+.responses-notice--preview {
+  border-style: dashed;
+  background: var(--pp-surface);
+}
+
 .responses-banner {
   display: flex;
   align-items: flex-start;
@@ -142,6 +172,10 @@
   color: var(--pp-text-muted);
 }
 
+.responses-table-scroll {
+  min-width: 0;
+}
+
 /* The action row stays in view while the measures scroll, so the
    decision controls are never below the fold. */
 .responses-table tfoot td,
@@ -205,4 +239,11 @@
 
 .responses-explanation li + li {
   margin-top: var(--pp-space-1);
+}
+
+@media (max-width: 760px) {
+  .responses-table-scroll {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
 }

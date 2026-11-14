@@ -232,10 +232,27 @@ describe('ResponsePanel', () => {
     expect(within(waitCommunity).queryByRole('img', { name: 'Warning' })).not.toBeInTheDocument()
   })
 
-  it('keeps a pending slot request from looking solved', () => {
+  it('requires confirmation before a slot has actually been requested', () => {
     render(<ResponsePanel view={makeView()} />)
     const [, , slotStatus] = row('Status')
-    expect(slotStatus).toHaveTextContent('Pending confirmation; original deadline still applies')
+    expect(slotStatus).toHaveTextContent('Requires confirmation; original deadline still applies')
+    expect(screen.queryByText(/Slot request recorded/)).not.toBeInTheDocument()
+  })
+
+  it('keeps an actual pending slot request from looking solved', () => {
+    render(
+      <ResponsePanel
+        view={makeView()}
+        decision={{
+          shipment_id: 'SHP-001',
+          option_kind: 'request_slot',
+          status: 'pending_confirmation',
+          timestamp: '2026-11-14T19:46:36.081Z',
+        }}
+      />,
+    )
+    const [, , slotStatus] = row('Status')
+    expect(slotStatus).toHaveTextContent('Awaiting confirmation; original deadline still applies')
     const [, , slotRisk] = row('Risk')
     expect(slotRisk).toHaveTextContent('LATE')
   })

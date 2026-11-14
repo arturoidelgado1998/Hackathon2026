@@ -38,7 +38,7 @@ describe('scenario and reset totals', () => {
     expect(normalState.decisions).toEqual({})
     expect(normalState.previewDecision).toBeNull()
     expect(normalState.rejectedShipmentIds).toEqual([])
-    expect(getTotals(normalState)).toEqual(getTotals(initialState))
+    expect(getTotals(normalState)).toEqual(getTotals({ ...initialState, scenario: 'normal' }))
     expect(getTotals(appReducer(normalState, {
       type: 'set_scenario', scenario: 'disrupted',
     })).cost).toBe(1348)
@@ -54,14 +54,16 @@ describe('scenario and reset totals', () => {
     const reset = appReducer(active, { type: 'reset' })
     expect(reset).toEqual(initialState)
     expect(reset).toEqual({
-      scenario: 'normal',
+      scenario: 'disrupted',
       selectedShipmentId: null,
       decisions: {},
       previewDecision: null,
       rejectedShipmentIds: [],
+      lastDecisionChange: null,
+      showEmptyGroups: false,
     })
     expect(cardsFor(reset)).toEqual(cardsFor(initialState))
     expect(getTotals(reset)).toEqual(getTotals(initialState))
-    expect(getTotals(reset).cost).toBe(1175)
+    expect(getTotals(reset).cost).toBe(1348)
   })
 })

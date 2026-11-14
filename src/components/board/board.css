@@ -26,6 +26,11 @@
   font-size: var(--pp-text-sm);
 }
 
+.triage-board__empty-toggle,
+.shipment-card__view-responses {
+  display: none;
+}
+
 .board-column {
   min-width: 0;
 }
@@ -189,7 +194,11 @@
 }
 
 .shipment-card__actions {
-  padding: 0 var(--pp-space-3) var(--pp-space-2);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--pp-space-2);
+  padding: var(--pp-space-2) var(--pp-space-3);
 }
 
 .shipment-card__reject {
@@ -206,4 +215,21 @@
 
 .shipment-card__reject:hover {
   background: var(--pp-surface-muted);
+}
+
+@media (max-width: 760px) {
+  .triage-board__empty-toggle,
+  .shipment-card__view-responses {
+    display: inline-flex;
+    justify-content: center;
+  }
+
+  .triage-board[data-collapse-empty='true'] .board-column--empty {
+    display: none;
+  }
+
+  .shipment-card__view-responses {
+    color: var(--pp-accent);
+    text-underline-offset: 0.2em;
+  }
 }

@@ -2,17 +2,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as data from '../data/index.ts'
 import type { Baseline } from '../viewModels.ts'
 import type { Decision } from '../types.ts'
-import type { AppState } from './reducer.ts'
+import { initialState, type AppState } from './reducer.ts'
 import { getTotals } from './totals.ts'
 
 const timestamp = '2026-11-14T12:00:00.000Z'
-const normal: AppState = {
-  scenario: 'normal',
-  selectedShipmentId: null,
-  decisions: {},
-  previewDecision: null,
-  rejectedShipmentIds: [],
-}
+const normal: AppState = { ...initialState, scenario: 'normal' }
 const disrupted: AppState = { ...normal, scenario: 'disrupted' }
 
 function decision(

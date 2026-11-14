@@ -2,7 +2,7 @@ import { useReducer } from 'react'
 import { AssumptionsPanel } from './components/assumptions/AssumptionsPanel.tsx'
 import { TriageBoard } from './components/board/index.ts'
 import { ResponsePanel } from './components/responses/index.ts'
-import { OPTION_TITLES } from './components/responses/format.ts'
+import { OPTION_ACTION_LABELS, OPTION_TITLES } from './components/responses/format.ts'
 import { AppShell } from './components/shell/AppShell.tsx'
 import { IncidentBanner } from './components/shell/IncidentBanner.tsx'
 import { IndicatorsBar } from './components/shell/IndicatorsBar.tsx'
@@ -47,6 +47,8 @@ function App() {
           selectedShipmentId={selectedShipmentId}
           onSelectShipment={(shipmentId) => dispatch({ type: 'select_shipment', shipmentId })}
           onRejectAll={(shipmentId) => dispatch({ type: 'reject_all', shipmentId })}
+          showEmptyGroups={state.showEmptyGroups}
+          onToggleEmptyGroups={() => dispatch({ type: 'toggle_empty_groups' })}
         />
       }
       map={
@@ -68,6 +70,14 @@ function App() {
       responses={
         <ResponsePanel
           key={`${scenario}:${selectedShipmentId ?? 'none'}`}
+          decision={selectedDecision}
+          previewDecision={previewDecision}
+          onCancelPreview={() => dispatch({ type: 'cancel_preview' })}
+          onUndo={
+            state.lastDecisionChange?.shipmentId === selectedShipmentId
+              ? () => dispatch({ type: 'undo_decision' })
+              : undefined
+          }
           view={
             responseView && selectedCard
               ? { ...responseView, summary: selectedCard.summary }
@@ -100,7 +110,6 @@ function App() {
                 <button
                   type="button"
                   className="pp-button pp-button--primary"
-                  aria-label={`Select ${title}`}
                   aria-pressed={selectedDecision?.option_kind === option.kind}
                   disabled={unavailable}
                   title={unavailable ? option.status : undefined}
@@ -113,7 +122,7 @@ function App() {
                     })
                   }
                 >
-                  Select
+                  {OPTION_ACTION_LABELS[option.kind]}
                 </button>
               </>
             )

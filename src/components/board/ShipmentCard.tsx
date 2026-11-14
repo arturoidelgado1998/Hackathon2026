@@ -66,7 +66,7 @@ export function ShipmentCard({ card, selected = false, onSelectShipment }: Shipm
         <span className="shipment-card__decision">
           {OPTION_TITLES[decision.option_kind]} —{' '}
           {decision.status === 'pending_confirmation'
-            ? 'Pending confirmation; original risk retained'
+            ? 'Awaiting confirmation; original risk retained'
             : 'Decision recorded; estimate, not a confirmed outcome'}
         </span>
       )}

@@ -104,16 +104,32 @@ export function AppShell({
             {indicators}
           </section>
         </div>
+        {scenario === 'normal' && (
+          <p className="pp-shell__guidance">
+            <strong>Explore the sample disruption:</strong> switch to <strong>Disrupted</strong>,
+            {' '}then select a shipment under <strong>Needs review</strong> to compare responses.
+          </p>
+        )}
       </header>
 
       <main className="pp-shell__main">
-        <section className="pp-shell__region pp-shell__board" aria-label="Triage board">
+        <section
+          className="pp-shell__region pp-shell__board"
+          id="shipment-queue"
+          tabIndex={-1}
+          aria-label="Triage board"
+        >
           {board}
         </section>
         <section
           className="pp-shell__region pp-shell__responses"
+          id="response-options"
+          tabIndex={-1}
           aria-label="Response options"
         >
+          <a className="pp-shell__back-link" href="#shipment-queue">
+            Back to shipments
+          </a>
           {responses}
         </section>
         <section className="pp-shell__region pp-shell__map" aria-label="Map panel">
