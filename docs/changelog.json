@@ -23,8 +23,8 @@
   "summary": {
     "counts": {
       "done": 5,
-      "not_started": 12,
-      "on_hold": 5
+      "not_started": 14,
+      "on_hold": 3
     },
     "current_branch_for_phase_1": "phase-1-dashboard",
     "pull_requests": [
@@ -34,6 +34,14 @@
         "state": "merged",
         "merged_at": "2026-11-14T19:30:14Z",
         "merge_commit": "4b8f069",
+        "base": "main",
+        "head": "phase-1-dashboard"
+      },
+      {
+        "number": 25,
+        "url": "https://github.com/arturoidelgado1998/Hackathon2026/pull/25",
+        "state": "merged",
+        "merge_commit": "9810047",
         "base": "main",
         "head": "phase-1-dashboard"
       }
@@ -627,9 +635,9 @@
       "code": "G1",
       "title": "Geography data: real locations and segment geometry",
       "phase": "Phase 5: GIS / ArcGIS",
-      "status": "on_hold",
+      "status": "not_started",
       "github_state": "open",
-      "assignee": null,
+      "assignee": "arturoidelgado1998",
       "built_by": null,
       "branch": null,
       "pull_request": null,
@@ -637,21 +645,27 @@
       "depends_on": [
         "R1"
       ],
-      "already_in_place": [],
+      "already_in_place": [
+        "Team feature service with facilities, 9 segments, 30 shipment routes and 2 synthetic zones: https://services.arcgis.com/QPnoxtBFXm6yYtyc/arcgis/rest/services/PortPlan_%E2%80%94_Disruption_Triage_WFL1/FeatureServer"
+      ],
       "changes": [],
       "verification": [],
       "deviations_from_issue": [],
       "revisions": [],
-      "follow_ups": []
+      "follow_ups": [
+        "2026-11-14: on-hold lifted and assigned. Blocked on a decision: the feature service is a different dataset from src/data (shipment ids, warehouse names, segment ids, travel-time ranges, Warehouse B alternative). Details in the issue comment",
+        "Drawn segment lengths are shorter than the stated miles, so the 'within 0.5 mi' criterion fails as written",
+        "The service's capabilities include Create, Update and Delete; check that the public cannot edit it"
+      ]
     },
     {
       "number": 20,
       "code": "G2",
       "title": "ArcGIS map component replacing the placeholder",
       "phase": "Phase 5: GIS / ArcGIS",
-      "status": "on_hold",
+      "status": "not_started",
       "github_state": "open",
-      "assignee": null,
+      "assignee": "arturoidelgado1998",
       "built_by": null,
       "branch": null,
       "pull_request": null,
@@ -660,13 +674,18 @@
         "G1"
       ],
       "already_in_place": [
-        "MapPanelProps contract is fixed in src/map/MapPanel.tsx"
+        "MapPanelProps contract is fixed in src/map/MapPanel.tsx",
+        "@arcgis/core 5.1.27, @arcgis/map-components 5.1.27 and @esri/calcite-components 5.1.2 installed locally (package.json not yet committed)",
+        "Layer 2 of the feature service has route lines per shipment and scenario, ready for display"
       ],
       "changes": [],
       "verification": [],
       "deviations_from_issue": [],
       "revisions": [],
-      "follow_ups": []
+      "follow_ups": [
+        "2026-11-14: on-hold lifted and assigned. Wait for the G1 data decision so the map matches the queue",
+        "No .env yet; a basemap needs VITE_ARCGIS_API_KEY"
+      ]
     },
     {
       "number": 21,
@@ -700,7 +719,7 @@
       "phase": "Phase 5: GIS / ArcGIS",
       "status": "on_hold",
       "github_state": "open",
-      "assignee": null,
+      "assignee": "arturoidelgado1998",
       "built_by": null,
       "branch": null,
       "pull_request": null,
@@ -709,12 +728,16 @@
         "G2",
         "G3"
       ],
-      "already_in_place": [],
+      "already_in_place": [
+        "Layer 3 of the feature service has two SYNTHETIC zone polygons usable as a placeholder overlay"
+      ],
       "changes": [],
       "verification": [],
       "deviations_from_issue": [],
       "revisions": [],
-      "follow_ups": []
+      "follow_ups": [
+        "2026-11-14: assigned; stays on hold until G3 provides real layers"
+      ]
     },
     {
       "number": 23,
