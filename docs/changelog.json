@@ -394,7 +394,9 @@
       "verification": [],
       "deviations_from_issue": [],
       "revisions": [],
-      "follow_ups": []
+      "follow_ups": [
+        "Issue text updated 2026-11-14: the eleven-item limitations list is now written out in the issue; keep it in one module so R1 (#18) reuses it"
+      ]
     },
     {
       "number": 10,
@@ -616,7 +618,8 @@
       "deviations_from_issue": [],
       "revisions": [],
       "follow_ups": [
-        "The repo has no CI workflow yet"
+        "The repo has no CI workflow yet",
+        "Issue text updated 2026-11-14: README limitations must match the list in D8 (#9)"
       ]
     },
     {
