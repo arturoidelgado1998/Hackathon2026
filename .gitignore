@@ -13,6 +13,7 @@ dist-ssr
 coverage
 *.tsbuildinfo
 *.local
+.github/skills/impeccable/scripts/bin/
 
 # Environment (keep .env.example)
 .env

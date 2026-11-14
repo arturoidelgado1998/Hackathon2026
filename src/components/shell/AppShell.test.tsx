@@ -44,6 +44,34 @@ describe('AppShell', () => {
     expect(screen.queryByRole('region', { name: 'Assumptions and sources' })).toBeNull()
   })
 
+  it('expands assumptions into a readable panel and collapses with Escape', () => {
+    renderShell({ assumptions: <p>All sources and limitations</p> })
+    const content = screen.getByText('All sources and limitations')
+    const toggle = screen.getByRole('button', { name: 'Expand assumptions & sources' })
+    expect(content).not.toBeVisible()
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+
+    fireEvent.click(toggle)
+    expect(content).toBeVisible()
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('region', { name: 'Assumptions details' })).toHaveAttribute(
+      'id',
+      toggle.getAttribute('aria-controls'),
+    )
+
+    fireEvent.keyDown(content, { key: 'Escape' })
+    expect(content).not.toBeVisible()
+    expect(toggle).toHaveFocus()
+  })
+
+  it('collapses assumptions on Reset as well as restoring the scenario', () => {
+    const props = renderShell({ assumptions: <p>All sources and limitations</p> })
+    fireEvent.click(screen.getByRole('button', { name: 'Expand assumptions & sources' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Reset' }))
+    expect(screen.getByText('All sources and limitations')).not.toBeVisible()
+    expect(props.onReset).toHaveBeenCalledTimes(1)
+  })
+
   it('marks the active scenario with aria-pressed', () => {
     renderShell({ scenario: 'disrupted' })
     expect(screen.getByRole('button', { name: 'Normal' })).toHaveAttribute('aria-pressed', 'false')

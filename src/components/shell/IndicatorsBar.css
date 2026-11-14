@@ -14,18 +14,19 @@
 }
 
 .pp-indicators__item {
-  display: flex;
-  gap: 0.375rem;
-  align-items: baseline;
+  display: grid;
+  gap: var(--pp-space-1);
 }
 
 .pp-indicators__item dt {
   color: var(--pp-text-muted);
+  font-size: var(--pp-text-xs);
 }
 
 .pp-indicators__item dd {
   margin: 0;
   font-weight: 650;
+  font-size: var(--pp-text-lg);
   font-variant-numeric: tabular-nums;
 }
 
@@ -34,7 +35,7 @@
   border: 1px dashed var(--pp-border-strong);
   border-radius: var(--pp-radius-sm);
   color: var(--pp-text-muted);
-  font-size: 0.6875rem;
+  font-size: var(--pp-text-xs);
   font-weight: 700;
   letter-spacing: 0.08em;
 }

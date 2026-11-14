@@ -10,7 +10,8 @@
       "in_progress": "Someone is working on it; assignee and branch are set",
       "done": "Merged and verified",
       "on_hold": "Do not start until the on-hold label is removed",
-      "in_review": "Work is in an open pull request"
+      "in_review": "Work is in an open pull request",
+      "ready_for_review": "Implemented and verified on a feature branch; not merged"
     },
     "how_to_update": [
       "Starting an issue: set status to in_progress, fill assignee and branch, and assign yourself on GitHub",
@@ -30,7 +31,8 @@
   "summary": {
     "counts": {
       "done": 5,
-      "not_started": 12,
+      "ready_for_review": 3,
+      "not_started": 9,
       "in_review": 2,
       "on_hold": 3
     },
@@ -77,7 +79,54 @@
       21
     ],
     "data_source": "ArcGIS feature service, imported by scripts/import_map_data.py",
-    "sanity_checks": "npm run sanity: 28 checks in sanity/, also run by the pipeline's sanity job"
+    "sanity_checks": "npm run sanity: 28 checks in sanity/, also run by the pipeline's sanity job",
+    "delivery_checklist": [
+      {
+        "task": "Update main and create Nicole's branch",
+        "status": "done",
+        "details": "Fast-forwarded main to 9810047, then created nicole/d6-d8-dashboard. Existing unrelated local skills were preserved."
+      },
+      {
+        "task": "Retrieve D6-D8 and delegate one agent per issue",
+        "status": "done",
+        "details": "Read issues 7, 8 and 9, assigned nmtraboulsi, and ran D6-workflow, D7-indicators and D8-transparency agents with separate ownership."
+      },
+      {
+        "task": "Implement D6-D8",
+        "status": "ready_for_review",
+        "details": "Acceptance criteria are implemented and covered by tests. Issues remain open because the changes have not been merged."
+      },
+      {
+        "task": "Make assumptions and sources fully accessible",
+        "status": "done",
+        "details": "Expandable, scrollable drawer with mobile access, section links, Escape and focus return. All eleven limitations are reachable."
+      },
+      {
+        "task": "Install and apply Impeccable",
+        "status": "done",
+        "details": "Installed the official project-scoped Copilot skill, disabled telemetry, applied its Operate-mode polish guidance, and ran its local detector with no findings. Automatic hooks remain disabled."
+      },
+      {
+        "task": "Make Why explanations discoverable",
+        "status": "done",
+        "details": "Opening Why focuses the supplied explanation and brings it into view. Close or Escape returns focus to the matching Why button."
+      },
+      {
+        "task": "Validate and run the dashboard",
+        "status": "done",
+        "details": "Build, typecheck, lint and all 153 tests pass under Node 24. Browser checks cover desktop explanation focus and mobile sources/limitations access. Preview is available at http://127.0.0.1:5173/."
+      },
+      {
+        "task": "Connect GitHub MCP to the repository",
+        "status": "blocked",
+        "details": "Both available GitHub MCP connections return 404 for this repository. GitHub CLI access works and was used for issue retrieval, assignment and branch publication. MCP credentials still need repository authorization."
+      },
+      {
+        "task": "Compare routes using historical travel-time data",
+        "status": "on_hold",
+        "details": "Deferred at the user's request. No historical dataset has been supplied and simulated fixtures are not presented as historical observations."
+      }
+    ]
   },
   "issues": [
     {
@@ -364,13 +413,37 @@
       "code": "D6",
       "title": "Selection, Preview, Select and decisions",
       "phase": "Phase 1: Dashboard",
-      "status": "not_started",
+      "status": "ready_for_review",
       "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
+      "assignee": "nmtraboulsi",
+      "built_by": "Copilot D6-workflow agent",
+      "branch": "nicole/d6-d8-dashboard",
       "pull_request": null,
-      "commit": null,
+      "commit": {
+        "hash": "4eaed53e2fd2c074b8c21800314ab7d80fe09cbc",
+        "date": "2026-11-14T12:48:19-08:00",
+        "message": "D6-D8: Complete dashboard workflow and polish UI",
+        "files": {
+          "added": [
+            "src/state/reducer.ts",
+            "src/state/reducer.test.ts",
+            "src/state/options.ts",
+            "src/state/selectors.test.ts"
+          ],
+          "modified": [
+            "src/App.tsx",
+            "src/App.test.tsx",
+            "src/state/selectors.ts",
+            "src/viewModels.ts",
+            "src/components/board/ShipmentCard.tsx",
+            "src/components/board/TriageBoard.tsx",
+            "src/components/board/TriageBoard.test.tsx",
+            "src/components/board/board.css",
+            "src/map/MapPanel.tsx",
+            "src/map/MapPanel.test.tsx"
+          ]
+        }
+      },
       "depends_on": [
         "D4",
         "D5"
@@ -380,9 +453,23 @@
         "src/state/selectors.ts builds the card, response and route views; add decisions on top",
         "ResponsePanel has a renderActions slot for Preview and Select buttons"
       ],
-      "changes": [],
-      "verification": [],
-      "deviations_from_issue": [],
+      "changes": [
+        "Replaced local scenario/selection state with one app reducer in src/state.",
+        "Synchronized shipment selection across the board, response comparison and highlighted map routes.",
+        "Recorded ISO-timestamped previews separately from committed decisions so previewing never changes columns, risk or totals.",
+        "Recorded Wait/Reroute as selected decisions and later-slot requests as pending confirmation, retaining their original risk.",
+        "Added Reject all to every Needs review shipment with the exact dispatcher rejection note.",
+        "Disabled unavailable responses and surfaced invalid reducer actions explicitly."
+      ],
+      "verification": [
+        "Reducer and selector tests cover preview, selected responses, pending requests, rejection, timestamps and invalid actions.",
+        "Integration tests prove previews preserve an existing committed decision and totals, pending requests retain original risk, and all Needs review shipments expose Reject all.",
+        "Full validation: build, typecheck and lint pass; 13 test files and 153 tests pass under Node 24."
+      ],
+      "deviations_from_issue": [
+        "Used a single App-level useReducer rather than adding context; the current slot-based component tree needs no additional provider.",
+        "D6-D8 share the personal branch requested by the user. No pull request has been opened or merged."
+      ],
       "revisions": [],
       "follow_ups": []
     },
@@ -391,13 +478,31 @@
       "code": "D7",
       "title": "Indicators bar, scenario toggle and Reset",
       "phase": "Phase 1: Dashboard",
-      "status": "not_started",
+      "status": "ready_for_review",
       "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
+      "assignee": "nmtraboulsi",
+      "built_by": "Copilot D7-indicators agent",
+      "branch": "nicole/d6-d8-dashboard",
       "pull_request": null,
-      "commit": null,
+      "commit": {
+        "hash": "4eaed53e2fd2c074b8c21800314ab7d80fe09cbc",
+        "date": "2026-11-14T12:48:19-08:00",
+        "message": "D6-D8: Complete dashboard workflow and polish UI",
+        "files": {
+          "added": [
+            "src/state/totals.ts",
+            "src/state/totals.test.ts",
+            "src/state/scenarios.test.ts"
+          ],
+          "modified": [
+            "src/App.tsx",
+            "src/App.test.tsx",
+            "src/state/reducer.ts",
+            "src/state/selectors.ts",
+            "src/components/shell/IndicatorsBar.css"
+          ]
+        }
+      },
       "depends_on": [
         "D6"
       ],
@@ -405,9 +510,22 @@
         "IndicatorsBar renders totals it is given; App passes nulls today",
         "Scenario toggle and Reset already work at a basic level in src/App.tsx"
       ],
-      "changes": [],
-      "verification": [],
-      "deviations_from_issue": [],
+      "changes": [
+        "Added getTotals(state) as the single sample-data aggregation point for at-risk shipments, estimated cost and tailpipe CO2.",
+        "Counted LATE, TIGHT and UNKNOWN risk; pending requests continue to use current-plan metrics rather than counting as saved.",
+        "Updated totals from selected responses, while previews and rejected options leave them unchanged.",
+        "Kept unaffected shipment cards and their summaries identical across Normal and Disrupted scenarios.",
+        "Reset restores the exact initial reducer state and dashboard, including no decisions, preview, incident, selection or open assumptions drawer."
+      ],
+      "verification": [
+        "Totals tests assert normal/disrupted sample totals, selected options, pending requests, preview isolation and unknown metrics.",
+        "Scenario tests compare unaffected cards across scenarios and deeply compare reset state to initialState.",
+        "App tests compare the reset dashboard DOM to a fresh render.",
+        "Full validation: build, typecheck and lint pass; 13 test files and 153 tests pass under Node 24."
+      ],
+      "deviations_from_issue": [
+        "Changing scenarios clears scenario-specific decisions, previews and rejection notes while retaining a valid shipment selection."
+      ],
       "revisions": [],
       "follow_ups": []
     },
@@ -416,13 +534,37 @@
       "code": "D8",
       "title": "\"Why?\" panel, assumptions panel and estimate labels",
       "phase": "Phase 1: Dashboard",
-      "status": "not_started",
+      "status": "ready_for_review",
       "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
+      "assignee": "nmtraboulsi",
+      "built_by": "Copilot D8-transparency agent",
+      "branch": "nicole/d6-d8-dashboard",
       "pull_request": null,
-      "commit": null,
+      "commit": {
+        "hash": "4eaed53e2fd2c074b8c21800314ab7d80fe09cbc",
+        "date": "2026-11-14T12:48:19-08:00",
+        "message": "D6-D8: Complete dashboard workflow and polish UI",
+        "files": {
+          "added": [
+            "src/components/assumptions/AssumptionsPanel.tsx",
+            "src/components/assumptions/AssumptionsPanel.test.tsx",
+            "src/components/assumptions/assumptions.css",
+            "src/components/assumptions/index.ts",
+            "src/data/limitations.ts"
+          ],
+          "modified": [
+            "src/App.tsx",
+            "src/components/responses/ResponsePanel.tsx",
+            "src/components/responses/ResponsePanel.test.tsx",
+            "src/components/responses/responses.css",
+            "src/components/shell/AppShell.tsx",
+            "src/components/shell/AppShell.css",
+            "src/components/shell/AppShell.test.tsx",
+            "src/components/shell/IncidentBanner.tsx",
+            "README.md"
+          ]
+        }
+      },
       "depends_on": [
         "D5"
       ],
@@ -430,9 +572,25 @@
         "ResponsePanel calls onWhy(kind); every option carries explanation_inputs",
         "AppShell has an assumptions slot; src/data exports assumptions and assumptionPlaceholders"
       ],
-      "changes": [],
-      "verification": [],
-      "deviations_from_issue": [],
+      "changes": [
+        "Why displays each response's supplied explanation_inputs without calculations or AI-generated explanations.",
+        "Added explicit explanation focus on open, Close/Escape controls, and return focus to the corresponding Why button.",
+        "Listed all numeric assumptions with values, units, sources, placeholder flags and the supplied EPA 2025 edition.",
+        "Added the Confirmed, Estimated, Simulated and Unknown legend and estimate/bounds tooltips.",
+        "Stored all eleven updated issue limitations verbatim in one reusable data module.",
+        "Replaced the clipped footer with an expandable sources drawer, section navigation and mobile-readable assumption rows."
+      ],
+      "verification": [
+        "Tests open all three explanations for each shipment with options, and assert the reference Wait timing steps verbatim.",
+        "Tests check explanation focus, Close/Escape return focus, assumption value/unit/source labels and placeholder flags.",
+        "Tests assert all eleven limitations, including exact first and last text, and estimate labels on numeric response cells.",
+        "At a 390x844 emulated browser viewport, sources measured 358px visible/358px total width; all eleven limitations were present and the last item scrolled fully into view.",
+        "At a 1440x1000 browser viewport, Why moved focus to its visible explanation; response controls measured 44px high with no page overflow.",
+        "Full validation: build, typecheck and lint pass; 13 test files and 153 tests pass under Node 24."
+      ],
+      "deviations_from_issue": [
+        "Included the user's follow-up requests for an expandable assumptions panel and a more discoverable Why interaction."
+      ],
       "revisions": [],
       "follow_ups": [
         "Issue text updated 2026-11-14: the eleven-item limitations list is now written out in the issue; keep it in one module so R1 (#18) reuses it"
@@ -1049,9 +1207,211 @@
         "New job 'Sanity checks on the built app' in .github/workflows/advisory-checks.yml, on pull requests and pushes to main and staging",
         "Playwright 1.65.0 added as a dev dependency, pinned; tsconfig.sanity.json and an ESLint entry so the checks are typechecked and linted"
       ]
+    },
+    {
+      "id": "nicole-impeccable-polish",
+      "title": "Install Impeccable and finish dashboard usability polish",
+      "related_issues": [
+        7,
+        8,
+        9
+      ],
+      "built_by": "Copilot coordinator",
+      "branch": "nicole/d6-d8-dashboard",
+      "pull_request": null,
+      "commit": {
+        "hash": "4eaed53e2fd2c074b8c21800314ab7d80fe09cbc",
+        "date": "2026-11-14T12:48:19-08:00",
+        "message": "D6-D8: Complete dashboard workflow and polish UI",
+        "files": {
+          "added": [
+            ".github/skills/impeccable/",
+            ".github/agents/impeccable-asset-producer.agent.md",
+            ".github/agents/impeccable-documenter.agent.md",
+            ".github/agents/impeccable-finish-reviewer.agent.md",
+            ".github/agents/impeccable-manual-edit-applier.agent.md",
+            ".impeccable/config.json"
+          ],
+          "modified": [
+            ".gitignore",
+            "README.md",
+            "src/index.css",
+            "src/components/board/board.css",
+            "src/components/shell/AppShell.css",
+            "src/components/shell/IndicatorsBar.css",
+            "src/components/responses/responses.css",
+            "src/components/assumptions/assumptions.css"
+          ]
+        }
+      },
+      "changes": [
+        "Installed official Impeccable via its 4.9.1 installer, including its project-local Copilot skill, shipped agents, launcher and Apache-2.0 license.",
+        "Kept telemetry disabled, selected code-led refinement, and left automatic hooks off; all scans were local and manual.",
+        "Applied the skill's existing-interface Operate guidance rather than replacing the dashboard's restrained visual identity.",
+        "Raised shared controls and scenario/reject actions to 44px targets, improved table spacing and indicator hierarchy, and gave the response comparison more usable width.",
+        "Added mobile sources layout and in-panel navigation without replacing sample data, calculation rules or decision behavior.",
+        "Excluded downloaded platform engine binaries from version control and preserved upstream skill formatting and Windows launcher line endings."
+      ],
+      "verification": [
+        "Ran Impeccable context and read its audit, polish, Operate-mode and craft-floor references.",
+        "Ran the installed local detector once over changed dashboard UI targets: exit 0, JSON result [].",
+        "Browser checks used emulated desktop/mobile viewports, not a physical touch device; no claim of full assistive-technology certification.",
+        "npm run build, npm run typecheck, npm run lint and npm test pass via Node 24; 153 tests pass in 13 files.",
+        "No application dependency or lockfile changes were required."
+      ],
+      "follow_ups": [
+        "D6-D8 are implemented on the feature branch, not merged; their GitHub issues intentionally remain open.",
+        "Authorize the GitHub MCP connection for this repository; both available MCP issue reads currently return 404 while gh CLI works.",
+        "Historical route comparison is paused at the user's request and needs a real data source before any historical fastest-route claim.",
+        "Automatic Impeccable hooks are not enabled. Use its documented manual detector, or configure hooks separately.",
+        "D9 and the later engine, AI and GIS phases are outside this delivery."
+      ]
+    },
+    {
+      "id": "dispatcher-workflow-clarity",
+      "title": "Clarify response choices, Undo and mobile navigation",
+      "related_issues": [
+        7,
+        8,
+        9
+      ],
+      "built_by": "Copilot coordinator",
+      "branch": "nicole/d6-d8-dashboard",
+      "pull_request": null,
+      "commit": {
+        "hash": "18867352c1ff5ecfb3e0a6807eff7419ee6ef1fe",
+        "date": "2026-11-14T13:18:54-08:00",
+        "message": "Polish dispatcher decisions and mobile workflow",
+        "files": {
+          "modified": [
+            "README.md",
+            "src/App.tsx",
+            "src/App.test.tsx",
+            "src/components/board/ShipmentCard.tsx",
+            "src/components/board/TriageBoard.tsx",
+            "src/components/board/TriageBoard.test.tsx",
+            "src/components/board/board.css",
+            "src/components/responses/ResponsePanel.tsx",
+            "src/components/responses/ResponsePanel.test.tsx",
+            "src/components/responses/format.ts",
+            "src/components/responses/responses.css",
+            "src/components/shell/AppShell.tsx",
+            "src/components/shell/AppShell.css",
+            "src/state/reducer.ts",
+            "src/state/reducer.test.ts",
+            "src/state/scenarios.test.ts",
+            "src/state/totals.test.ts"
+          ]
+        }
+      },
+      "changes": [
+        "Replaced generic Select actions with Choose wait, Use reroute and Request slot.",
+        "Added explicit recorded-choice and Preview only notices. New choices and previews focus their notices so confirmation is visible, without stealing focus when revisiting a shipment.",
+        "Added Cancel preview, restoring the recorded route without changing the decision, risk or totals.",
+        "Added one-step Undo for the most recent response choice. It restores the prior decision or Needs review state and any prior rejection note without discarding other shipments' changes.",
+        "Changed the slot status to Requires confirmation until a request is actually recorded, then Awaiting confirmation. Pending requests still retain original risk and current-plan totals.",
+        "Added Normal-scenario guidance and collapsible empty groups on small screens. Selected shipments expose a View responses shortcut; Back to shipments restores queue focus.",
+        "Kept horizontal scrolling inside the comparison table on mobile so its shipment context and confirmation notices remain fully visible.",
+        "Changed the starting and Reset scenario to Disrupted at the user's request. Reset clears decisions, previews, Undo and empty-group disclosure; Normal remains available.",
+        "Separated Reject all from the selected shipment outline with 8px of vertical spacing so its border and keyboard focus ring are not cut off."
+      ],
+      "verification": [
+        "Typecheck, lint, production build and the complete 167-test suite passed after the workflow and default-scenario changes.",
+        "After the final border and mobile-scroll fixes, reran lint, production build (including typecheck) and all 74 tests in the four affected UI test files; all passed.",
+        "At a 390x844 emulated browser viewport, exercised the response shortcut, preview, recorded reroute, Cancel preview, slot request and Undo. Notices were fully visible above the fixed assumptions bar, and there was no page-level horizontal overflow.",
+        "Verified Back to shipments returns focus to the queue.",
+        "At 390px, 760px, 1024px and 1440px widths, Reject all retained its complete 1px border, 44px target height, 8px gap from selection and at least 8px bottom clearance.",
+        "The final local Impeccable detector scan returned [] with exit code 0."
+      ],
+      "notes": [
+        "Recorded on Nicole's feature branch; no pull request has been opened or merged.",
+        "The Disrupted starting/Reset scenario intentionally supersedes the earlier Normal default; the user explicitly chose the matching Reset behavior.",
+        "Undo reverses a local sample decision, not an external warehouse request. It is not a multi-step history.",
+        "Historical route comparison remains on hold; no new dependencies, calculations or route rankings were introduced."
+      ]
     }
   ],
   "entries": [
+    {
+      "id": "2026-11-14-merge-nicole-d6-d8",
+      "date": "2026-11-14",
+      "title": "Merged Nicole's D6-D8 dashboard work into staging",
+      "summary": "nicole/d6-d8-dashboard was built before staging adopted the feature service's data and added the ArcGIS map. This merge keeps every feature from both sides and updates the tests that assumed the old data.",
+      "issues": [
+        7,
+        8,
+        9
+      ],
+      "related_issues": [
+        19,
+        20
+      ],
+      "branch": "merge/nicole-d6-d8-into-staging",
+      "merged_branches": {
+        "from": "nicole/d6-d8-dashboard",
+        "into": "staging"
+      },
+      "alignment_with_issues": {
+        "D6 (#7)": "Covered: one reducer for selection, preview, select and reject all; preview never commits; a slot request stays pending with its original risk; timestamps on every decision.",
+        "D7 (#8)": "Covered: getTotals(state) feeds the indicators; pending shipments stay at risk; Reset restores the starting state exactly.",
+        "D8 (#9)": "Covered: Why? shows each option's supplied steps; assumptions and sources panel with a value-type legend; all eleven limitations in src/data/limitations.ts."
+      },
+      "features_kept_from_nicole": [
+        "Preview, Choose wait, Use reroute and Request slot actions in the comparison table",
+        "Preview only notice with Cancel preview; one-step Undo last choice",
+        "Reject all on every Needs review shipment, with the rejection note",
+        "Dashboard starts in, and resets to, the Disrupted scenario",
+        "Collapsible empty groups and View responses / Back to shipments shortcuts on small screens",
+        "Assumptions & sources as an expandable bottom drawer",
+        "Indicators bound to live totals",
+        "Map panel labels a previewed route as Preview route and a pending slot as Current route",
+        "Project-local Impeccable skill under .github/skills and .github/agents"
+      ],
+      "features_kept_from_staging": [
+        "Feature-service data (S-01 to S-10, real corridors, min/max travel times) and the import script",
+        "ArcGIS map in the Routes pane with the load-failure fallback",
+        "Advisory checks workflow and the sanity checks",
+        "Dated change log entries"
+      ],
+      "conflicts": [
+        {
+          "file": "src/map/MapPanel.tsx",
+          "resolution": "Kept the ArcGIS map imports and Nicole's Decision type; the note now carries both sentences"
+        },
+        {
+          "file": "src/components/shell/AppShell.css",
+          "resolution": "Kept Nicole's narrower queue; the map pane is 21rem on a laptop so her comparison table shows all three options, and grows to 28rem on wide screens"
+        },
+        {
+          "file": "README.md",
+          "resolution": "Kept both the Sanity checks section and Nicole's workflow and Impeccable sections"
+        },
+        {
+          "file": "docs/changelog.json",
+          "resolution": "Started from staging's file and applied Nicole's D6-D8 entries, her two other_changes records, the ready_for_review status and her delivery checklist"
+        }
+      ],
+      "breakages_not_flagged_as_conflicts": [
+        "52 of Nicole's tests failed after the merge because they used the old shipment ids and totals; updated to the feature-service data (S-01 for the reference shipment, new totals such as 4 at risk and $1,204)",
+        "Two tests relied on a reroute being unavailable, which no longer happens in the data; they now simulate one",
+        "Two sanity checks assumed the app starts and resets in Normal; updated for the Disrupted start",
+        "The preview route had no legend entry on the map; added Previewed or chosen"
+      ],
+      "verification": [
+        "npm run typecheck, lint and test pass: 170 tests in 13 files",
+        "npm run sanity passes: build plus 28 sanity checks, including the headless browser run",
+        "Browser at 1366x768 and 1920x1080: starts in Disrupted with 4 at risk, $1,204 and 546.5 kg; previewing a reroute draws it on the ArcGIS map; all three options are visible without sideways scrolling"
+      ],
+      "not_verified": [
+        "Nicole's mobile navigation was not rechecked at phone width after the merge",
+        "Undo, Reject all and the assumptions drawer were covered by her tests only, not clicked through in the browser after the merge"
+      ],
+      "known_gaps": [
+        "D6-D8 stay ready_for_review until this merge reaches staging",
+        "The limitations text still calls sensitive-zone flags placeholders; they now come from the feature service's synthetic zones",
+        "The Impeccable skill adds about 24,000 lines of vendored tooling under .github"
+      ]
+    },
     {
       "id": "2026-11-14-sanity-checks",
       "date": "2026-11-14",
