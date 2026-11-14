@@ -8,9 +8,14 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b --noEmit",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:sanity": "vitest run --config vitest.sanity.config.ts",
+    "sanity": "npm run build && npm run test:sanity"
   },
   "dependencies": {
+    "@arcgis/core": "5.1.27",
+    "@arcgis/map-components": "5.1.27",
+    "@esri/calcite-components": "5.1.2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
@@ -28,6 +33,7 @@
     "eslint-plugin-react-refresh": "^0.5.7",
     "globals": "^17.14.0",
     "jsdom": "^31.0.1",
+    "playwright": "1.65.0",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.2",
     "vite": "^8.3.8",

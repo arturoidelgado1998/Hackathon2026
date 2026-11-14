@@ -52,11 +52,17 @@ describe('sample data files', () => {
     }
   })
 
-  it('segments satisfy RoadSegment with null geometry', () => {
-    expect(segments.length).toBeGreaterThanOrEqual(5)
-    expect(segments.length).toBeLessThanOrEqual(8)
+  it('segments satisfy RoadSegment with drawn geometry near Los Angeles', () => {
+    expect(segments).toHaveLength(9)
     for (const s of segments) {
-      expect(s.geometry).toBeNull()
+      expect(s.geometry?.type).toBe('LineString')
+      expect(s.geometry!.coordinates.length).toBeGreaterThanOrEqual(2)
+      for (const [lon, lat] of s.geometry!.coordinates) {
+        expect(lon).toBeGreaterThan(-118.6)
+        expect(lon).toBeLessThan(-117)
+        expect(lat).toBeGreaterThan(33.5)
+        expect(lat).toBeLessThan(34.5)
+      }
       expect(s.miles).toBeGreaterThan(0)
       expect(s.minutes_min).toBeGreaterThan(0)
       expect(s.minutes_max).toBeGreaterThanOrEqual(s.minutes_min)
@@ -141,12 +147,19 @@ describe('counts and route totals', () => {
     }
   })
 
-  it('uses NB-03 on 4 or 5 routes, and at least 2 shipments avoid it', () => {
-    const using = routes.filter((r) => r.segment_ids.includes('NB-03'))
-    expect(using.length).toBeGreaterThanOrEqual(4)
-    expect(using.length).toBeLessThanOrEqual(5)
-    const avoiding = shipments.filter((s) => !getRoute(s.assigned_route_id)!.segment_ids.includes('NB-03'))
-    expect(avoiding.length).toBeGreaterThanOrEqual(2)
+  it('has at least 4 shipments on the shared NB-03 corridor and at least 2 that avoid it', () => {
+    const usesCorridor = (id: string) => getRoute(id)!.segment_ids.includes('NB-03')
+    expect(shipments.filter((s) => usesCorridor(s.assigned_route_id)).length).toBeGreaterThanOrEqual(4)
+    expect(shipments.filter((s) => !usesCorridor(s.assigned_route_id)).length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('connects each route: every segment starts where the previous one ends', () => {
+    for (const r of routes) {
+      const lines = r.segment_ids.map((id) => getSegment(id)!.geometry!.coordinates)
+      for (let i = 1; i < lines.length; i++) {
+        expect(lines[i][0]).toEqual(lines[i - 1][lines[i - 1].length - 1])
+      }
+    }
   })
 
   it('keeps sensitive-zone fields as placeholders', () => {
@@ -159,12 +172,13 @@ describe('counts and route totals', () => {
     expect(flagged.length).toBeGreaterThanOrEqual(1)
     for (const r of flagged) {
       expect(r.kind).toBe('alternative')
-      expect(r.sensitive_zone_note).toBe('PLACEHOLDER, replaced by corridor analysis (G3)')
+      // Hand-drawn zones from the feature service, until the corridor analysis (G3).
+      expect(r.sensitive_zone_note).toMatch(/SYNTHETIC/)
     }
   })
 })
 
-describe('reference shipment SHP-001', () => {
+describe('reference shipment S-01', () => {
   const s = shipments.find((x) => x.id === REFERENCE_SHIPMENT_ID)!
 
   it('matches the issue route and timing inputs', () => {
@@ -173,41 +187,43 @@ describe('reference shipment SHP-001', () => {
     expect(s.appt_end).toBe('11:30')
     const orig = getRoute(s.assigned_route_id)!
     expect(orig.segment_ids).toEqual(['PORT-01', 'NB-03', 'WH-A-APPR'])
-    expect(getSegment('PORT-01')).toMatchObject({ miles: 5, minutes_min: 10, minutes_max: 10 })
-    expect(getSegment('NB-03')).toMatchObject({ miles: 25, minutes_min: 30, minutes_max: 30 })
-    expect(getSegment('WH-A-APPR')).toMatchObject({ miles: 15, minutes_min: 20, minutes_max: 20 })
+    expect(getSegment('PORT-01')).toMatchObject({ miles: 5, minutes_min: 10, minutes_max: 12 })
+    expect(getSegment('NB-03')).toMatchObject({ miles: 25, minutes_min: 30, minutes_max: 38 })
+    expect(getSegment('WH-A-APPR')).toMatchObject({ miles: 15, minutes_min: 20, minutes_max: 24 })
     const alt = getRoutesForDestination('WH-A')[1]
-    expect(alt).toMatchObject({ total_miles: 60, total_minutes_min: 75, total_minutes_max: 75 })
+    expect(alt).toMatchObject({ total_miles: 60, total_minutes_min: 75, total_minutes_max: 88 })
     expect(alt.segment_ids).not.toContain('NB-03')
     const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3))
     const departure = Math.max(toMin(s.cargo_ready), toMin(s.truck_available)) + assumptions.pickup_handling_min
     expect(departure).toBe(10 * 60)
   })
 
-  it('normal: 11:00, meets window, 45 mi, $121, 70.7 kg', () => {
+  // Cost and driver duty use the max-arrival case. The min case reproduces the
+  // team plan's table ($121 normal, $161 wait, $158 reroute).
+  it('normal: 11:00 to 11:14, meets window, 45 mi, $130, 70.7 kg', () => {
     expect(getShipmentSummary(s.id, 'normal')).toEqual({
-      risk: 'ON_TRACK', arrival_min: '11:00', arrival_max: '11:00', lateness_min: 0, lateness_max: 0,
+      risk: 'ON_TRACK', arrival_min: '11:00', arrival_max: '11:14', lateness_min: 0, lateness_max: 0,
       reason: expect.any(String), affected: false,
     })
-    expect(getBaseline(s.id)).toEqual({ miles: 45, cost: 121, co2_kg: 70.7, driver_duty_min: 60 })
+    expect(getBaseline(s.id)).toEqual({ miles: 45, cost: 130, co2_kg: 70.7, driver_duty_min: 74 })
   })
 
-  it('disrupted options match the issue table', () => {
+  it('disrupted options match the feature service', () => {
     const [wait, reroute, slot] = getResponseOptions(s.id, 'disrupted')
     expect(wait).toMatchObject({
-      kind: 'wait', arrival_min: '12:00', arrival_max: '12:00', lateness_min: 30, lateness_max: 30,
-      risk: 'LATE', miles: 45, cost: 161, co2_kg: 70.7, driver_duty_min: 120,
+      kind: 'wait', arrival_min: '12:00', arrival_max: '12:12', lateness_min: 30, lateness_max: 42,
+      risk: 'LATE', miles: 45, cost: 169, co2_kg: 70.7, driver_duty_min: 132,
     })
     expect(reroute).toMatchObject({
-      kind: 'reroute', arrival_min: '11:15', arrival_max: '11:15', lateness_min: 0, lateness_max: 0,
-      risk: 'ON_TRACK', miles: 60, cost: 158, co2_kg: 94.2, driver_duty_min: 75, passes_sensitive_zone: true,
+      kind: 'reroute', arrival_min: '11:15', arrival_max: '11:28', lateness_min: 0, lateness_max: 0,
+      risk: 'ON_TRACK', miles: 60, cost: 167, co2_kg: 94.2, driver_duty_min: 88, passes_sensitive_zone: true,
     })
     expect(slot).toMatchObject({
       kind: 'request_slot', arrival_min: null, arrival_max: null, lateness_min: null, lateness_max: null,
       miles: null, cost: null, co2_kg: null, driver_duty_min: null, requires_confirmation: true,
       status: 'Pending confirmation; original deadline still applies', risk: 'LATE',
     })
-    expect(getShipmentSummary(s.id, 'disrupted')).toMatchObject({ risk: 'LATE', arrival_max: '12:00', affected: true })
+    expect(getShipmentSummary(s.id, 'disrupted')).toMatchObject({ risk: 'LATE', arrival_max: '12:12', affected: true })
   })
 })
 

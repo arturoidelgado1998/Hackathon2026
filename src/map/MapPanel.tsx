@@ -1,9 +1,14 @@
-import { useId } from 'react'
+import { Component, Suspense, lazy, useId, useState } from 'react'
+import type { ReactNode } from 'react'
 import type { Facility, Route, RoadSegment } from '../types.ts'
 import { ClosedIcon, QuestionIcon } from '../components/icons.tsx'
 import './MapPanel.css'
 
-// Phase 5 (G2) replaces this placeholder with a real map. Keep these props.
+// The ArcGIS map is loaded on demand. If it cannot load, the route list below
+// still shows everything the map does, in text.
+const ArcgisMap = lazy(() => import('./ArcgisMap.tsx'))
+
+// G2 put the real map behind these props. Keep them stable.
 export interface MapPanelProps {
   facilities: Facility[]
   segments: RoadSegment[]
@@ -25,7 +30,29 @@ const HIGHLIGHTS: { key: Highlight; label: string }[] = [
   { key: 'chosen', label: 'Chosen route' },
 ]
 
-/** Schematic placeholder: highlighted routes as ordered segment lists. */
+/** Catches a failed map load so the rest of the panel keeps working. */
+class MapBoundary extends Component<{ onError: () => void; children: ReactNode }, { failed: boolean }> {
+  state = { failed: false }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  componentDidCatch() {
+    this.props.onError()
+  }
+  render() {
+    return this.state.failed ? null : this.props.children
+  }
+}
+
+function LegendLine({ kind }: { kind: 'original' | 'alternative' | 'closed' | 'network' }) {
+  return (
+    <svg className={`pp-map__legend-line pp-map__legend-line--${kind}`} width="28" height="8" aria-hidden="true">
+      <line x1="2" y1="4" x2="26" y2="4" />
+    </svg>
+  )
+}
+
+/** The map, a legend, and the highlighted routes as ordered segment lists. */
 export function MapPanel({
   facilities,
   segments,
@@ -37,6 +64,7 @@ export function MapPanel({
   onSegmentClick,
 }: MapPanelProps) {
   const idPrefix = useId()
+  const [mapFailed, setMapFailed] = useState(false)
   const segmentById = new Map(segments.map((s) => [s.id, s]))
   const facilityName = (id: string) => facilities.find((f) => f.id === id)?.name ?? id
   const segmentName = (id: string) => segmentById.get(id)?.name ?? id
@@ -50,11 +78,50 @@ export function MapPanel({
     <div className="pp-map">
       <div className="pp-map__header">
         <h2 className="pp-map__title">Routes</h2>
-        <span className="pp-map__badge">Map arrives in Phase 5</span>
+        <span className="pp-map__badge">Illustrative</span>
       </div>
       <p className="pp-map__note">
-        Illustrative routes: a schematic of segments in travel order, not a map.
+        Lines are schematic and routes are not verified for trucks.
       </p>
+
+      {mapFailed ? (
+        <p className="pp-map__fallback" role="status">
+          The map could not load. The route list below shows the same information.
+        </p>
+      ) : (
+        <>
+          <div className="pp-map__canvas">
+            <MapBoundary onError={() => setMapFailed(true)}>
+              <Suspense fallback={<p className="pp-map__loading">Loading map…</p>}>
+                <ArcgisMap
+                  facilities={facilities}
+                  segments={segments}
+                  routes={routes}
+                  highlightedRouteIds={highlightedRouteIds}
+                  incidentSegmentId={incidentSegmentId}
+                  candidateSegmentId={candidateSegmentId}
+                  onSegmentClick={onSegmentClick}
+                  onError={() => setMapFailed(true)}
+                />
+              </Suspense>
+            </MapBoundary>
+          </div>
+          <ul className="pp-map__legend" aria-label="Map legend">
+            <li>
+              <LegendLine kind="original" /> Original route
+            </li>
+            <li>
+              <LegendLine kind="alternative" /> Alternative route
+            </li>
+            <li>
+              <LegendLine kind="closed" /> Closed
+            </li>
+            <li>
+              <LegendLine kind="network" /> Other segments
+            </li>
+          </ul>
+        </>
+      )}
 
       {(incidentSegmentId !== null || candidateSegmentId !== null) && (
         <ul className="pp-map__incidents" aria-label="Incident segments">

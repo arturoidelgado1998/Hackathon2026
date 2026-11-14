@@ -1,6 +1,7 @@
-// Typed access to the SIMULATED sample data (issue #3, D2).
+// Typed access to the SIMULATED sample data.
 // Import from here instead of touching the JSON files directly.
-// All values are synthetic and hand-calculated; see README.md in this folder.
+// The JSON files are generated from the team's ArcGIS feature service by
+// scripts/import_map_data.py; see README.md in this folder. Do not edit them by hand.
 
 import type {
   Assumptions,
@@ -55,7 +56,7 @@ export interface SampleResponsesFile {
 const responses = sampleResponsesJson as unknown as SampleResponsesFile
 
 export const facilities: Facility[] = facilitiesJson.items as Facility[]
-export const segments: RoadSegment[] = segmentsJson.items as RoadSegment[]
+export const segments: RoadSegment[] = segmentsJson.items as unknown as RoadSegment[]
 export const routes: RouteRecord[] = routesJson.items as RouteRecord[]
 export const shipments: Shipment[] = shipmentsJson.items as Shipment[]
 
@@ -74,8 +75,8 @@ export const assumptionPlaceholders: Record<string, boolean> = assumptionsJson.p
 /** The sample incident: NB-03 closed from 10:00, reported reopening 11:10. */
 export const sampleIncident: Incident = responses.incident
 
-/** SHP-001 to WH-A; reproduces the issue #3 reference tables exactly. */
-export const REFERENCE_SHIPMENT_ID = 'SHP-001'
+/** S-01 to WH-A: the team plan's reference shipment (45 mi original, 60 mi alternative). */
+export const REFERENCE_SHIPMENT_ID = 'S-01'
 
 const ORDER: ResponseOption['kind'][] = ['wait', 'reroute', 'request_slot']
 

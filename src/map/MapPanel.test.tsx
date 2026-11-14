@@ -3,6 +3,27 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Facility, Route, RoadSegment } from '../types.ts'
 import { MapPanel, type MapPanelProps } from './MapPanel.tsx'
 
+// A stand-in for the ArcGIS map that can also report a load failure.
+vi.mock('./ArcgisMap.tsx', () => ({
+  default: (props: {
+    highlightedRouteIds: object
+    incidentSegmentId: string | null
+    candidateSegmentId: string | null
+    onError?: () => void
+  }) => (
+    <div
+      data-testid="arcgis-map"
+      data-routes={JSON.stringify(props.highlightedRouteIds)}
+      data-incident={props.incidentSegmentId ?? ''}
+      data-candidate={props.candidateSegmentId ?? ''}
+    >
+      <button type="button" onClick={props.onError}>
+        Simulate map failure
+      </button>
+    </div>
+  ),
+}))
+
 const facilities: Facility[] = [
   { id: 'P1', name: 'Test Port', type: 'port', lat: 0, lon: 0 },
   { id: 'W1', name: 'Test Warehouse', type: 'warehouse', lat: 1, lon: 1 },
@@ -63,13 +84,35 @@ function routeList(name: RegExp) {
   return screen.getByRole('list', { name })
 }
 
-describe('MapPanel placeholder', () => {
-  it('shows the placeholder badge, note and empty state when nothing is highlighted', () => {
+describe('MapPanel', () => {
+  it('shows the illustrative note, the legend and the empty state when nothing is highlighted', () => {
     renderPanel()
-    expect(screen.getByText('Map arrives in Phase 5')).toBeInTheDocument()
-    expect(screen.getByText(/Illustrative routes/)).toBeInTheDocument()
+    expect(screen.getByText('Illustrative')).toBeInTheDocument()
+    expect(screen.getByText(/not verified for trucks/)).toBeInTheDocument()
     expect(screen.getByText('Select a shipment to see its routes')).toBeInTheDocument()
-    expect(screen.queryAllByRole('listitem')).toHaveLength(0)
+    expect(screen.getByRole('list', { name: 'Map legend' })).toBeInTheDocument()
+    expect(screen.queryAllByRole('list', { name: /route:/i })).toHaveLength(0)
+  })
+
+  it('passes the highlights and incident state to the map', async () => {
+    renderPanel({
+      selectedShipmentId: 'S1',
+      highlightedRouteIds: { original: 'R1', alternative: 'R2' },
+      incidentSegmentId: 'B',
+      candidateSegmentId: 'C',
+    })
+    const map = await screen.findByTestId('arcgis-map')
+    expect(JSON.parse(map.dataset.routes!)).toEqual({ original: 'R1', alternative: 'R2' })
+    expect(map.dataset.incident).toBe('B')
+    expect(map.dataset.candidate).toBe('C')
+  })
+
+  it('falls back to the route list when the map cannot load', async () => {
+    renderPanel({ selectedShipmentId: 'S1', highlightedRouteIds: { original: 'R1' } })
+    fireEvent.click(await screen.findByRole('button', { name: 'Simulate map failure' }))
+    expect(screen.getByRole('status')).toHaveTextContent('The map could not load.')
+    expect(screen.queryByTestId('arcgis-map')).not.toBeInTheDocument()
+    expect(routeList(/Original route/)).toBeInTheDocument()
   })
 
   it('shows the selected shipment', () => {

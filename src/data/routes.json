@@ -1,5 +1,6 @@
 {
   "label": "SIMULATED",
+  "source": "https://services.arcgis.com/QPnoxtBFXm6yYtyc/arcgis/rest/services/PortPlan_%E2%80%94_Disruption_Triage_WFL1/FeatureServer",
   "items": [
     {
       "id": "R-A-ORIG",
@@ -11,7 +12,7 @@
         "WH-A-APPR"
       ],
       "kind": "original",
-      "truck_suitability_note": "PLACEHOLDER: synthetic route, not verified as truck-legal or truck-suitable.",
+      "truck_suitability_note": "ILLUSTRATIVE - not verified for trucks",
       "near_sensitive_zone": false,
       "sensitive_zone_note": "",
       "schools_150m": null,
@@ -19,7 +20,7 @@
       "max_diesel_pm_pctl": null,
       "total_miles": 45,
       "total_minutes_min": 60,
-      "total_minutes_max": 60
+      "total_minutes_max": 74
     },
     {
       "id": "R-A-ALT",
@@ -27,19 +28,19 @@
       "destination": "WH-A",
       "segment_ids": [
         "PORT-01",
-        "EW-07",
+        "EB-405",
         "WH-A-APPR"
       ],
       "kind": "alternative",
-      "truck_suitability_note": "PLACEHOLDER: synthetic route, not verified as truck-legal or truck-suitable.",
+      "truck_suitability_note": "ILLUSTRATIVE - not verified for trucks",
       "near_sensitive_zone": true,
-      "sensitive_zone_note": "PLACEHOLDER, replaced by corridor analysis (G3)",
+      "sensitive_zone_note": "Passes SYNTHETIC school zone (Z-01)",
       "schools_150m": null,
       "dac_tracts": null,
       "max_diesel_pm_pctl": null,
       "total_miles": 60,
       "total_minutes_min": 75,
-      "total_minutes_max": 75
+      "total_minutes_max": 88
     },
     {
       "id": "R-B-ORIG",
@@ -51,36 +52,34 @@
         "WH-B-APPR"
       ],
       "kind": "original",
-      "truck_suitability_note": "PLACEHOLDER: synthetic route, not verified as truck-legal or truck-suitable.",
+      "truck_suitability_note": "ILLUSTRATIVE - not verified for trucks",
       "near_sensitive_zone": false,
       "sensitive_zone_note": "",
       "schools_150m": null,
       "dac_tracts": null,
       "max_diesel_pm_pctl": null,
-      "total_miles": 38,
+      "total_miles": 40,
       "total_minutes_min": 55,
-      "total_minutes_max": 65
+      "total_minutes_max": 68
     },
     {
       "id": "R-B-ALT",
       "origin": "PORT-LB",
       "destination": "WH-B",
       "segment_ids": [
-        "PORT-01",
-        "LNK-06",
-        "NB-03",
-        "WH-B-APPR"
+        "HARBOR-110",
+        "XTOWN-B"
       ],
       "kind": "alternative",
-      "truck_suitability_note": "PLACEHOLDER: synthetic route, not verified as truck-legal or truck-suitable.",
-      "near_sensitive_zone": false,
-      "sensitive_zone_note": "",
+      "truck_suitability_note": "ILLUSTRATIVE - not verified for trucks",
+      "near_sensitive_zone": true,
+      "sensitive_zone_note": "Passes SYNTHETIC residential area (Z-02)",
       "schools_150m": null,
       "dac_tracts": null,
       "max_diesel_pm_pctl": null,
-      "total_miles": 44,
+      "total_miles": 45,
       "total_minutes_min": 65,
-      "total_minutes_max": 80
+      "total_minutes_max": 83
     },
     {
       "id": "R-C-ORIG",
@@ -88,40 +87,36 @@
       "destination": "WH-C",
       "segment_ids": [
         "PORT-01",
-        "HBR-02",
-        "WH-C-APPR"
+        "WEST-405"
       ],
       "kind": "original",
-      "truck_suitability_note": "PLACEHOLDER: synthetic route, not verified as truck-legal or truck-suitable.",
+      "truck_suitability_note": "ILLUSTRATIVE - not verified for trucks",
       "near_sensitive_zone": false,
       "sensitive_zone_note": "",
       "schools_150m": null,
       "dac_tracts": null,
       "max_diesel_pm_pctl": null,
-      "total_miles": 37,
-      "total_minutes_min": 55,
-      "total_minutes_max": 75
+      "total_miles": 16,
+      "total_minutes_min": 28,
+      "total_minutes_max": 35
     },
     {
       "id": "R-C-ALT",
       "origin": "PORT-LB",
       "destination": "WH-C",
       "segment_ids": [
-        "PORT-01",
-        "NB-03",
-        "LNK-06",
-        "WH-C-APPR"
+        "C-LOCAL"
       ],
       "kind": "alternative",
-      "truck_suitability_note": "PLACEHOLDER: synthetic route, not verified as truck-legal or truck-suitable.",
+      "truck_suitability_note": "ILLUSTRATIVE - not verified for trucks",
       "near_sensitive_zone": false,
       "sensitive_zone_note": "",
       "schools_150m": null,
       "dac_tracts": null,
       "max_diesel_pm_pctl": null,
-      "total_miles": 56,
-      "total_minutes_min": 75,
-      "total_minutes_max": 90
+      "total_miles": 12,
+      "total_minutes_min": 32,
+      "total_minutes_max": 38
     }
   ]
 }

@@ -21,7 +21,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['server/**/*.{ts,js}', '*.config.{ts,js}'],
+    files: ['server/**/*.{ts,js}', 'sanity/**/*.ts', '*.config.{ts,js}'],
     languageOptions: {
       globals: globals.node,
     },
