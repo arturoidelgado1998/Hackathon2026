@@ -151,6 +151,47 @@ describe('TriageBoard', () => {
     expect(within(selected).getByText(/Selected/)).toBeInTheDocument()
     expect(screen.getAllByRole('button', { pressed: false })).toHaveLength(FIXTURE.length - 1)
   })
+
+  it('offers Reject all on every Needs review card without nesting buttons or changing selection', () => {
+    const onRejectAll = vi.fn()
+    const onSelectShipment = vi.fn()
+    render(
+      <TriageBoard cards={FIXTURE} onRejectAll={onRejectAll} onSelectShipment={onSelectShipment} />,
+    )
+
+    const buttons = screen.getAllByRole('button', { name: /Reject all options for/ })
+    expect(buttons).toHaveLength(2)
+    for (const id of ['SH-103', 'SH-104']) {
+      const button = screen.getByRole('button', { name: `Reject all options for ${id}` })
+      expect(button.parentElement?.closest('button')).toBeNull()
+      fireEvent.click(button)
+      expect(onRejectAll).toHaveBeenLastCalledWith(id)
+    }
+    expect(onSelectShipment).not.toHaveBeenCalled()
+    expect(within(column('Monitoring')).queryByRole('button', { name: /Reject all/ })).toBeNull()
+  })
+
+  it('displays the exact rejection note while keeping a pending request risk unchanged', () => {
+    const rejected = { ...FIXTURE[2], rejectionNote: 'Dispatcher rejected all options' }
+    const pending: ShipmentCardView = {
+      ...FIXTURE[4],
+      decision: {
+        shipment_id: 'SH-105',
+        option_kind: 'request_slot',
+        status: 'pending_confirmation',
+        timestamp: '2026-11-14T19:46:36.081Z',
+      },
+    }
+    render(<TriageBoard cards={[rejected, pending]} />)
+
+    expect(screen.getByText('Dispatcher rejected all options')).toBeInTheDocument()
+    const request = within(screen.getByRole('button', { name: /SH-105/ }))
+    expect(request.getByText('LATE')).toBeInTheDocument()
+    expect(request.getByText(/Pending confirmation; original risk retained/)).toBeInTheDocument()
+    expect(request.queryByText(/saved/i)).toBeNull()
+    expect(request.getByTitle(/scenario bounds, not a statistical interval/))
+      .toHaveTextContent('10:05–10:40')
+  })
 })
 
 describe('ShipmentCard arrival', () => {

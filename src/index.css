@@ -50,6 +50,7 @@
 
   --pp-radius-sm: 4px;
   --pp-radius: 6px;
+  --pp-control-height: 2.75rem;
 
   color: var(--pp-text);
   background-color: var(--pp-bg);
@@ -98,7 +99,7 @@ p {
   display: inline-flex;
   align-items: center;
   gap: var(--pp-space-1);
-  min-height: 2rem;
+  min-height: var(--pp-control-height);
   padding: 0 var(--pp-space-3);
   border: 1px solid var(--pp-border-strong);
   border-radius: var(--pp-radius);
@@ -146,6 +147,13 @@ p {
   color: var(--pp-text-muted);
 }
 
+.pp-button[aria-pressed='true'] {
+  border-color: var(--pp-accent);
+  background: var(--pp-accent-soft);
+  color: var(--pp-accent);
+  box-shadow: inset 0 0 0 1px var(--pp-accent);
+}
+
 /* Numbers that are compared line up digit for digit. */
 .pp-num {
   font-variant-numeric: tabular-nums;
@@ -164,9 +172,10 @@ p {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    transition-duration: 0.01ms !important;
+  .pp-button,
+  .pp-shell__toggle-btn,
+  .shipment-card,
+  .pp-map__segment--button {
+    transition: none;
   }
 }

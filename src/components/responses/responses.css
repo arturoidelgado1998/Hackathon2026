@@ -4,7 +4,7 @@
 .responses-panel {
   display: flex;
   flex-direction: column;
-  gap: var(--pp-space-3);
+  gap: var(--pp-space-4);
   min-width: 0;
   /* On very wide panes the columns stay close enough to compare. */
   max-width: 60rem;
@@ -12,6 +12,7 @@
 
 .responses-panel--empty {
   max-width: 34rem;
+  padding-top: var(--pp-space-5);
 }
 
 .responses-heading {
@@ -65,7 +66,7 @@
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
-  font-size: var(--pp-text-sm);
+  font-size: var(--pp-text-md);
 }
 
 .responses-note {
@@ -78,7 +79,7 @@
 
 .responses-table th,
 .responses-table td {
-  padding: 0.3125rem var(--pp-space-3);
+  padding: var(--pp-space-2) var(--pp-space-3);
   border-bottom: 1px solid var(--pp-border);
   text-align: left;
   vertical-align: top;
@@ -156,12 +157,52 @@
 }
 
 .responses-actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--pp-space-2);
+}
+
+.responses-actions > button:first-child {
+  grid-column: 1 / -1;
+}
+
+.responses-actions .pp-button {
+  justify-content: center;
+  min-width: 0;
+  padding-inline: var(--pp-space-2);
 }
 
 /* Narrow panes: the table keeps a readable width and its pane scrolls. */
 .responses-table {
-  min-width: 30rem;
+  min-width: 42rem;
+}
+
+.responses-explanation {
+  padding: var(--pp-space-4);
+  scroll-margin-block: var(--pp-space-4);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  font-size: var(--pp-text-sm);
+}
+
+.responses-explanation__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pp-space-3);
+  margin-bottom: var(--pp-space-2);
+}
+
+.responses-explanation h3 {
+  margin-bottom: var(--pp-space-1);
+  font-size: var(--pp-text-md);
+}
+
+.responses-explanation ol {
+  margin: 0;
+  padding-left: var(--pp-space-5);
+}
+
+.responses-explanation li + li {
+  margin-top: var(--pp-space-1);
 }

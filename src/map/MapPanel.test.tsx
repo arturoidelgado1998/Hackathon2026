@@ -109,6 +109,26 @@ describe('MapPanel placeholder', () => {
     }
   })
 
+  it.each([
+    ['previewed', /Preview route: R2/],
+    ['pending_confirmation', /Current route \(slot pending confirmation\): R2/],
+  ] as const)('labels a %s highlight without calling it a committed chosen route', (status, heading) => {
+    renderPanel({
+      selectedShipmentId: 'S1',
+      highlightedRouteIds: { chosen: 'R2' },
+      highlightedDecision: {
+        shipment_id: 'S1',
+        option_kind: status === 'previewed' ? 'reroute' : 'request_slot',
+        status,
+        timestamp: '2026-11-14T19:46:36.081Z',
+      },
+    })
+    expect(routeList(heading)).toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: /Chosen route/ })).toBeNull()
+    expect(screen.getByText('Est. 6.1 mi')).toBeInTheDocument()
+    expect(screen.getByText(/Distances are simulated estimates/)).toBeInTheDocument()
+  })
+
   it('marks the closed segment with text', () => {
     renderPanel({
       selectedShipmentId: 'S1',

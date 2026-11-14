@@ -8,6 +8,7 @@ export interface TriageBoardProps {
   cards: ShipmentCardView[]
   selectedShipmentId?: string | null
   onSelectShipment?: (shipmentId: string) => void
+  onRejectAll?: (shipmentId: string) => void
 }
 
 /** Workflow wording per group. "Decision recorded" is the dispatcher's choice, not an outcome. */
@@ -20,7 +21,12 @@ const COLUMN_SUBTITLES: Partial<Record<BoardColumn, string>> = {
  * A shipment's group is its workflow state; its badge is its calculated
  * risk. The two are independent.
  */
-export function TriageBoard({ cards, selectedShipmentId = null, onSelectShipment }: TriageBoardProps) {
+export function TriageBoard({
+  cards,
+  selectedShipmentId = null,
+  onSelectShipment,
+  onRejectAll,
+}: TriageBoardProps) {
   const idPrefix = useId()
   return (
     <div className="triage-board" role="group" aria-label="Triage board">
@@ -66,6 +72,18 @@ export function TriageBoard({ cards, selectedShipmentId = null, onSelectShipment
                       selected={card.shipment.id === selectedShipmentId}
                       onSelectShipment={onSelectShipment}
                     />
+                    {id === 'needs_review' && onRejectAll && (
+                      <div className="shipment-card__actions">
+                        <button
+                          type="button"
+                          className="shipment-card__reject"
+                          aria-label={`Reject all options for ${card.shipment.id}`}
+                          onClick={() => onRejectAll(card.shipment.id)}
+                        >
+                          Reject all
+                        </button>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>

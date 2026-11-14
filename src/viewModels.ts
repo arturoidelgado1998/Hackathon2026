@@ -4,6 +4,7 @@
 // These types describe what is displayed. They contain no calculations.
 
 import type {
+  Decision,
   ResponseOption,
   ResponseOptionKind,
   RiskLabel,
@@ -58,6 +59,9 @@ export interface ShipmentCardView {
   destinationName: string
   summary: ShipmentSummary
   column: BoardColumn
+  /** Committed choice only; previews never change the queue. */
+  decision?: Decision
+  rejectionNote?: string
 }
 
 /** Sensitive-zone facts for the route an option would use. Null until G3. */

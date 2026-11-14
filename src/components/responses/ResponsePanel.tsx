@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import type { ResponseOption, ResponseOptionKind } from '../../types'
 import type { Baseline, CommunityInfo, ResponsePanelView } from '../../viewModels'
 import { RiskBadge } from '../board/RiskBadge'
@@ -23,9 +23,9 @@ import './responses.css'
 
 export interface ResponsePanelProps {
   view: ResponsePanelView | null
-  /** "Why?" button; wired in a later issue. */
+  /** Optional notification when an option's explanation is toggled. */
   onWhy?: (kind: ResponseOptionKind) => void
-  /** Slot for Preview/Select buttons, added later. */
+  /** Slot for response actions, such as Preview and Select. */
   renderActions?: (option: ResponseOption) => ReactNode
 }
 
@@ -75,22 +75,37 @@ function withChange(value: string, change: string | null): ReactNode {
 
 interface Row {
   label: string
+  estimate?: string
   cell: (option: ResponseOption, baseline: Baseline, community?: CommunityInfo) => ReactNode
 }
 
 const DELIVERY_ROWS: Row[] = [
-  { label: 'Est. arrival', cell: (o) => <span className="pp-num">{formatArrival(o)}</span> },
+  {
+    label: 'Est. arrival',
+    estimate: 'Estimated arrival from a simulated scenario.',
+    cell: (o) => (
+      <span className="pp-num" title="scenario bounds, not a statistical interval">
+        {formatArrival(o)}
+      </span>
+    ),
+  },
   {
     label: 'Appointment',
+    estimate: 'Estimated lateness against the original appointment window.',
     cell: (o) => (isPending(o) ? 'Not confirmed yet' : formatAppointment(o)),
   },
   { label: 'Risk', cell: (o) => <RiskBadge risk={o.risk} /> },
-  { label: 'Est. cost', cell: (o) => <span className="pp-num">{formatCost(o.cost)}</span> },
+  {
+    label: 'Est. cost',
+    estimate: 'Estimated cost using placeholder assumptions.',
+    cell: (o) => <span className="pp-num">{formatCost(o.cost)}</span>,
+  },
 ]
 
 const IMPACT_ROWS: Row[] = [
   {
     label: 'Driver',
+    estimate: 'Estimated driver duty and change from the estimated normal scenario.',
     cell: (o, baseline) => {
       if (isPending(o)) return PENDING_STRIP_TEXT
       if (o.driver_duty_min === null) return NA
@@ -100,9 +115,15 @@ const IMPACT_ROWS: Row[] = [
       )
     },
   },
-  { label: 'Community', cell: (o, _baseline, community) => communityCell(o, community) },
+  {
+    label: 'Community',
+    estimate:
+      'Estimated proximity along an illustrative route; not measured exposure or health impact.',
+    cell: (o, _baseline, community) => communityCell(o, community),
+  },
   {
     label: 'Environment: miles',
+    estimate: 'Estimated route miles and change from the estimated normal scenario.',
     cell: (o, baseline) => {
       if (isPending(o)) return PENDING_STRIP_TEXT
       if (o.miles === null) return NA
@@ -114,6 +135,7 @@ const IMPACT_ROWS: Row[] = [
   },
   {
     label: 'Environment: est. tailpipe CO2',
+    estimate: 'Estimated tailpipe CO2 and change from the estimated normal scenario.',
     cell: (o, baseline) => {
       if (isPending(o)) return PENDING_STRIP_TEXT
       if (o.co2_kg === null) return NA
@@ -129,6 +151,7 @@ const IMPACT_ROWS: Row[] = [
  * Side-by-side comparison of the response options for one shipment.
  * One table, so the same measure lines up across every option. Options
  * keep the order they are given in and are never ranked or scored.
+ * Key by scenario to reset explanations when switching scenarios.
  */
 export function ResponsePanel({ view, onWhy, renderActions }: ResponsePanelProps) {
   if (view === null) {
@@ -144,7 +167,45 @@ export function ResponsePanel({ view, onWhy, renderActions }: ResponsePanelProps
     )
   }
 
+  return (
+    <ShipmentResponses
+      key={view.shipment.id}
+      view={view}
+      onWhy={onWhy}
+      renderActions={renderActions}
+    />
+  )
+}
+
+function ShipmentResponses({
+  view,
+  onWhy,
+  renderActions,
+}: Omit<ResponsePanelProps, 'view'> & { view: ResponsePanelView }) {
+  const explanationId = useId()
+  const [expanded, setExpanded] = useState<ResponseOptionKind[]>([])
+  const [explanationToFocus, setExplanationToFocus] = useState<ResponseOptionKind | null>(null)
+  const explanationRefs = useRef<Partial<Record<ResponseOptionKind, HTMLElement>>>({})
+  const whyRefs = useRef<Partial<Record<ResponseOptionKind, HTMLButtonElement>>>({})
   const { shipment, destinationName, summary, options, baseline, community } = view
+
+  useEffect(() => {
+    if (explanationToFocus) explanationRefs.current[explanationToFocus]?.focus()
+  }, [explanationToFocus])
+
+  function toggleWhy(kind: ResponseOptionKind) {
+    setExplanationToFocus(expanded.includes(kind) ? null : kind)
+    setExpanded((current) =>
+      current.includes(kind) ? current.filter((item) => item !== kind) : [...current, kind],
+    )
+    onWhy?.(kind)
+  }
+
+  function closeWhy(kind: ResponseOptionKind) {
+    toggleWhy(kind)
+    whyRefs.current[kind]?.focus()
+  }
+
   const header = (
     <header className="responses-header">
       <h2 id="responses-heading" className="responses-heading">
@@ -153,14 +214,19 @@ export function ResponsePanel({ view, onWhy, renderActions }: ResponsePanelProps
       <p className="responses-context">
         <span>
           Appointment{' '}
-          <strong className="pp-num">
+          <strong className="pp-num" title="Simulated appointment window.">
             {shipment.appt_start}–{shipment.appt_end}
           </strong>
         </span>
         {summary && (
           <>
             <RiskBadge risk={summary.risk} />
-            <span className="responses-reason">{summary.reason}</span>
+            <span
+              className="responses-reason"
+              title="Estimated timing from a simulated scenario."
+            >
+              <span title="scenario bounds, not a statistical interval">{summary.reason}</span>
+            </span>
           </>
         )}
       </p>
@@ -192,6 +258,7 @@ export function ResponsePanel({ view, onWhy, renderActions }: ResponsePanelProps
       <table className="responses-table" aria-labelledby="responses-heading">
         <caption className="responses-note">
           All values are estimates. Options are shown in a fixed order and are not ranked.
+          {' '}Arrival ranges: <span>scenario bounds, not a statistical interval</span>.
         </caption>
         <thead>
           <tr>
@@ -215,7 +282,7 @@ export function ResponsePanel({ view, onWhy, renderActions }: ResponsePanelProps
             <tr key={row.label}>
               <th scope="row">{row.label}</th>
               {options.map((o) => (
-                <td key={o.kind} data-kind={o.kind}>
+                <td key={o.kind} data-kind={o.kind} title={row.estimate}>
                   {row.cell(o, baseline, community[o.kind])}
                 </td>
               ))}
@@ -224,7 +291,11 @@ export function ResponsePanel({ view, onWhy, renderActions }: ResponsePanelProps
           <tr>
             <th scope="row">Status</th>
             {options.map((o) => (
-              <td key={o.kind} data-kind={o.kind}>
+              <td
+                key={o.kind}
+                data-kind={o.kind}
+                title="Estimated status from a simulated scenario; reopening times are not guaranteed."
+              >
                 {isPending(o) ? (
                   <span className="responses-pending">
                     <ClockIcon size={13} /> {o.status || NA}
@@ -246,7 +317,7 @@ export function ResponsePanel({ view, onWhy, renderActions }: ResponsePanelProps
             <tr key={row.label}>
               <th scope="row">{row.label}</th>
               {options.map((o) => (
-                <td key={o.kind} data-kind={o.kind}>
+                <td key={o.kind} data-kind={o.kind} title={row.estimate}>
                   {row.cell(o, baseline, community[o.kind])}
                 </td>
               ))}
@@ -268,10 +339,15 @@ export function ResponsePanel({ view, onWhy, renderActions }: ResponsePanelProps
               <td key={o.kind} data-kind={o.kind}>
                 <div className="responses-actions">
                   <button
+                    ref={(element) => {
+                      if (element) whyRefs.current[o.kind] = element
+                    }}
                     type="button"
                     className="pp-button"
-                    onClick={() => onWhy?.(o.kind)}
+                    onClick={() => toggleWhy(o.kind)}
                     aria-label={`Why? (${OPTION_TITLES[o.kind]})`}
+                    aria-expanded={expanded.includes(o.kind)}
+                    aria-controls={`${explanationId}-${o.kind}`}
                   >
                     Why?
                   </button>
@@ -282,6 +358,51 @@ export function ResponsePanel({ view, onWhy, renderActions }: ResponsePanelProps
           </tr>
         </tfoot>
       </table>
+      {options.map((option) => (
+        <section
+          ref={(element) => {
+            if (element) explanationRefs.current[option.kind] = element
+          }}
+          key={option.kind}
+          id={`${explanationId}-${option.kind}`}
+          className="responses-explanation"
+          hidden={!expanded.includes(option.kind)}
+          aria-labelledby={`${explanationId}-${option.kind}-heading`}
+          tabIndex={-1}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              event.stopPropagation()
+              closeWhy(option.kind)
+            }
+          }}
+        >
+          <div className="responses-explanation__header">
+            <h3 id={`${explanationId}-${option.kind}-heading`}>
+              {OPTION_TITLES[option.kind]}: inputs and steps
+            </h3>
+            <button
+              type="button"
+              className="pp-button"
+              aria-label={`Close explanation (${OPTION_TITLES[option.kind]})`}
+              onClick={() => closeWhy(option.kind)}
+            >
+              Close
+            </button>
+          </div>
+          <p className="responses-note">Estimated inputs and steps from this simulated scenario.</p>
+          {option.explanation_inputs.length > 0 ? (
+            <ol>
+              {option.explanation_inputs.map((input, index) => (
+                <li key={index} title="Estimated explanation input from a simulated scenario.">
+                  {input}
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p>No explanation inputs available.</p>
+          )}
+        </section>
+      ))}
     </div>
   )
 }

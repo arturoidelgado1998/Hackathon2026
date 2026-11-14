@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react'
+import { useId, useRef, useState, type ReactNode } from 'react'
 import type { Scenario } from '../../viewModels.ts'
+import { QuestionIcon } from '../icons.tsx'
 import './AppShell.css'
 
 export interface AppShellProps {
@@ -44,6 +45,10 @@ export function AppShell({
   responses,
   assumptions,
 }: AppShellProps) {
+  const [assumptionsExpanded, setAssumptionsExpanded] = useState(false)
+  const assumptionsId = useId()
+  const assumptionsToggle = useRef<HTMLButtonElement>(null)
+
   return (
     <div className="pp-shell">
       <header className="pp-shell__header">
@@ -68,7 +73,14 @@ export function AppShell({
                 ))}
               </div>
             </div>
-            <button type="button" className="pp-button" onClick={onReset}>
+            <button
+              type="button"
+              className="pp-button"
+              onClick={() => {
+                setAssumptionsExpanded(false)
+                onReset()
+              }}
+            >
               Reset
             </button>
             <button
@@ -111,8 +123,46 @@ export function AppShell({
           <section
             className="pp-shell__region pp-shell__assumptions"
             aria-label="Assumptions and sources"
+            onKeyDown={(event) => {
+              if (event.key === 'Escape' && assumptionsExpanded) {
+                setAssumptionsExpanded(false)
+                assumptionsToggle.current?.focus()
+              }
+            }}
           >
-            {assumptions}
+            <button
+              ref={assumptionsToggle}
+              type="button"
+              className="pp-shell__assumptions-toggle"
+              aria-label={`${assumptionsExpanded ? 'Collapse' : 'Expand'} assumptions & sources`}
+              aria-expanded={assumptionsExpanded}
+              aria-controls={assumptionsId}
+              onClick={() => setAssumptionsExpanded((expanded) => !expanded)}
+            >
+              <span className="pp-shell__assumptions-title">
+                <QuestionIcon size={20} />
+                <span>
+                  <strong>Assumptions & sources</strong>
+                  <span className="pp-shell__assumptions-hint">
+                    Model inputs, value types and prototype limitations
+                  </span>
+                </span>
+              </span>
+              <span className="pp-shell__assumptions-action">
+                {assumptionsExpanded ? 'Collapse panel' : 'Expand panel'}
+                <span className="pp-shell__drawer-chevron" aria-hidden="true" />
+              </span>
+            </button>
+            <div
+              id={assumptionsId}
+              className="pp-shell__assumptions-content"
+              hidden={!assumptionsExpanded}
+              tabIndex={0}
+              role="region"
+              aria-label="Assumptions details"
+            >
+              {assumptions}
+            </div>
           </section>
         )}
       </main>

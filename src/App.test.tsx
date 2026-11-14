@@ -96,4 +96,66 @@ describe('App', () => {
     expect(cardFor(REFERENCE_SHIPMENT_ID)).toHaveAttribute('aria-pressed', 'false')
     expect(region('Response options')).toHaveTextContent('Select a shipment to compare responses.')
   })
+
+  it('previews without committing, then records decisions and keeps pending risk in totals', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Disrupted' }))
+    fireEvent.click(cardFor(REFERENCE_SHIPMENT_ID))
+    const originalTotals = region('Indicators').textContent
+
+    fireEvent.click(screen.getByRole('button', { name: 'Preview Reroute' }))
+    expect(region('Indicators').textContent).toBe(originalTotals)
+    expect(within(region('Needs review')).getByText(REFERENCE_SHIPMENT_ID)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select Reroute' }))
+    expect(within(region('Decision recorded')).getByText(REFERENCE_SHIPMENT_ID)).toBeInTheDocument()
+    expect(within(cardFor(REFERENCE_SHIPMENT_ID)).getByText('ON TRACK')).toBeInTheDocument()
+    expect(region('Indicators').textContent).not.toBe(originalTotals)
+    const selectedTotals = region('Indicators').textContent
+
+    fireEvent.click(screen.getByRole('button', { name: 'Preview Wait' }))
+    expect(region('Indicators').textContent).toBe(selectedTotals)
+    expect(within(region('Decision recorded')).getByText(REFERENCE_SHIPMENT_ID)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select Request later slot' }))
+    expect(
+      within(region('Awaiting confirmation')).getByText(REFERENCE_SHIPMENT_ID),
+    ).toBeInTheDocument()
+    expect(within(cardFor(REFERENCE_SHIPMENT_ID)).getByText('LATE')).toBeInTheDocument()
+    expect(region('Indicators').textContent).toBe(originalTotals)
+  })
+
+  it('offers Reject all on each Needs review shipment and leaves a rejection note', () => {
+    render(<App />)
+    fireEvent.click(screen.getByRole('button', { name: 'Disrupted' }))
+    expect(
+      within(region('Needs review')).getAllByRole('button', { name: /Reject all options for/ }),
+    ).toHaveLength(6)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: `Reject all options for ${REFERENCE_SHIPMENT_ID}` }),
+    )
+    expect(within(region('Needs review')).getByText(REFERENCE_SHIPMENT_ID)).toBeInTheDocument()
+    expect(cardFor(REFERENCE_SHIPMENT_ID).parentElement).toHaveTextContent(
+      'Dispatcher rejected all options',
+    )
+  })
+
+  it('restores a fresh dashboard after decisions, previews and an open explanation', () => {
+    const { container } = render(<App />)
+    const freshDashboard = container.cloneNode(true)
+    fireEvent.click(screen.getByRole('button', { name: 'Expand assumptions & sources' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Disrupted' }))
+    fireEvent.click(cardFor(REFERENCE_SHIPMENT_ID))
+    fireEvent.click(screen.getByRole('button', { name: 'Select Reroute' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Preview Wait' }))
+    expect(screen.getByRole('button', { name: 'Preview Wait' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Why? (Wait)' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Reset' }))
+
+    expect(container.isEqualNode(freshDashboard)).toBe(true)
+  })
 })

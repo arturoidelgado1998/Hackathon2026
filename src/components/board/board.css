@@ -106,7 +106,7 @@
   display: grid;
   gap: 0.125rem;
   width: 100%;
-  padding: var(--pp-space-2) var(--pp-space-3);
+  padding: var(--pp-space-3);
   border: 0;
   background: transparent;
   color: var(--pp-text);
@@ -179,4 +179,31 @@
   color: var(--pp-text-muted);
   font-size: var(--pp-text-xs);
   line-height: 1.4;
+}
+
+.shipment-card__decision,
+.shipment-card__rejection {
+  font-size: var(--pp-text-xs);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.shipment-card__actions {
+  padding: 0 var(--pp-space-3) var(--pp-space-2);
+}
+
+.shipment-card__reject {
+  min-height: var(--pp-control-height);
+  padding: var(--pp-space-1) var(--pp-space-2);
+  border: 1px solid var(--pp-border-strong);
+  border-radius: var(--pp-radius-sm);
+  background: var(--pp-surface);
+  color: var(--pp-text);
+  font: inherit;
+  font-size: var(--pp-text-xs);
+  cursor: pointer;
+}
+
+.shipment-card__reject:hover {
+  background: var(--pp-surface-muted);
 }

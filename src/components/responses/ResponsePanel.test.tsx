@@ -1,8 +1,16 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import {
+  getBaseline,
+  getFacility,
+  getResponseOptions,
+  getShipmentSummary,
+  shipments,
+} from '../../data'
 import type { ResponseOption } from '../../types'
 import type { ResponsePanelView } from '../../viewModels'
 import { delta, deltaOneDecimal } from './deltas'
+import { OPTION_TITLES } from './format'
 import { ResponsePanel } from './index'
 
 // Inline reference fixture (mirrors the D2 reference shipment).
@@ -78,6 +86,22 @@ function makeView(overrides: Partial<ResponsePanelView> = {}): ResponsePanelView
     ...overrides,
   }
 }
+
+function sampleView(shipmentId: string): ResponsePanelView {
+  const shipment = shipments.find((item) => item.id === shipmentId)!
+  return {
+    shipment,
+    destinationName: getFacility(shipment.destination_id)!.name,
+    summary: getShipmentSummary(shipmentId, 'disrupted'),
+    options: getResponseOptions(shipmentId, 'disrupted'),
+    baseline: getBaseline(shipmentId),
+    community: {},
+  }
+}
+
+const shipmentsWithOptions = shipments.filter(
+  (shipment) => getResponseOptions(shipment.id, 'disrupted').length > 0,
+)
 
 const table = () => screen.getByRole('table')
 
@@ -276,6 +300,118 @@ describe('ResponsePanel', () => {
     expect(onWhy).toHaveBeenCalledWith('reroute')
     expect(screen.getByRole('button', { name: 'Select wait' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Select request_slot' })).toBeInTheDocument()
+  })
+
+  it.each(shipmentsWithOptions)('expands all three supplied explanations for $id', (shipment) => {
+    const view = sampleView(shipment.id)
+    render(<ResponsePanel view={view} />)
+
+    expect(view.options.map((option) => option.kind)).toEqual(['wait', 'reroute', 'request_slot'])
+    for (const option of view.options) {
+      const button = screen.getByRole('button', { name: `Why? (${OPTION_TITLES[option.kind]})` })
+      expect(button).toHaveAttribute('aria-expanded', 'false')
+      const details = document.getElementById(button.getAttribute('aria-controls')!)!
+      expect(details).not.toBeVisible()
+
+      fireEvent.click(button)
+
+      expect(button).toHaveAttribute('aria-expanded', 'true')
+      expect(
+        screen.getByRole('region', { name: `${OPTION_TITLES[option.kind]}: inputs and steps` }),
+      ).toBe(details)
+      expect(within(details).getAllByRole('listitem').map((item) => item.textContent)).toEqual(
+        option.explanation_inputs,
+      )
+    }
+  })
+
+  it('shows the reference Wait timing steps verbatim and can collapse them', () => {
+    const onWhy = vi.fn()
+    render(<ResponsePanel view={sampleView('SHP-001')} onWhy={onWhy} />)
+    const button = screen.getByRole('button', { name: 'Why? (Wait)' })
+    fireEvent.click(button)
+    const details = screen.getByRole('region', { name: 'Wait: inputs and steps' })
+    expect(details).toHaveFocus()
+
+    for (const step of [
+      'Departs 10:00',
+      'Reaches NB-03 at 10:10',
+      'Waits until 11:10 (60 min)',
+      'Arrives 12:00',
+      'Deadline 11:30',
+    ]) {
+      expect(within(details).getByText(step)).toBeInTheDocument()
+    }
+
+    fireEvent.click(button)
+    expect(button).toHaveAttribute('aria-expanded', 'false')
+    expect(details).not.toBeVisible()
+    expect(onWhy.mock.calls).toEqual([['wait'], ['wait']])
+  })
+
+  it('closes explanations with the close control or Escape and returns focus to Why', () => {
+    render(<ResponsePanel view={sampleView('SHP-001')} />)
+    const why = screen.getByRole('button', { name: 'Why? (Wait)' })
+    fireEvent.click(why)
+    fireEvent.click(screen.getByRole('button', { name: 'Close explanation (Wait)' }))
+    expect(why).toHaveFocus()
+    expect(why).toHaveAttribute('aria-expanded', 'false')
+
+    fireEvent.click(why)
+    const details = screen.getByRole('region', { name: 'Wait: inputs and steps' })
+    expect(details).toHaveFocus()
+    fireEvent.keyDown(details, { key: 'Escape' })
+    expect(details).not.toBeVisible()
+    expect(why).toHaveFocus()
+  })
+
+  it('resets explanations on shipment changes, deselection and parent scenario-key changes', () => {
+    const view = sampleView('SHP-001')
+    const { rerender } = render(<ResponsePanel key="disrupted" view={view} />)
+    const openWait = () => fireEvent.click(screen.getByRole('button', { name: 'Why? (Wait)' }))
+    const expectCollapsed = () =>
+      expect(screen.getByRole('button', { name: 'Why? (Wait)' })).toHaveAttribute(
+        'aria-expanded',
+        'false',
+      )
+
+    openWait()
+    rerender(<ResponsePanel key="disrupted" view={sampleView('SHP-003')} />)
+    expectCollapsed()
+    openWait()
+    rerender(<ResponsePanel key="disrupted" view={null} />)
+    rerender(<ResponsePanel key="disrupted" view={view} />)
+    expectCollapsed()
+    openWait()
+    rerender(<ResponsePanel key="normal" view={view} />)
+    expectCollapsed()
+  })
+
+  it.each(shipmentsWithOptions)('labels estimated numbers and arrival bounds for $id', (shipment) => {
+    render(<ResponsePanel view={sampleView(shipment.id)} />)
+    const numericCells = Array.from(table().querySelectorAll('tbody td')).filter((cell) =>
+      /\d/.test(cell.textContent ?? ''),
+    )
+    expect(numericCells.length).toBeGreaterThan(0)
+    for (const cell of numericCells) {
+      expect(cell).toHaveAttribute('title', expect.stringMatching(/estimated/i))
+    }
+    expect(screen.getByText('scenario bounds, not a statistical interval')).toBeInTheDocument()
+    for (const cell of row('Est. arrival')) {
+      expect(within(cell).getByTitle('scenario bounds, not a statistical interval')).toBeInTheDocument()
+    }
+    for (const button of screen.getAllByRole('button', { name: /^Why\?/ })) {
+      fireEvent.click(button)
+    }
+    for (const item of screen.getAllByRole('listitem')) {
+      if (/\d/.test(item.textContent ?? '')) {
+        expect(item).toHaveAttribute('title', expect.stringMatching(/estimated/i))
+      }
+    }
+    expect(document.querySelector('.responses-reason')).toHaveAttribute(
+      'title',
+      expect.stringMatching(/estimated/i),
+    )
   })
 
   it('never says best or recommended, and says options are not ranked', () => {

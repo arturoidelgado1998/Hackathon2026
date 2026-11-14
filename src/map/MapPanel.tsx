@@ -1,5 +1,5 @@
 import { useId } from 'react'
-import type { Facility, Route, RoadSegment } from '../types.ts'
+import type { Decision, Facility, Route, RoadSegment } from '../types.ts'
 import { ClosedIcon, QuestionIcon } from '../components/icons.tsx'
 import './MapPanel.css'
 
@@ -10,6 +10,8 @@ export interface MapPanelProps {
   routes: Route[]
   selectedShipmentId: string | null
   highlightedRouteIds: { original?: string; alternative?: string; chosen?: string }
+  /** Labels the highlighted choice without presenting a preview as committed. */
+  highlightedDecision?: Decision | null
   /** Confirmed closure. */
   incidentSegmentId: string | null
   /** AI match awaiting confirmation. */
@@ -32,6 +34,7 @@ export function MapPanel({
   routes,
   selectedShipmentId,
   highlightedRouteIds,
+  highlightedDecision = null,
   incidentSegmentId,
   candidateSegmentId,
   onSegmentClick,
@@ -43,7 +46,14 @@ export function MapPanel({
 
   const shown = HIGHLIGHTS.flatMap(({ key, label }) => {
     const routeId = highlightedRouteIds[key]
-    return routeId === undefined ? [] : [{ key, label, routeId }]
+    const choiceLabel = key === 'chosen' && highlightedDecision?.shipment_id === selectedShipmentId
+      ? highlightedDecision.status === 'previewed'
+        ? 'Preview route'
+        : highlightedDecision.status === 'pending_confirmation'
+          ? 'Current route (slot pending confirmation)'
+          : label
+      : label
+    return routeId === undefined ? [] : [{ key, label: choiceLabel, routeId }]
   })
 
   return (
@@ -54,6 +64,7 @@ export function MapPanel({
       </div>
       <p className="pp-map__note">
         Illustrative routes: a schematic of segments in travel order, not a map.
+        {' '}Distances are simulated estimates.
       </p>
 
       {(incidentSegmentId !== null || candidateSegmentId !== null) && (
@@ -103,7 +114,7 @@ export function MapPanel({
                       <>
                         <span className="pp-map__segment-name">{seg?.name ?? segId}</span>
                         <span className="pp-map__segment-miles pp-num">
-                          {seg ? `${seg.miles} mi` : 'miles unknown'}
+                          {seg ? `Est. ${seg.miles} mi` : 'miles unknown'}
                         </span>
                         {closed && <StatusTag kind="closed" />}
                         {segId === candidateSegmentId && <StatusTag kind="candidate" />}
