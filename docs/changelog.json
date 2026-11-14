@@ -24,8 +24,8 @@
   "summary": {
     "counts": {
       "done": 5,
-      "not_started": 13,
-      "in_review": 1,
+      "not_started": 12,
+      "in_review": 2,
       "on_hold": 3
     },
     "current_branch_for_phase_1": "phase-1-dashboard",
@@ -59,7 +59,7 @@
       7,
       8,
       9,
-      20
+      21
     ],
     "data_source": "ArcGIS feature service, imported by scripts/import_map_data.py"
   },
@@ -724,13 +724,33 @@
       "code": "G2",
       "title": "ArcGIS map component replacing the placeholder",
       "phase": "Phase 5: GIS / ArcGIS",
-      "status": "not_started",
+      "status": "in_review",
       "github_state": "open",
       "assignee": "arturoidelgado1998",
-      "built_by": null,
-      "branch": null,
-      "pull_request": null,
-      "commit": null,
+      "built_by": "Coordinator",
+      "branch": "phase-1-dashboard",
+      "pull_request": 26,
+      "commit": {
+        "hash": "519ba84",
+        "date": "2026-11-14T12:22:58-08:00",
+        "message": "G2: Add the ArcGIS map to the Routes pane",
+        "files": {
+          "added": [
+            "src/map/ArcgisMap.tsx"
+          ],
+          "modified": [
+            "README.md",
+            "package-lock.json",
+            "package.json",
+            "src/components/shell/AppShell.css",
+            "src/map/MapPanel.css",
+            "src/map/MapPanel.test.tsx",
+            "src/map/MapPanel.tsx",
+            "src/test/setup.ts"
+          ],
+          "deleted": []
+        }
+      },
       "depends_on": [
         "G1"
       ],
@@ -740,13 +760,29 @@
         "Layer 2 of the feature service has route lines per shipment and scenario, ready for display",
         "src/data segments now carry LineString geometry and facilities carry coordinates, matching the feature service"
       ],
-      "changes": [],
-      "verification": [],
-      "deviations_from_issue": [],
+      "changes": [
+        "src/map/ArcgisMap.tsx: the map, built on the arcgis-map web component with a graphics layer drawn from the app's data",
+        "Network in grey, original route solid, alternative dashed, closed segment red with a Closed label, port as a square and warehouses as circles",
+        "Frames the selected shipment's routes; whole network when nothing is selected",
+        "MapPanel lazy-loads the map, shows a legend, and keeps the route list as a text view",
+        "Falls back to the route list if the map cannot load",
+        "Right pane widened to 26rem to give the map room"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test all pass (84 tests; the map is replaced by a stand-in in tests)",
+        "Viewed in the browser: basemap loads without an API key; S-01 and S-07 show the right original and alternative routes with NB-03 marked Closed",
+        "The load-failure fallback was seen working during a dev-server dependency reload"
+      ],
+      "deviations_from_issue": [
+        "Draws from src/data instead of querying the feature service live, so the map always matches the queue; the data is imported from the service",
+        "Done before R1 (#18) at the team's request"
+      ],
       "revisions": [],
       "follow_ups": [
-        "No .env yet; a basemap needs VITE_ARCGIS_API_KEY",
-        "Data is reconciled (G1); the map can be built against the feature service or src/data"
+        "Clicking a segment on the map calls onSegmentClick, but nothing passes that handler yet (A2, #16), so it is untested in the app",
+        "The candidate (Awaiting confirmation) style is implemented but not yet exercised by the app",
+        "The production build is about 19 MB because the SDK ships many on-demand chunks",
+        "Sensitive-zone overlays are G4 (#22)"
       ]
     },
     {
