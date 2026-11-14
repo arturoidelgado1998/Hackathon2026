@@ -20,7 +20,19 @@ npm test            # run the test suite once (Vitest)
 npm run build       # type-check and build to dist/
 npm run typecheck   # type-check only
 npm run lint        # ESLint
+npm run sanity      # build, then run the sanity checks (see below)
 ```
+
+## Sanity checks
+
+`npm run sanity` builds the app and checks that the project as a whole still works. The checks live in `sanity/` and also run on every pull request (the "Sanity checks on the built app" job).
+
+- **Repository:** the scripts the README and the pipeline call exist, the layout below is in place, and no `.env` file, key or build output is checked in.
+- **Change log:** `docs/changelog.json` adds up, refers only to issues that exist, and every file it says was built is still there.
+- **Build:** the page and its files are complete, and the ArcGIS map stays out of the first page load.
+- **Browser:** the built app is opened in headless Chromium and taken through the main flow: start, closure, compare responses, every shipment, reset, and the real map.
+
+The browser check needs Chromium once per machine: `npx playwright install --only-shell chromium`. Use `npm run test:sanity` to rerun the checks without rebuilding.
 
 ## Environment
 
@@ -36,6 +48,7 @@ The LLM key is server-side only (`server/`); only `VITE_`-prefixed variables rea
 - `src/map/`: map panel
 - `src/state/`: app state
 - `server/`: small Node endpoint for the LLM call
+- `sanity/`: sanity checks on the repository, the change log, the build and the built app
 - `docs/`: project documentation
 
 ## Map
