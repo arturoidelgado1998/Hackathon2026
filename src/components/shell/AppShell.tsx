@@ -132,7 +132,7 @@ export function AppShell({
           </a>
           {responses}
         </section>
-        <section className="pp-shell__region pp-shell__map" aria-label="Map panel">
+        <section className="pp-shell__region pp-shell__map" aria-label="Map panel" tabIndex={0}>
           {map}
         </section>
         {assumptions != null && (
@@ -150,7 +150,6 @@ export function AppShell({
               ref={assumptionsToggle}
               type="button"
               className="pp-shell__assumptions-toggle"
-              aria-label={`${assumptionsExpanded ? 'Collapse' : 'Expand'} assumptions & sources`}
               aria-expanded={assumptionsExpanded}
               aria-controls={assumptionsId}
               onClick={() => setAssumptionsExpanded((expanded) => !expanded)}

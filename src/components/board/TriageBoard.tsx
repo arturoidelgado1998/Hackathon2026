@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { compareReviewUrgency } from '../../state/urgency.ts'
 import { BOARD_COLUMNS } from '../../viewModels.ts'
 import type { BoardColumn, ShipmentCardView } from '../../viewModels.ts'
 import { ShipmentCard } from './ShipmentCard.tsx'
@@ -15,6 +16,7 @@ export interface TriageBoardProps {
 
 /** Workflow wording per group. "Decision recorded" is the dispatcher's choice, not an outcome. */
 const COLUMN_SUBTITLES: Partial<Record<BoardColumn, string>> = {
+  needs_review: 'Earliest reroute deadline first; missing deadlines after known ones. No currently feasible response last. Ties: shipment ID.',
   decision_recorded: 'Dispatcher chose a response',
 }
 
@@ -44,6 +46,9 @@ export function TriageBoard({
         <h2 className="triage-board__title">Shipments</h2>
         <span className="triage-board__total pp-num">{cards.length} today</span>
       </div>
+      {!cards.some((card) => card.summary.affected) && (
+        <p className="board-column__empty">No shipments affected by the current incident</p>
+      )}
       {emptyColumns.length > 0 && onToggleEmptyGroups && (
         <button
           type="button"
@@ -58,6 +63,7 @@ export function TriageBoard({
       )}
       {BOARD_COLUMNS.map(({ id, title }) => {
         const columnCards = cards.filter((card) => card.column === id)
+        if (id === 'needs_review') columnCards.sort(compareReviewUrgency)
         const titleId = `${idPrefix}-${id}-title`
         const subtitle = COLUMN_SUBTITLES[id]
         return (

@@ -305,6 +305,26 @@ describe('ResponsePanel', () => {
     )
   })
 
+  it('does not mistake an affected shipment with no options for an unaffected shipment', () => {
+    render(<ResponsePanel view={{ ...sampleView('S-01'), options: [] }} />)
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'No currently feasible response: review with warehouse or customer.',
+    )
+    expect(screen.queryByText(/No response needed/)).not.toBeInTheDocument()
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+  })
+
+  it('does not count an unavailable on-track option as feasible', () => {
+    render(
+      <ResponsePanel
+        view={makeView({
+          options: [wait, { ...reroute, arrival_min: null, arrival_max: null }, requestSlot],
+        })}
+      />,
+    )
+    expect(screen.getByRole('alert')).toHaveTextContent('No currently feasible response')
+  })
+
   it('shows the banner when reroute is UNKNOWN', () => {
     const unknownReroute: ResponseOption = {
       ...reroute,
@@ -391,11 +411,11 @@ describe('ResponsePanel', () => {
     expect(details).toHaveFocus()
 
     for (const step of [
-      'Departs 10:00',
-      'Reaches NB-03 at 10:10 to 10:12',
-      'Waits until 11:10 (58 to 60 min)',
-      'Arrives 12:00 to 12:12',
-      'Deadline 11:30',
+      'Departure: max(cargo ready 09:30, truck available 09:15) + pickup handling 30 min = 10:00.',
+      'PORT-01: enter 10:00–10:00, exit 10:10–10:12; closure wait 0–0 min.',
+      'NB-03: enter 11:10–11:10, exit 11:40–11:48; closure wait 58–60 min.',
+      'Estimated arrival 12:00–12:12; service starts 12:00–12:12 (not before appointment opening 11:00).',
+      'Original appointment 11:00–11:30: lateness 30–42 min; risk LATE.',
     ]) {
       expect(within(details).getByText(step)).toBeInTheDocument()
     }

@@ -50,6 +50,7 @@ export interface Route {
   kind: RouteKind
   truck_suitability_note: string
   near_sensitive_zone: boolean
+  sensitive_zone_note?: string
   schools_150m: number | null
   dac_tracts: string[] | null
   max_diesel_pm_pctl: number | null

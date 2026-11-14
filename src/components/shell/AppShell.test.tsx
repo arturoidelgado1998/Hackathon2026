@@ -47,7 +47,7 @@ describe('AppShell', () => {
   it('expands assumptions into a readable panel and collapses with Escape', () => {
     renderShell({ assumptions: <p>All sources and limitations</p> })
     const content = screen.getByText('All sources and limitations')
-    const toggle = screen.getByRole('button', { name: 'Expand assumptions & sources' })
+    const toggle = screen.getByRole('button', { name: /Assumptions & sources.*Expand panel/ })
     expect(content).not.toBeVisible()
     expect(toggle).toHaveAttribute('aria-expanded', 'false')
 
@@ -66,7 +66,7 @@ describe('AppShell', () => {
 
   it('collapses assumptions on Reset as well as restoring the scenario', () => {
     const props = renderShell({ assumptions: <p>All sources and limitations</p> })
-    fireEvent.click(screen.getByRole('button', { name: 'Expand assumptions & sources' }))
+    fireEvent.click(screen.getByRole('button', { name: /Assumptions & sources.*Expand panel/ }))
     fireEvent.click(screen.getByRole('button', { name: 'Reset' }))
     expect(screen.getByText('All sources and limitations')).not.toBeVisible()
     expect(props.onReset).toHaveBeenCalledTimes(1)

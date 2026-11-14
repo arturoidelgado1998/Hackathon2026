@@ -1,0 +1,497 @@
+[
+  {
+    "id": "late",
+    "label": "Shipments LATE",
+    "unit": "shipments",
+    "rule": "Count shipments with E2 risk LATE, including pending requests.",
+    "estimated": true,
+    "data_label": "SIMULATED",
+    "values": {
+      "normal": 0,
+      "disrupted_no_action": 3,
+      "disrupted_selected_responses": 2
+    },
+    "simulation": {
+      "selection_rule": "Evaluation only: choose an available ON_TRACK Wait or Reroute whose full service range meets the original appointment, with the fewest added miles versus the assigned normal route; ties use Wait before Reroute. If neither is ON_TRACK, request a later slot and retain the current Wait metrics until confirmation. Unaffected shipments keep their assigned route. This rule does not select or rank UI responses.",
+      "scenario_labels": {
+        "normal": "Normal",
+        "disrupted_no_action": "Disrupted — no action",
+        "disrupted_selected_responses": "Disrupted — selected responses (evaluation rule)"
+      },
+      "selected_responses": [
+        {
+          "shipment_id": "S-01",
+          "option_kind": "reroute",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-02",
+          "option_kind": "wait",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-03",
+          "option_kind": "request_slot",
+          "status": "pending_confirmation"
+        },
+        {
+          "shipment_id": "S-04",
+          "option_kind": "request_slot",
+          "status": "pending_confirmation"
+        },
+        {
+          "shipment_id": "S-05",
+          "option_kind": "wait",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-07",
+          "option_kind": "reroute",
+          "status": "selected"
+        }
+      ],
+      "unknown_totals": "null, never zero",
+      "aggregation": "sum displayed rounded per-shipment estimates"
+    }
+  },
+  {
+    "id": "tightOrUnknown",
+    "label": "Shipments TIGHT or UNKNOWN",
+    "unit": "shipments",
+    "rule": "Count shipments with E2 risk TIGHT or UNKNOWN; neither is counted as saved.",
+    "estimated": true,
+    "data_label": "SIMULATED",
+    "values": {
+      "normal": 0,
+      "disrupted_no_action": 1,
+      "disrupted_selected_responses": 0
+    },
+    "simulation": {
+      "selection_rule": "Evaluation only: choose an available ON_TRACK Wait or Reroute whose full service range meets the original appointment, with the fewest added miles versus the assigned normal route; ties use Wait before Reroute. If neither is ON_TRACK, request a later slot and retain the current Wait metrics until confirmation. Unaffected shipments keep their assigned route. This rule does not select or rank UI responses.",
+      "scenario_labels": {
+        "normal": "Normal",
+        "disrupted_no_action": "Disrupted — no action",
+        "disrupted_selected_responses": "Disrupted — selected responses (evaluation rule)"
+      },
+      "selected_responses": [
+        {
+          "shipment_id": "S-01",
+          "option_kind": "reroute",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-02",
+          "option_kind": "wait",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-03",
+          "option_kind": "request_slot",
+          "status": "pending_confirmation"
+        },
+        {
+          "shipment_id": "S-04",
+          "option_kind": "request_slot",
+          "status": "pending_confirmation"
+        },
+        {
+          "shipment_id": "S-05",
+          "option_kind": "wait",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-07",
+          "option_kind": "reroute",
+          "status": "selected"
+        }
+      ],
+      "unknown_totals": "null, never zero",
+      "aggregation": "sum displayed rounded per-shipment estimates"
+    }
+  },
+  {
+    "id": "latenessMax",
+    "label": "Total lateness (max case)",
+    "unit": "minutes",
+    "rule": "Sum E2 maximum lateness under the original appointments; null if any value is unknown.",
+    "estimated": true,
+    "data_label": "SIMULATED",
+    "values": {
+      "normal": 0,
+      "disrupted_no_action": 132,
+      "disrupted_selected_responses": 84
+    },
+    "simulation": {
+      "selection_rule": "Evaluation only: choose an available ON_TRACK Wait or Reroute whose full service range meets the original appointment, with the fewest added miles versus the assigned normal route; ties use Wait before Reroute. If neither is ON_TRACK, request a later slot and retain the current Wait metrics until confirmation. Unaffected shipments keep their assigned route. This rule does not select or rank UI responses.",
+      "scenario_labels": {
+        "normal": "Normal",
+        "disrupted_no_action": "Disrupted — no action",
+        "disrupted_selected_responses": "Disrupted — selected responses (evaluation rule)"
+      },
+      "selected_responses": [
+        {
+          "shipment_id": "S-01",
+          "option_kind": "reroute",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-02",
+          "option_kind": "wait",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-03",
+          "option_kind": "request_slot",
+          "status": "pending_confirmation"
+        },
+        {
+          "shipment_id": "S-04",
+          "option_kind": "request_slot",
+          "status": "pending_confirmation"
+        },
+        {
+          "shipment_id": "S-05",
+          "option_kind": "wait",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-07",
+          "option_kind": "reroute",
+          "status": "selected"
+        }
+      ],
+      "unknown_totals": "null, never zero",
+      "aggregation": "sum displayed rounded per-shipment estimates"
+    }
+  },
+  {
+    "id": "cost",
+    "label": "Estimated operating cost",
+    "unit": "USD",
+    "rule": "Sum E2 rounded whole-dollar per-shipment mileage-plus-labor costs; null if any cost is unknown.",
+    "estimated": true,
+    "data_label": "SIMULATED",
+    "values": {
+      "normal": 1027,
+      "disrupted_no_action": 1204,
+      "disrupted_selected_responses": 1182
+    },
+    "simulation": {
+      "selection_rule": "Evaluation only: choose an available ON_TRACK Wait or Reroute whose full service range meets the original appointment, with the fewest added miles versus the assigned normal route; ties use Wait before Reroute. If neither is ON_TRACK, request a later slot and retain the current Wait metrics until confirmation. Unaffected shipments keep their assigned route. This rule does not select or rank UI responses.",
+      "scenario_labels": {
+        "normal": "Normal",
+        "disrupted_no_action": "Disrupted — no action",
+        "disrupted_selected_responses": "Disrupted — selected responses (evaluation rule)"
+      },
+      "selected_responses": [
+        {
+          "shipment_id": "S-01",
+          "option_kind": "reroute",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-02",
+          "option_kind": "wait",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-03",
+          "option_kind": "request_slot",
+          "status": "pending_confirmation"
+        },
+        {
+          "shipment_id": "S-04",
+          "option_kind": "request_slot",
+          "status": "pending_confirmation"
+        },
+        {
+          "shipment_id": "S-05",
+          "option_kind": "wait",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-07",
+          "option_kind": "reroute",
+          "status": "selected"
+        }
+      ],
+      "unknown_totals": "null, never zero",
+      "aggregation": "sum displayed rounded per-shipment estimates"
+    }
+  },
+  {
+    "id": "addedMiles",
+    "label": "Added miles versus normal",
+    "unit": "miles",
+    "rule": "Sum per-shipment route miles minus assigned-route normal miles; signed differences.",
+    "estimated": true,
+    "data_label": "SIMULATED",
+    "values": {
+      "normal": 0,
+      "disrupted_no_action": 0,
+      "disrupted_selected_responses": 20
+    },
+    "simulation": {
+      "selection_rule": "Evaluation only: choose an available ON_TRACK Wait or Reroute whose full service range meets the original appointment, with the fewest added miles versus the assigned normal route; ties use Wait before Reroute. If neither is ON_TRACK, request a later slot and retain the current Wait metrics until confirmation. Unaffected shipments keep their assigned route. This rule does not select or rank UI responses.",
+      "scenario_labels": {
+        "normal": "Normal",
+        "disrupted_no_action": "Disrupted — no action",
+        "disrupted_selected_responses": "Disrupted — selected responses (evaluation rule)"
+      },
+      "selected_responses": [
+        {
+          "shipment_id": "S-01",
+          "option_kind": "reroute",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-02",
+          "option_kind": "wait",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-03",
+          "option_kind": "request_slot",
+          "status": "pending_confirmation"
+        },
+        {
+          "shipment_id": "S-04",
+          "option_kind": "request_slot",
+          "status": "pending_confirmation"
+        },
+        {
+          "shipment_id": "S-05",
+          "option_kind": "wait",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-07",
+          "option_kind": "reroute",
+          "status": "selected"
+        }
+      ],
+      "unknown_totals": "null, never zero",
+      "aggregation": "sum displayed rounded per-shipment estimates"
+    }
+  },
+  {
+    "id": "co2Kg",
+    "label": "Estimated tailpipe CO2",
+    "unit": "kg",
+    "rule": "Sum E2 per-shipment tailpipe CO2 rounded to 0.1 kg; excludes engine-off closure waiting.",
+    "estimated": true,
+    "data_label": "SIMULATED",
+    "values": {
+      "normal": 546.5,
+      "disrupted_no_action": 546.5,
+      "disrupted_selected_responses": 577.9
+    },
+    "simulation": {
+      "selection_rule": "Evaluation only: choose an available ON_TRACK Wait or Reroute whose full service range meets the original appointment, with the fewest added miles versus the assigned normal route; ties use Wait before Reroute. If neither is ON_TRACK, request a later slot and retain the current Wait metrics until confirmation. Unaffected shipments keep their assigned route. This rule does not select or rank UI responses.",
+      "scenario_labels": {
+        "normal": "Normal",
+        "disrupted_no_action": "Disrupted — no action",
+        "disrupted_selected_responses": "Disrupted — selected responses (evaluation rule)"
+      },
+      "selected_responses": [
+        {
+          "shipment_id": "S-01",
+          "option_kind": "reroute",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-02",
+          "option_kind": "wait",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-03",
+          "option_kind": "request_slot",
+          "status": "pending_confirmation"
+        },
+        {
+          "shipment_id": "S-04",
+          "option_kind": "request_slot",
+          "status": "pending_confirmation"
+        },
+        {
+          "shipment_id": "S-05",
+          "option_kind": "wait",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-07",
+          "option_kind": "reroute",
+          "status": "selected"
+        }
+      ],
+      "unknown_totals": "null, never zero",
+      "aggregation": "sum displayed rounded per-shipment estimates"
+    }
+  },
+  {
+    "id": "pending",
+    "label": "Pending later-slot requests",
+    "unit": "shipments",
+    "rule": "Count pending_confirmation requests; retain their current Wait metrics, not hypothetical savings.",
+    "estimated": true,
+    "data_label": "SIMULATED",
+    "values": {
+      "normal": 0,
+      "disrupted_no_action": 0,
+      "disrupted_selected_responses": 2
+    },
+    "simulation": {
+      "selection_rule": "Evaluation only: choose an available ON_TRACK Wait or Reroute whose full service range meets the original appointment, with the fewest added miles versus the assigned normal route; ties use Wait before Reroute. If neither is ON_TRACK, request a later slot and retain the current Wait metrics until confirmation. Unaffected shipments keep their assigned route. This rule does not select or rank UI responses.",
+      "scenario_labels": {
+        "normal": "Normal",
+        "disrupted_no_action": "Disrupted — no action",
+        "disrupted_selected_responses": "Disrupted — selected responses (evaluation rule)"
+      },
+      "selected_responses": [
+        {
+          "shipment_id": "S-01",
+          "option_kind": "reroute",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-02",
+          "option_kind": "wait",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-03",
+          "option_kind": "request_slot",
+          "status": "pending_confirmation"
+        },
+        {
+          "shipment_id": "S-04",
+          "option_kind": "request_slot",
+          "status": "pending_confirmation"
+        },
+        {
+          "shipment_id": "S-05",
+          "option_kind": "wait",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-07",
+          "option_kind": "reroute",
+          "status": "selected"
+        }
+      ],
+      "unknown_totals": "null, never zero",
+      "aggregation": "sum displayed rounded per-shipment estimates"
+    }
+  },
+  {
+    "id": "addedDriverDuty",
+    "label": "Added driver duty versus normal",
+    "unit": "minutes",
+    "rule": "Sum E2 signed duty increases against each assigned original-route normal baseline; null if any increase is unknown.",
+    "estimated": true,
+    "data_label": "SIMULATED",
+    "values": {
+      "normal": 0,
+      "disrupted_no_action": 263,
+      "disrupted_selected_responses": 176
+    },
+    "simulation": {
+      "selection_rule": "Evaluation only: choose an available ON_TRACK Wait or Reroute whose full service range meets the original appointment, with the fewest added miles versus the assigned normal route; ties use Wait before Reroute. If neither is ON_TRACK, request a later slot and retain the current Wait metrics until confirmation. Unaffected shipments keep their assigned route. This rule does not select or rank UI responses.",
+      "scenario_labels": {
+        "normal": "Normal",
+        "disrupted_no_action": "Disrupted — no action",
+        "disrupted_selected_responses": "Disrupted — selected responses (evaluation rule)"
+      },
+      "selected_responses": [
+        {
+          "shipment_id": "S-01",
+          "option_kind": "reroute",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-02",
+          "option_kind": "wait",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-03",
+          "option_kind": "request_slot",
+          "status": "pending_confirmation"
+        },
+        {
+          "shipment_id": "S-04",
+          "option_kind": "request_slot",
+          "status": "pending_confirmation"
+        },
+        {
+          "shipment_id": "S-05",
+          "option_kind": "wait",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-07",
+          "option_kind": "reroute",
+          "status": "selected"
+        }
+      ],
+      "unknown_totals": "null, never zero",
+      "aggregation": "sum displayed rounded per-shipment estimates"
+    }
+  },
+  {
+    "id": "flaggedRoutes",
+    "label": "Routes passing flagged zones",
+    "unit": "shipment-route uses",
+    "rule": "Count per-shipment route uses flagged near_sensitive_zone, NOT unique route ids or measured exposure.",
+    "estimated": true,
+    "data_label": "SIMULATED",
+    "values": {
+      "normal": 10,
+      "disrupted_no_action": 10,
+      "disrupted_selected_responses": 10
+    },
+    "simulation": {
+      "selection_rule": "Evaluation only: choose an available ON_TRACK Wait or Reroute whose full service range meets the original appointment, with the fewest added miles versus the assigned normal route; ties use Wait before Reroute. If neither is ON_TRACK, request a later slot and retain the current Wait metrics until confirmation. Unaffected shipments keep their assigned route. This rule does not select or rank UI responses.",
+      "scenario_labels": {
+        "normal": "Normal",
+        "disrupted_no_action": "Disrupted — no action",
+        "disrupted_selected_responses": "Disrupted — selected responses (evaluation rule)"
+      },
+      "selected_responses": [
+        {
+          "shipment_id": "S-01",
+          "option_kind": "reroute",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-02",
+          "option_kind": "wait",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-03",
+          "option_kind": "request_slot",
+          "status": "pending_confirmation"
+        },
+        {
+          "shipment_id": "S-04",
+          "option_kind": "request_slot",
+          "status": "pending_confirmation"
+        },
+        {
+          "shipment_id": "S-05",
+          "option_kind": "wait",
+          "status": "selected"
+        },
+        {
+          "shipment_id": "S-07",
+          "option_kind": "reroute",
+          "status": "selected"
+        }
+      ],
+      "unknown_totals": "null, never zero",
+      "aggregation": "sum displayed rounded per-shipment estimates"
+    }
+  }
+]

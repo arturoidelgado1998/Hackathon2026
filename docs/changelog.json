@@ -31,8 +31,8 @@
   "summary": {
     "counts": {
       "done": 5,
-      "ready_for_review": 3,
-      "not_started": 9,
+      "ready_for_review": 8,
+      "not_started": 4,
       "in_review": 4,
       "in_progress": 1
     },
@@ -82,10 +82,16 @@
     "next_up": [
       7,
       8,
-      9
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      21
     ],
     "data_source": "ArcGIS feature service, imported by scripts/import_map_data.py",
-    "sanity_checks": "npm run sanity: 45 checks in sanity/, also run by the pipeline's sanity job",
+    "sanity_checks": "npm run sanity: 47 checks in sanity/, also run by the pipeline's sanity job",
     "delivery_checklist": [
       {
         "task": "Update main and create Nicole's branch",
@@ -607,11 +613,11 @@
       "code": "D9",
       "title": "Empty, error and loading states; accessibility pass",
       "phase": "Phase 1: Dashboard",
-      "status": "not_started",
+      "status": "ready_for_review",
       "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
+      "assignee": "nmtraboulsi",
+      "built_by": "D9-accessibility agent",
+      "branch": "nicole/d9-e1-e4-engine-integration",
       "pull_request": null,
       "commit": null,
       "depends_on": [
@@ -624,8 +630,18 @@
       "already_in_place": [
         "Empty states exist for no selection and no options; contrast measured at 5.8:1 or better; focus rings themed"
       ],
-      "changes": [],
-      "verification": [],
+      "changes": [
+        "Sample-triggerable interpretation loading and AI-unavailable feedback, with no fake incident endpoint or enabled A2 flow.",
+        "Explicit no-affected and no-feasible states, readable type, visible selected keyboard focus and accessible control names.",
+        "Authorized vitest-axe dependency, six dashboard accessibility cases and persistent real Chromium keyboard, responsive and contrast checks."
+      ],
+      "verification": [
+        "D9 agent: 85 affected UI tests and two real-browser accessibility sanity checks pass.",
+        "Real Chromium checks cover core keyboard workflow, responsive geometry at 390/760/1024/1440 widths and desktop text contrast of at least 4.5:1.",
+        "Focused ESLint, whitespace checks and Impeccable detector pass.",
+        "jsdom color-contrast checking is disabled explicitly; clipped mobile cells, ArcGIS canvas, physical devices, screen readers and true browser zoom are not fully audited.",
+        "Parent verification after E4: all 306 tests, 30 sanity checks, typecheck, ESLint and production build pass."
+      ],
       "deviations_from_issue": [],
       "revisions": [],
       "follow_ups": [
@@ -637,11 +653,11 @@
       "code": "E1",
       "title": "Engine: departure, route timing and closure wait",
       "phase": "Phase 2: Engine",
-      "status": "not_started",
+      "status": "ready_for_review",
       "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
+      "assignee": "nmtraboulsi",
+      "built_by": "E1-timing agent",
+      "branch": "nicole/d9-e1-e4-engine-integration",
       "pull_request": null,
       "commit": null,
       "depends_on": [
@@ -651,8 +667,16 @@
       "already_in_place": [
         "src/data/README.md lists the expected values the engine must reproduce"
       ],
-      "changes": [],
-      "verification": [],
+      "changes": [
+        "Pure TypeScript departure and ordered segment timing with explicit min/max arrivals, waits and unknown reopening bounds.",
+        "Dispatcher-assumed reopening takes precedence and is marked as an assumption; same-day time inputs are validated explicitly.",
+        "Production timing imports only engine helpers and shared types."
+      ],
+      "verification": [
+        "E1 agent: 44 focused time/timing tests pass under Node 24.",
+        "E1 agent: typecheck and focused ESLint pass.",
+        "Parent verification after E4: all 306 tests and 30 sanity checks pass, with no production sample-response imports."
+      ],
       "deviations_from_issue": [],
       "revisions": [],
       "follow_ups": [
@@ -664,19 +688,27 @@
       "code": "E2",
       "title": "Engine: appointment, lateness, risk, cost, CO2 and driver duty",
       "phase": "Phase 2: Engine",
-      "status": "not_started",
+      "status": "ready_for_review",
       "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
+      "assignee": "nmtraboulsi",
+      "built_by": "E2-metrics agent",
+      "branch": "nicole/d9-e1-e4-engine-integration",
       "pull_request": null,
       "commit": null,
       "depends_on": [
         "E1"
       ],
       "already_in_place": [],
-      "changes": [],
-      "verification": [],
+      "changes": [
+        "Pure metrics built on E1 timings: inclusive appointment deadline, lateness/risk, estimated cost and tailpipe CO2, driver duty and increase over the assigned normal plan.",
+        "Every metrics result is marked estimated; unavailable values remain null and sensitive-zone context passes through unchanged.",
+        "Reference S-01 normal, wait and reroute values match the updated feature-service acceptance values."
+      ],
+      "verification": [
+        "E2 agent: 44 focused metrics tests pass under Node 24.",
+        "E2 agent: typecheck passes.",
+        "Parent verification after E4: all 306 tests and 30 sanity checks pass; live S-01 metrics match the reference."
+      ],
       "deviations_from_issue": [],
       "revisions": [],
       "follow_ups": [
@@ -688,19 +720,28 @@
       "code": "E3",
       "title": "Engine: response options, totals and scenario comparison",
       "phase": "Phase 2: Engine",
-      "status": "not_started",
+      "status": "ready_for_review",
       "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
+      "assignee": "nmtraboulsi",
+      "built_by": "E3-responses agent",
+      "branch": "nicole/d9-e1-e4-engine-integration",
       "pull_request": null,
       "commit": null,
       "depends_on": [
         "E2"
       ],
       "already_in_place": [],
-      "changes": [],
-      "verification": [],
+      "changes": [
+        "Pure engine assessments and response options expose calculation explanations, community context, explicit availability and the two decision deadlines.",
+        "Pending requests retain their current plan and risk; unavailable routes and unknown reopening do not produce guessed metrics.",
+        "Nine estimated SIMULATED evaluation rows compare normal, disrupted-no-action and reproducibly selected-response conditions without ranking or automatically selecting UI options."
+      ],
+      "verification": [
+        "E3 agent: 32 focused response/evaluation tests and typecheck pass.",
+        "Parent: all 120 E1-E3 tests pass together across five engine test files.",
+        "Normal, disrupted and selected-response evaluation totals match the independently recorded fixture baseline.",
+        "Parent independently parsed CSV and JSON exports: all nine rows, three scenarios and 27 numeric cells match the recorded expected values."
+      ],
       "deviations_from_issue": [],
       "revisions": [],
       "follow_ups": [
@@ -712,11 +753,11 @@
       "code": "E4",
       "title": "Wire the dashboard to the engine and export the evaluation table",
       "phase": "Phase 2: Engine",
-      "status": "not_started",
+      "status": "ready_for_review",
       "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
+      "assignee": "nmtraboulsi",
+      "built_by": "E4-integration agent",
+      "branch": "nicole/d9-e1-e4-engine-integration",
       "pull_request": null,
       "commit": null,
       "depends_on": [
@@ -727,8 +768,20 @@
       "already_in_place": [
         "src/state/selectors.ts is the single place that reads the data module"
       ],
-      "changes": [],
-      "verification": [],
+      "changes": [
+        "Runtime data helpers, board assessments and indicator totals now delegate to the pure engine; sample-responses.json is imported only by tests.",
+        "Affected cards display reopening and reroute deadlines; Needs review sorts by earliest reroute deadline, with explicit tie/missing-deadline handling and no-feasible shipments last.",
+        "Response delta arithmetic is shared from the engine instead of calculated in UI helpers.",
+        "npm run evaluate exports all nine estimated SIMULATED rows to docs/evaluation.csv and docs/evaluation.json with units, scenario labels and the evaluation-only selection rule.",
+        "Documentation and integration/export tests cover fresh input changes and preserve the existing decision, pending, preview, Undo and Reset behavior."
+      ],
+      "verification": [
+        "E4 agent: 277 affected tests, typecheck, focused ESLint and evaluation export pass.",
+        "Parent: full 306-test suite, all 30 sanity checks, typecheck, ESLint and production build pass under Node 24.22.3/npm 11.21.2.",
+        "Parent: 16 live-browser assertions pass, including exact deadline/order/reference metrics, preview, choice, Undo, pending, rejection, scenarios and Reset.",
+        "Parent: parsed CSV/JSON contain exactly nine rows, three scenarios and all 27 independently expected numeric values.",
+        "Impeccable detector reports no findings; no production TypeScript imports sample-responses.json."
+      ],
       "deviations_from_issue": [],
       "revisions": [],
       "follow_ups": [
@@ -1452,6 +1505,146 @@
     }
   ],
   "entries": [
+    {
+      "id": "2026-11-14-merge-staging-into-nicole-engine",
+      "date": "2026-11-14",
+      "title": "Merged staging into Nicole's engine branch, preserving both changelogs",
+      "summary": "Combined staging's G3-G5 corridor, map-overlay and truck-network work with Nicole's D9 and E1-E4 engine delivery. All seven existing dated entries from both branches are preserved unchanged, along with each branch's issue updates; summary counts and pending-review lists are combined.",
+      "issues": [10, 11, 12, 13, 14, 21, 22, 23],
+      "branch": "nicole/d9-e1-e4-engine-integration",
+      "previous_branch_commit": "ed28999",
+      "source_staging_commit": "11b1774",
+      "conflicts_resolved": [
+        "docs/changelog.json: retained both complete histories and reconciled summary metadata.",
+        "src/components/responses/ResponsePanel.tsx: retained engine availability checks and the Caltrans truck-network row.",
+        "src/data/README.md: retained real corridor/layer documentation and the engine-only production data contract."
+      ],
+      "integration_changes": [
+        "Engine response stakeholder notes retain the optional corridor screening note supplied with each route; no real corridor facts are replaced with generic text.",
+        "Updated evaluation expectations and regenerated CSV/JSON exports for G3's real corridor flags: all ten shipment-route uses are flagged in each scenario, rather than the previous synthetic 0/0/2.",
+        "Preserved explicit unknown-community test cases and the per-shipment, not unique-route, counting test. Timing, cost, emissions and decision behavior are unchanged."
+      ],
+      "verification": [
+        "A semantic comparison against both Git parents confirms every original dated entry is unchanged and all 22 issue records retain the correct branch-specific updates.",
+        "Node 24/npm 11: all 331 unit tests in 22 files pass; typecheck and ESLint pass.",
+        "Production build and all 47 sanity checks in six files pass, including real Chromium map, community/truck-network, keyboard, responsive and contrast checks.",
+        "Independent standard-library JSON/CSV parsing confirms all nine rows, three scenarios, 27 expected numeric values and simulation metadata.",
+        "User preview and resolved response module return HTTP 200; the shared page's actual ArcGIS map is ready and no Vite error overlay is present."
+      ],
+      "limitations": [
+        "The shared VS Code validation tab was hidden, preventing additional manual pointer-flow checks there; the headless Chromium interaction checks passed.",
+        "Existing canvas warnings in jsdom and the large ArcGIS production-chunk warning remain.",
+        "This step merges staging into the local feature branch only; it does not push, merge the feature into staging/main, or close issues."
+      ]
+    },
+    {
+      "id": "2026-11-14-d9-e1-e4-delivery",
+      "date": "2026-11-14",
+      "title": "Implemented and validated D9 and E1-E4 on Nicole's branch",
+      "summary": "Five issue-specific agents delivered accessible dashboard states, a deterministic timing/metrics/response engine, live engine-backed UI assessments, visible decision deadlines and urgency sorting, and reproducible evaluation exports. Work is verified locally on Nicole's feature branch and ready for review; no merge is included in this delivery.",
+      "issues": [10, 11, 12, 13, 14],
+      "branch": "nicole/d9-e1-e4-engine-integration",
+      "base_commit": "1522db7",
+      "alignment_with_issues": {
+        "D9 (#10)": "Sample-triggerable empty/loading/AI-unavailable states; keyboard core flow; serious/critical accessibility assertions; real desktop contrast and responsive checks.",
+        "E1 (#11)": "Ordered min/max segment timing, correct 58-60 minute reference closure wait, pickup delays, unaffected trucks/routes, explicit unknown and dispatcher-assumed reopening.",
+        "E2 (#12)": "Inclusive appointment rule, estimated risk/impact metrics and unchanged community context. Reference costs $130/$169/$167, CO2 70.7/70.7/94.2 kg and duty 74/132/88 minutes match.",
+        "E3 (#13)": "Explained options, safe pending behavior, 10:28/10:02 reference deadlines, totals and nine-row three-condition evaluation using the documented evaluation-only selection rule.",
+        "E4 (#14)": "No production fixture imports, fresh engine-backed UI calculations, visible deadlines and urgency rule, nine-row CSV/JSON export, and preserved Phase 1 plus D9 behavior."
+      },
+      "files": {
+        "added": [
+          "docs/evaluation.csv",
+          "docs/evaluation.json",
+          "sanity/accessibility.sanity.test.ts",
+          "scripts/evaluate.ts",
+          "src/App.accessibility.test.tsx",
+          "src/components/shell/IncidentInterpretationFeedback.css",
+          "src/components/shell/IncidentInterpretationFeedback.tsx",
+          "src/data/demoIncident.ts",
+          "src/engine/deltas.ts",
+          "src/engine/evaluation.test.ts",
+          "src/engine/evaluation.ts",
+          "src/engine/evaluationExport.test.ts",
+          "src/engine/metrics.test.ts",
+          "src/engine/metrics.ts",
+          "src/engine/responses.test.ts",
+          "src/engine/responses.ts",
+          "src/engine/time.test.ts",
+          "src/engine/time.ts",
+          "src/engine/timing.test.ts",
+          "src/engine/timing.ts",
+          "src/state/engineIntegration.test.ts",
+          "src/state/urgency.ts"
+        ],
+        "modified": [
+          "README.md",
+          "docs/changelog.json",
+          "package-lock.json",
+          "package.json",
+          "src/App.test.tsx",
+          "src/App.tsx",
+          "src/components/board/RiskBadge.css",
+          "src/components/board/ShipmentCard.tsx",
+          "src/components/board/TriageBoard.test.tsx",
+          "src/components/board/TriageBoard.tsx",
+          "src/components/board/board.css",
+          "src/components/responses/ResponsePanel.test.tsx",
+          "src/components/responses/ResponsePanel.tsx",
+          "src/components/responses/deltas.ts",
+          "src/components/shell/AppShell.test.tsx",
+          "src/components/shell/AppShell.tsx",
+          "src/data/README.md",
+          "src/data/data.test.ts",
+          "src/data/index.ts",
+          "src/index.css",
+          "src/state/options.ts",
+          "src/state/selectors.ts",
+          "src/state/totals.test.ts",
+          "src/state/totals.ts",
+          "src/viewModels.ts"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "Node 24.22.3/npm 11.21.2: npm run typecheck, npm run lint and npm run build pass.",
+        "npm test: 306 tests pass in 21 files.",
+        "npm run test:sanity: 30 checks pass in five files, including real Chromium keyboard, responsive and contrast checks.",
+        "npm run evaluate succeeds. Independently parsed JSON and CSV have all nine rows, three scenarios and 27 expected numeric values, with SIMULATED/estimated labels, units and selection metadata.",
+        "Live browser: 16 assertions pass for real map readiness, all six urgency positions, exact reference deadlines/metrics, preview isolation, Why focus/Escape, selected reroute totals 3/$1,202/570 kg, Undo, pending without savings, Reject all, S-03 no-feasible warning, Normal and exact Disrupted Reset.",
+        "Source search finds sample-responses.json imports only in test files.",
+        "Impeccable detector returns no findings and git diff --check passes."
+      ],
+      "outside_repo": [
+        "Assigned GitHub issues #10-#14 to nmtraboulsi; issues remain open pending review/merge.",
+        "Refreshed the user preview with Vite --force after a stale ArcGIS dependency optimizer cache; verified HTTP 200, no Vite overlay and the real map ready."
+      ],
+      "limitations_and_warnings": [
+        "The only added dependency is D9's explicitly authorized vitest-axe development dependency.",
+        "jsdom cannot measure canvas-based text contrast and prints its known canvas warnings. Contrast is checked separately in real Chromium.",
+        "The production build retains the existing large ArcGIS lazy-chunk warning.",
+        "Physical devices, screen readers, true browser zoom and every clipped mobile contrast case are not comprehensively audited.",
+        "Report incident remains disabled; A1-A3 AI interpretation/manual-entry functionality is outside these five issues.",
+        "Issues remain open for review; no pull request or merge is included in this delivery."
+      ]
+    },
+    {
+      "id": "2026-11-14-d9-e1-e4-start",
+      "date": "2026-11-14",
+      "title": "Started D9 and engine implementation on Nicole's branch",
+      "summary": "Fetched the current acceptance criteria for D9 and E1-E4 and assigned all five issues to nmtraboulsi. Separate D9 and E1 agents are implementing independent UI hardening and pure timing work concurrently. E2, E3 and E4 are queued in dependency order; E4 also waits for D9 to avoid shared UI and package-file conflicts.",
+      "issues": [10, 11, 12, 13, 14],
+      "branch": "nicole/d9-e1-e4-engine-integration",
+      "verification": [
+        "Confirmed the branch starts at staging commit 1522db7 with no pre-existing tracked changes.",
+        "Read live GitHub issue bodies for #10-#14 and successfully assigned all five to nmtraboulsi.",
+        "Recorded independent fixture-based expected normal, disrupted and selected-response evaluation totals for later engine verification.",
+        "Implementation is in progress; no new issue is claimed complete, committed or pushed."
+      ],
+      "not_verified": [
+        "Combined D9/E1-E4 implementation and final automated/browser verification are still pending."
+      ]
+    },
     {
       "id": "2026-11-14-gis-sanity-checks",
       "date": "2026-11-14",

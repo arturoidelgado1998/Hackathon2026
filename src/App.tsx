@@ -5,6 +5,10 @@ import { ResponsePanel } from './components/responses/index.ts'
 import { OPTION_ACTION_LABELS, OPTION_TITLES } from './components/responses/format.ts'
 import { AppShell } from './components/shell/AppShell.tsx'
 import { IncidentBanner } from './components/shell/IncidentBanner.tsx'
+import {
+  IncidentInterpretationFeedback,
+  type IncidentInterpretationStatus,
+} from './components/shell/IncidentInterpretationFeedback.tsx'
 import { IndicatorsBar } from './components/shell/IndicatorsBar.tsx'
 import { facilities, getSegment, routes, sampleIncident, segments } from './data/index.ts'
 import { MapPanel } from './map/MapPanel.tsx'
@@ -18,7 +22,12 @@ import {
 } from './state/selectors.ts'
 import { getTotals } from './state/totals.ts'
 
-function App() {
+export interface AppProps {
+  /** Sample/integration entry point only; this does not enable incident reporting. */
+  incidentInterpretationStatus?: IncidentInterpretationStatus
+}
+
+function App({ incidentInterpretationStatus = 'idle' }: AppProps) {
   const [state, dispatch] = useReducer(appReducer, initialState)
   const { scenario, selectedShipmentId, decisions, previewDecision, rejectedShipmentIds } = state
   const incident = scenario === 'disrupted' ? sampleIncident : null
@@ -35,10 +44,13 @@ function App() {
       onScenarioChange={(next) => dispatch({ type: 'set_scenario', scenario: next })}
       onReset={() => dispatch({ type: 'reset' })}
       status={
-        <IncidentBanner
-          incident={incident}
-          segmentName={incident ? getSegment(incident.segment_id)?.name : undefined}
-        />
+        <>
+          <IncidentBanner
+            incident={incident}
+            segmentName={incident ? getSegment(incident.segment_id)?.name : undefined}
+          />
+          <IncidentInterpretationFeedback status={incidentInterpretationStatus} />
+        </>
       }
       indicators={<IndicatorsBar {...totals} />}
       board={
