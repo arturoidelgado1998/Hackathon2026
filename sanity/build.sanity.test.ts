@@ -63,6 +63,19 @@ describe('production build', () => {
     expect(firstLoad).toBeLessThan(FIRST_LOAD_JS_BUDGET_BYTES)
   })
 
+  it('builds the driver page as its own small page, without the map', () => {
+    const driver = readText('dist', 'driver.html')
+    expect(driver).toContain('<title>PortPlan driver notice</title>')
+    expect(driver).not.toContain('/src/driver/main.tsx')
+    const scripts = [...driver.matchAll(/<(?:script[^>]*\ssrc|link[^>]*rel="modulepreload"[^>]*\shref)="\/([^"]+)"/g)]
+      .map((m) => m[1])
+    expect(scripts.length).toBeGreaterThan(0)
+    // A phone must never download the dashboard's map.
+    expect(scripts.filter((file) => /ArcgisMap/.test(file))).toEqual([])
+    const size = scripts.reduce((total, file) => total + statSync(fromRoot('dist', file)).size, 0)
+    expect(size).toBeLessThan(FIRST_LOAD_JS_BUDGET_BYTES)
+  })
+
   it('has no server-side variable names in the browser bundle', () => {
     const leaks = assets
       .filter((f) => f.endsWith('.js'))
