@@ -21,11 +21,12 @@ export type BoardColumn =
   | 'awaiting_confirmation'
   | 'decision_recorded'
 
+/** Listed in the order a dispatcher works them: what needs attention first. */
 export const BOARD_COLUMNS: { id: BoardColumn; title: string }[] = [
-  { id: 'monitoring', title: 'Monitoring' },
   { id: 'needs_review', title: 'Needs review' },
   { id: 'awaiting_confirmation', title: 'Awaiting confirmation' },
   { id: 'decision_recorded', title: 'Decision recorded' },
+  { id: 'monitoring', title: 'Monitoring' },
 ]
 
 /** One shipment's current status in one scenario. All values are estimates. */
@@ -70,6 +71,8 @@ export interface CommunityInfo {
 export interface ResponsePanelView {
   shipment: Shipment
   destinationName: string
+  /** The shipment's current status, shown above the comparison. */
+  summary?: ShipmentSummary
   /** Wait, Reroute, Request later slot. Empty when the shipment has none. */
   options: ResponseOption[]
   baseline: Baseline

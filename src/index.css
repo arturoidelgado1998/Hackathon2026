@@ -1,22 +1,60 @@
+/* PortPlan design tokens and base styles.
+   An operations tool: system sans, one accent, restrained colour.
+   Colour is reserved for the primary action, the current selection and
+   delivery risk. Risk always carries an icon and a text label as well. */
+
 :root {
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  line-height: 1.5;
+  font-size: 100%;
+  line-height: 1.45;
 
-  --pp-text: #1a1a1a;
-  --pp-text-muted: #555b63;
-  --pp-bg: #f4f5f7;
+  /* Neutrals */
+  --pp-text: #16191d;
+  --pp-text-muted: #4d5560;
+  --pp-bg: #f1f3f6;
   --pp-surface: #ffffff;
-  --pp-surface-muted: #f0f2f5;
-  --pp-border: #d9dde3;
-  --pp-border-strong: #8a929c;
-  --pp-accent: #1f4e8c;
+  --pp-surface-muted: #f4f6f8;
+  --pp-border: #dde1e6;
+  --pp-border-strong: #99a2ad;
+
+  /* Accent: primary action, selection, focus */
+  --pp-accent: #1d4f91;
+  --pp-accent-hover: #173f75;
+  --pp-accent-soft: #e9f1fb;
   --pp-accent-text: #ffffff;
   --pp-focus: #1f6feb;
-  --pp-danger: #b3261e;
-  --pp-warning: #8a5a00;
+
+  /* Delivery risk */
+  --pp-ok: #1a6b3a;
+  --pp-ok-soft: #e6f4ea;
+  --pp-warning: #7a4d00;
+  --pp-warning-soft: #fdf1d6;
+  --pp-danger: #a3241c;
+  --pp-danger-soft: #fde8e6;
+  --pp-unknown: #454c55;
+  --pp-unknown-soft: #eceff2;
+
+  /* Type scale (fixed, ratio about 1.14) */
+  --pp-text-xs: 0.75rem;
+  --pp-text-sm: 0.8125rem;
+  --pp-text-md: 0.875rem;
+  --pp-text-lg: 1rem;
+  --pp-text-xl: 1.125rem;
+
+  /* Spacing scale (4px base) */
+  --pp-space-1: 0.25rem;
+  --pp-space-2: 0.5rem;
+  --pp-space-3: 0.75rem;
+  --pp-space-4: 1rem;
+  --pp-space-5: 1.5rem;
+
+  --pp-radius-sm: 4px;
+  --pp-radius: 6px;
 
   color: var(--pp-text);
   background-color: var(--pp-bg);
+  accent-color: var(--pp-accent);
+  scrollbar-color: var(--pp-border-strong) transparent;
 }
 
 *,
@@ -34,4 +72,101 @@ body {
 
 body {
   background-color: var(--pp-bg);
+  font-size: var(--pp-text-md);
+}
+
+::selection {
+  background: var(--pp-accent);
+  color: var(--pp-accent-text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--pp-focus);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+/* Shared control: secondary button */
+.pp-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pp-space-1);
+  min-height: 2rem;
+  padding: 0 var(--pp-space-3);
+  border: 1px solid var(--pp-border-strong);
+  border-radius: var(--pp-radius);
+  background: var(--pp-surface);
+  color: var(--pp-text);
+  font: inherit;
+  font-size: var(--pp-text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease-out,
+    border-color 150ms ease-out;
+}
+
+.pp-button:hover {
+  background: var(--pp-surface-muted);
+  border-color: var(--pp-text-muted);
+}
+
+.pp-button:active {
+  background: var(--pp-border);
+}
+
+.pp-button:disabled {
+  cursor: not-allowed;
+  color: var(--pp-text-muted);
+  background: var(--pp-surface-muted);
+  border-color: var(--pp-border);
+}
+
+.pp-button--primary {
+  background: var(--pp-accent);
+  border-color: var(--pp-accent);
+  color: var(--pp-accent-text);
+}
+
+.pp-button--primary:hover {
+  background: var(--pp-accent-hover);
+  border-color: var(--pp-accent-hover);
+}
+
+.pp-button--primary:disabled {
+  background: var(--pp-surface-muted);
+  border-color: var(--pp-border);
+  color: var(--pp-text-muted);
+}
+
+/* Numbers that are compared line up digit for digit. */
+.pp-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.pp-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
 }

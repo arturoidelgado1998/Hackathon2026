@@ -1,5 +1,6 @@
 import { useId } from 'react'
 import type { Facility, Route, RoadSegment } from '../types.ts'
+import { ClosedIcon, QuestionIcon } from '../components/icons.tsx'
 import './MapPanel.css'
 
 // Phase 5 (G2) replaces this placeholder with a real map. Keep these props.
@@ -97,20 +98,34 @@ export function MapPanel({
                 <ol className="pp-map__segments" aria-labelledby={headingId}>
                   {route.segment_ids.map((segId, i) => {
                     const seg = segmentById.get(segId)
+                    const closed = segId === incidentSegmentId
+                    const content = (
+                      <>
+                        <span className="pp-map__segment-name">{seg?.name ?? segId}</span>
+                        <span className="pp-map__segment-miles pp-num">
+                          {seg ? `${seg.miles} mi` : 'miles unknown'}
+                        </span>
+                        {closed && <StatusTag kind="closed" />}
+                        {segId === candidateSegmentId && <StatusTag kind="candidate" />}
+                      </>
+                    )
                     return (
-                      <li key={`${segId}-${i}`}>
-                        <button
-                          type="button"
-                          className="pp-map__segment"
-                          onClick={() => onSegmentClick?.(segId)}
-                        >
-                          <span className="pp-map__segment-name">{seg?.name ?? segId}</span>
-                          <span className="pp-map__segment-miles">
-                            {seg ? `${seg.miles} mi` : 'miles unknown'}
-                          </span>
-                          {segId === incidentSegmentId && <StatusTag kind="closed" />}
-                          {segId === candidateSegmentId && <StatusTag kind="candidate" />}
-                        </button>
+                      <li
+                        key={`${segId}-${i}`}
+                        className={closed ? 'pp-map__stop pp-map__stop--closed' : 'pp-map__stop'}
+                      >
+                        {/* A segment is only a control when something listens for it. */}
+                        {onSegmentClick ? (
+                          <button
+                            type="button"
+                            className="pp-map__segment pp-map__segment--button"
+                            onClick={() => onSegmentClick(segId)}
+                          >
+                            {content}
+                          </button>
+                        ) : (
+                          <span className="pp-map__segment">{content}</span>
+                        )}
                       </li>
                     )
                   })}
@@ -129,11 +144,11 @@ export function MapPanel({
 function StatusTag({ kind }: { kind: 'closed' | 'candidate' }) {
   return kind === 'closed' ? (
     <span className="pp-map__tag pp-map__tag--closed">
-      <span aria-hidden="true">{'⛔'} </span>Closed
+      <ClosedIcon size={12} /> Closed
     </span>
   ) : (
     <span className="pp-map__tag pp-map__tag--candidate">
-      <span aria-hidden="true">? </span>Awaiting confirmation
+      <QuestionIcon size={12} /> Awaiting confirmation
     </span>
   )
 }

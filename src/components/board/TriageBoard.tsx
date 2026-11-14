@@ -10,25 +10,46 @@ export interface TriageBoardProps {
   onSelectShipment?: (shipmentId: string) => void
 }
 
-/** Workflow wording per column. "Decision recorded" is the dispatcher's choice, not an outcome. */
+/** Workflow wording per group. "Decision recorded" is the dispatcher's choice, not an outcome. */
 const COLUMN_SUBTITLES: Partial<Record<BoardColumn, string>> = {
   decision_recorded: 'Dispatcher chose a response',
 }
 
+/**
+ * The shipment queue: one group per workflow state, most urgent first.
+ * A shipment's group is its workflow state; its badge is its calculated
+ * risk. The two are independent.
+ */
 export function TriageBoard({ cards, selectedShipmentId = null, onSelectShipment }: TriageBoardProps) {
   const idPrefix = useId()
   return (
     <div className="triage-board" role="group" aria-label="Triage board">
+      <div className="triage-board__header">
+        <h2 className="triage-board__title">Shipments</h2>
+        <span className="triage-board__total pp-num">{cards.length} today</span>
+      </div>
       {BOARD_COLUMNS.map(({ id, title }) => {
         const columnCards = cards.filter((card) => card.column === id)
         const titleId = `${idPrefix}-${id}-title`
         const subtitle = COLUMN_SUBTITLES[id]
         return (
-          <section key={id} className="board-column" aria-labelledby={titleId} data-column={id}>
+          <section
+            key={id}
+            className={`board-column${columnCards.length === 0 ? ' board-column--empty' : ''}`}
+            aria-labelledby={titleId}
+            data-column={id}
+          >
             <header className="board-column__header">
               <h3 className="board-column__title">
                 <span id={titleId}>{title}</span>{' '}
-                <span className="board-column__count" data-testid={`count-${id}`}>
+                <span
+                  className={`board-column__count pp-num${
+                    id === 'needs_review' && columnCards.length > 0
+                      ? ' board-column__count--action'
+                      : ''
+                  }`}
+                  data-testid={`count-${id}`}
+                >
                   {columnCards.length}
                 </span>
               </h3>

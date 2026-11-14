@@ -79,8 +79,12 @@ function makeView(overrides: Partial<ResponsePanelView> = {}): ResponsePanelView
   }
 }
 
-function card(title: string): HTMLElement {
-  return screen.getByRole('article', { name: title })
+const table = () => screen.getByRole('table')
+
+/** Cells of the row with this label, in option order. */
+function row(label: string): HTMLElement[] {
+  const header = screen.getByRole('rowheader', { name: label })
+  return within(header.closest('tr') as HTMLElement).getAllByRole('cell')
 }
 
 describe('deltas', () => {
@@ -96,125 +100,167 @@ describe('ResponsePanel', () => {
   it('shows the empty state when no shipment is selected', () => {
     render(<ResponsePanel view={null} />)
     expect(screen.getByText('Select a shipment to compare responses.')).toBeInTheDocument()
-    expect(screen.queryAllByRole('article')).toHaveLength(0)
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
   })
 
   it('shows the no-response state when there are no options', () => {
     render(<ResponsePanel view={makeView({ options: [] })} />)
     expect(
-      screen.getByText('No response needed: this shipment is not affected by the current incident.'),
+      screen.getByText('No response needed: this shipment is not affected by an incident.'),
     ).toBeInTheDocument()
-    expect(screen.queryAllByRole('article')).toHaveLength(0)
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
   })
 
-  it('renders three cards in the given order with the reference values', () => {
-    render(<ResponsePanel view={makeView()} />)
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('SHP-001')
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Inland Warehouse')
-
-    const titles = screen.getAllByRole('article').map((a) => within(a).getByRole('heading', { level: 3 }).textContent)
-    expect(titles).toEqual(['Wait', 'Reroute', 'Request later slot'])
-
-    const w = card('Wait')
-    expect(w).toHaveTextContent('Est. arrival12:00')
-    expect(w).toHaveTextContent('30 min late')
-    expect(w).toHaveTextContent('45 mi (no change vs. normal)')
-    expect(w).toHaveTextContent('Est. cost$161')
-    expect(w).toHaveTextContent('70.7 kg (no change vs. normal)')
-    expect(w).toHaveTextContent('Late')
-
-    const r = card('Reroute')
-    expect(r).toHaveTextContent('Est. arrival11:15')
-    expect(r).toHaveTextContent('Meets window')
-    expect(r).toHaveTextContent('Est. cost$158')
-    expect(r).toHaveTextContent('On track')
-
-    const s = card('Request later slot')
-    expect(s).toHaveTextContent('Pending confirmation; original deadline still applies')
-    expect(s).toHaveTextContent('Est. arrivaln/a')
-    expect(s).toHaveTextContent('Est. costn/a')
-    expect(s).toHaveTextContent('Est. tailpipe CO2n/a')
-    expect(s).not.toHaveTextContent('Meets window')
+  it('names the shipment, its appointment and its current status', () => {
+    render(
+      <ResponsePanel
+        view={makeView({
+          summary: {
+            risk: 'LATE',
+            arrival_min: '12:00',
+            arrival_max: '12:00',
+            lateness_min: 30,
+            lateness_max: 30,
+            reason: 'Waits at NB-03 until 11:10',
+            affected: true,
+          },
+        })}
+      />,
+    )
+    expect(
+      screen.getByRole('heading', { name: 'Responses for SHP-001 to Inland Warehouse' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('10:30–11:30')).toBeInTheDocument()
+    expect(screen.getByText('Waits at NB-03 until 11:10')).toBeInTheDocument()
   })
 
-  it('shows the reroute increase against normal', () => {
+  it('lists the options as columns in the order given', () => {
     render(<ResponsePanel view={makeView()} />)
-    const r = card('Reroute')
-    expect(r).toHaveTextContent('60 mi (+15 mi vs. normal)')
-    expect(r).toHaveTextContent('94.2 kg (+23.5 kg vs. normal)')
-    expect(r).toHaveTextContent('+15 mi, +23.5 kg est. tailpipe CO2')
-    expect(r.textContent).not.toContain('23.500000')
+    const headRow = table().querySelector('thead tr') as HTMLElement
+    const headers = within(headRow).getAllByRole('columnheader').map((h) => h.textContent)
+    expect(headers).toEqual(['Measure', 'Wait', 'Reroute', 'Request later slot'])
   })
 
-  it('puts the stakeholder strip on every card, with a text warning', () => {
+  it('lines the reference values up by measure', () => {
     render(<ResponsePanel view={makeView()} />)
-    const strips = screen.getAllByRole('heading', { name: 'Stakeholder impact (SIMULATED)' })
-    expect(strips).toHaveLength(3)
-    for (const a of screen.getAllByRole('article')) {
-      expect(a).toHaveTextContent('Not modeled:noise, local air quality, driver pay/hours rules')
-    }
+    expect(row('Est. arrival').map((c) => c.textContent)).toEqual(['12:00', '11:15', 'n/a'])
+    expect(row('Appointment').map((c) => c.textContent)).toEqual([
+      '30 min late',
+      'Meets window',
+      'Not confirmed yet',
+    ])
+    expect(row('Risk').map((c) => c.textContent)).toEqual(['LATE', 'ON TRACK', 'LATE'])
+    expect(row('Est. cost').map((c) => c.textContent)).toEqual(['$161', '$158', 'n/a'])
+  })
 
-    expect(card('Wait')).toHaveTextContent('Driver:+60 min duty time vs. normal')
-    expect(card('Wait')).toHaveTextContent('No flagged zone on this route (placeholder)')
-    expect(card('Wait')).toHaveTextContent('Environment:no added miles or CO2')
+  it('shows the reroute increase against normal alongside its benefit', () => {
+    render(<ResponsePanel view={makeView()} />)
+    const [waitMiles, rerouteMiles] = row('Environment: miles')
+    expect(waitMiles).toHaveTextContent('45 mi')
+    expect(waitMiles).toHaveTextContent('no change vs. normal')
+    expect(rerouteMiles).toHaveTextContent('60 mi')
+    expect(rerouteMiles).toHaveTextContent('+15 mi vs. normal')
+    const [, rerouteCo2] = row('Environment: est. tailpipe CO2')
+    expect(rerouteCo2).toHaveTextContent('94.2 kg')
+    expect(rerouteCo2).toHaveTextContent('+23.5 kg vs. normal')
+  })
 
-    const r = card('Reroute')
-    expect(r).toHaveTextContent('Driver:+15 min duty time vs. normal')
-    const warning = within(r).getByText(/Passes a flagged zone \(placeholder\)/)
-    expect(within(warning).getByRole('img', { name: 'Warning' })).toBeInTheDocument()
+  it('shows who bears each option, with a text warning', () => {
+    render(<ResponsePanel view={makeView()} />)
+    expect(screen.getByText('Stakeholder impact (SIMULATED)')).toBeInTheDocument()
 
-    const s = card('Request later slot')
-    expect(within(s).getAllByText('n/a until a new slot is confirmed')).toHaveLength(3)
+    const [waitDriver, rerouteDriver, slotDriver] = row('Driver')
+    expect(waitDriver).toHaveTextContent('120 min on duty')
+    expect(waitDriver).toHaveTextContent('+60 min duty time vs. normal')
+    expect(rerouteDriver).toHaveTextContent('+15 min duty time vs. normal')
+    expect(slotDriver).toHaveTextContent('n/a until a new slot is confirmed')
+
+    const [waitCommunity, rerouteCommunity, slotCommunity] = row('Community')
+    expect(waitCommunity).toHaveTextContent('No flagged zone on this route (placeholder)')
+    expect(rerouteCommunity).toHaveTextContent('Passes a flagged zone (placeholder)')
+    expect(within(rerouteCommunity).getByRole('img', { name: 'Warning' })).toBeInTheDocument()
+    expect(within(waitCommunity).queryByRole('img', { name: 'Warning' })).not.toBeInTheDocument()
+    expect(slotCommunity).toHaveTextContent('n/a until a new slot is confirmed')
+  })
+
+  it('says what is not modeled once, across all options', () => {
+    render(<ResponsePanel view={makeView()} />)
+    expect(screen.getAllByText('noise, local air quality, driver pay/hours rules')).toHaveLength(1)
   })
 
   it('shows real community counts when they exist', () => {
-    const view = makeView({
-      community: {
-        reroute: { schools_150m: 3, dac_tracts: ['T1', 'T2'], max_diesel_pm_pctl: 90 },
-        wait: { schools_150m: 0, dac_tracts: [], max_diesel_pm_pctl: null },
-      },
-    })
-    render(<ResponsePanel view={view} />)
-    const line = within(card('Reroute')).getByText(
-      /3 schools and 2 disadvantaged tracts within 150 m \(real locations, illustrative route\)/,
+    render(
+      <ResponsePanel
+        view={makeView({
+          community: {
+            wait: { schools_150m: 0, dac_tracts: [], max_diesel_pm_pctl: null },
+            reroute: { schools_150m: 3, dac_tracts: ['T1', 'T2'], max_diesel_pm_pctl: 91 },
+          },
+        })}
+      />,
     )
-    expect(within(line).getByRole('img', { name: 'Warning' })).toBeInTheDocument()
+    const [waitCommunity, rerouteCommunity] = row('Community')
+    expect(rerouteCommunity).toHaveTextContent(
+      '3 schools and 2 disadvantaged tracts within 150 m (real locations, illustrative route)',
+    )
+    expect(within(rerouteCommunity).getByRole('img', { name: 'Warning' })).toBeInTheDocument()
+    expect(waitCommunity).toHaveTextContent('0 schools and 0 disadvantaged tracts within 150 m')
+    expect(within(waitCommunity).queryByRole('img', { name: 'Warning' })).not.toBeInTheDocument()
+  })
 
-    const waitCard = card('Wait')
-    expect(waitCard).toHaveTextContent('0 schools and 0 disadvantaged tracts within 150 m')
-    expect(within(waitCard).queryByRole('img', { name: 'Warning' })).toBeNull()
+  it('keeps a pending slot request from looking solved', () => {
+    render(<ResponsePanel view={makeView()} />)
+    const [, , slotStatus] = row('Status')
+    expect(slotStatus).toHaveTextContent('Pending confirmation; original deadline still applies')
+    const [, , slotRisk] = row('Risk')
+    expect(slotRisk).toHaveTextContent('LATE')
   })
 
   it('shows the no-feasible banner when wait and reroute are not on track or tight', () => {
-    const view = makeView({
-      options: [wait, { ...reroute, risk: 'LATE', lateness_min: 10, lateness_max: 25 }, requestSlot],
-    })
-    render(<ResponsePanel view={view} />)
-    expect(
-      screen.getByText(/No currently feasible response: review with warehouse or customer\./),
-    ).toBeInTheDocument()
-    expect(card('Reroute')).toHaveTextContent('10 to 25 min late')
+    const lateReroute: ResponseOption = { ...reroute, risk: 'LATE', lateness_min: 15, lateness_max: 15 }
+    render(<ResponsePanel view={makeView({ options: [wait, lateReroute, requestSlot] })} />)
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'No currently feasible response: review with warehouse or customer.',
+    )
   })
 
   it('shows the banner when reroute is UNKNOWN', () => {
-    const view = makeView({
-      options: [wait, { ...reroute, risk: 'UNKNOWN', lateness_min: null, lateness_max: null }, requestSlot],
-    })
-    render(<ResponsePanel view={view} />)
-    expect(screen.getByText(/No currently feasible response/)).toBeInTheDocument()
-    expect(card('Reroute')).toHaveTextContent('AppointmentUnknown')
+    const unknownReroute: ResponseOption = {
+      ...reroute,
+      risk: 'UNKNOWN',
+      arrival_min: null,
+      arrival_max: null,
+      lateness_min: null,
+      lateness_max: null,
+      miles: null,
+      cost: null,
+      co2_kg: null,
+      driver_duty_min: null,
+      passes_sensitive_zone: false,
+      status: 'Unavailable: the alternative also uses NB-03',
+    }
+    render(<ResponsePanel view={makeView({ options: [wait, unknownReroute, requestSlot] })} />)
+    expect(screen.getByRole('alert')).toBeInTheDocument()
+    const [, rerouteMiles] = row('Environment: miles')
+    expect(rerouteMiles).toHaveTextContent('n/a')
+    const [, rerouteStatus] = row('Status')
+    expect(rerouteStatus).toHaveTextContent('Unavailable: the alternative also uses NB-03')
   })
 
   it('does not show the banner for the reference fixture', () => {
     render(<ResponsePanel view={makeView()} />)
-    expect(screen.queryByText(/No currently feasible response/)).toBeNull()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
   it('words a possible lateness range', () => {
-    const view = makeView({ options: [{ ...wait, lateness_min: 0, lateness_max: 20, arrival_max: '12:20' }] })
-    render(<ResponsePanel view={view} />)
-    expect(card('Wait')).toHaveTextContent('May be up to 20 min late')
-    expect(card('Wait')).toHaveTextContent('12:00 to 12:20')
+    const tight: ResponseOption = { ...wait, risk: 'TIGHT', lateness_min: 0, lateness_max: 5 }
+    const range: ResponseOption = { ...reroute, risk: 'LATE', lateness_min: 20, lateness_max: 35 }
+    render(<ResponsePanel view={makeView({ options: [tight, range, requestSlot] })} />)
+    expect(row('Appointment').map((c) => c.textContent)).toEqual([
+      'May be up to 5 min late',
+      '20 to 35 min late',
+      'Not confirmed yet',
+    ])
   })
 
   it('calls onWhy with the option kind and renders the action slot', () => {
@@ -223,21 +269,18 @@ describe('ResponsePanel', () => {
       <ResponsePanel
         view={makeView()}
         onWhy={onWhy}
-        renderActions={(o) => <button type="button">Preview {o.kind}</button>}
+        renderActions={(o) => <button type="button">Select {o.kind}</button>}
       />,
     )
-    fireEvent.click(within(card('Reroute')).getByRole('button', { name: /Why\?/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Why? (Reroute)' }))
     expect(onWhy).toHaveBeenCalledWith('reroute')
-    expect(screen.getByRole('button', { name: 'Preview request_slot' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Select wait' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Select request_slot' })).toBeInTheDocument()
   })
 
-  it('never says best or recommended', () => {
-    const { container } = render(<ResponsePanel view={makeView()} />)
-    for (const el of container.querySelectorAll('*')) {
-      expect(el.textContent ?? '').not.toMatch(/\b(best|recommended)\b/i)
-      for (const attr of el.getAttributeNames()) {
-        expect(el.getAttribute(attr) ?? '').not.toMatch(/\b(best|recommended)\b/i)
-      }
-    }
+  it('never says best or recommended, and says options are not ranked', () => {
+    render(<ResponsePanel view={makeView()} />)
+    expect(table().textContent).not.toMatch(/\b(best|recommended|score)\b/i)
+    expect(table()).toHaveTextContent('Options are shown in a fixed order and are not ranked.')
   })
 })

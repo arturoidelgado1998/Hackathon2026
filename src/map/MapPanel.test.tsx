@@ -147,9 +147,9 @@ describe('MapPanel placeholder', () => {
     expect(onSegmentClick).toHaveBeenLastCalledWith('A')
   })
 
-  it('renders segment rows as buttons even without a click handler', () => {
+  it('does not offer segments as controls when nothing listens for a click', () => {
     renderPanel({ selectedShipmentId: 'S1', highlightedRouteIds: { original: 'R1' } })
-    const button = screen.getByRole('button', { name: /Harbor Blvd/ })
-    expect(() => fireEvent.click(button)).not.toThrow()
+    expect(screen.getByText(/Harbor Blvd/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Harbor Blvd/ })).not.toBeInTheDocument()
   })
 })

@@ -72,6 +72,7 @@ export function buildResponseView(
   return {
     shipment,
     destinationName: destinationName(shipment.destination_id),
+    summary: getShipmentSummary(shipmentId, scenario),
     options: getResponseOptions(shipmentId, scenario),
     baseline: getBaseline(shipmentId),
     community,

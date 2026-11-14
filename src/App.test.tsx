@@ -22,6 +22,7 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: 'Normal' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByTestId('count-monitoring')).toHaveTextContent('10')
     expect(screen.getByTestId('count-needs_review')).toHaveTextContent('0')
+    expect(region('Current situation')).toHaveTextContent('No active incident.')
     expect(region('Map panel')).toHaveTextContent('Select a shipment to see its routes')
     expect(region('Response options')).toHaveTextContent('Select a shipment to compare responses.')
   })
@@ -47,7 +48,7 @@ describe('App', () => {
 
     const responses = region('Response options')
     for (const title of ['Wait', 'Reroute', 'Request later slot']) {
-      expect(within(responses).getByRole('heading', { name: title })).toBeInTheDocument()
+      expect(within(responses).getByRole('columnheader', { name: title })).toBeInTheDocument()
     }
     // Reference values from the team plan, section 4.4.
     expect(responses).toHaveTextContent('30 min late')
@@ -57,6 +58,8 @@ describe('App', () => {
     expect(responses).toHaveTextContent('+23.5 kg')
     expect(responses).toHaveTextContent('Passes a flagged zone (placeholder)')
     expect(responses).toHaveTextContent('Pending confirmation; original deadline still applies')
+
+    expect(region('Current situation')).toHaveTextContent('Closure on NB-03')
 
     const map = region('Map panel')
     expect(map).toHaveTextContent('Original route')
@@ -69,7 +72,7 @@ describe('App', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Disrupted' }))
     fireEvent.click(cardFor('SHP-002'))
     expect(region('Response options')).toHaveTextContent(
-      'No response needed: this shipment is not affected by the current incident.',
+      'No response needed: this shipment is not affected by an incident.',
     )
   })
 

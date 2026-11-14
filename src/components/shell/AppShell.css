@@ -1,3 +1,6 @@
+/* App frame: a fixed header, then three panes separated by rules.
+   Queue (which shipment) | comparison (what are the options) | routes (where). */
+
 .pp-shell {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
@@ -9,8 +12,8 @@
 
 .pp-shell__header {
   min-width: 0;
-  border-bottom: 1px solid var(--pp-border);
   background: var(--pp-surface);
+  border-bottom: 1px solid var(--pp-border);
 }
 
 .pp-shell__topbar {
@@ -18,88 +21,99 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem 1rem;
-  padding: 0.5rem 1rem;
+  gap: var(--pp-space-2) var(--pp-space-4);
+  padding: var(--pp-space-2) var(--pp-space-4);
 }
 
 .pp-shell__title {
-  margin: 0;
-  font-size: 1.25rem;
+  font-size: var(--pp-text-xl);
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .pp-shell__controls {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--pp-space-2);
+}
+
+.pp-shell__scenario {
+  display: flex;
+  align-items: center;
+  gap: var(--pp-space-2);
+  margin-right: var(--pp-space-2);
+}
+
+.pp-shell__scenario-label {
+  color: var(--pp-text-muted);
+  font-size: var(--pp-text-sm);
 }
 
 .pp-shell__toggle {
   display: inline-flex;
-  border: 1px solid var(--pp-border-strong);
-  border-radius: 6px;
-  overflow: hidden;
+  padding: 2px;
+  border-radius: var(--pp-radius);
+  background: var(--pp-border);
 }
 
-.pp-shell__toggle-btn,
-.pp-shell__btn {
-  font: inherit;
-  padding: 0.3rem 0.75rem;
+.pp-shell__toggle-btn {
+  min-height: 1.75rem;
+  padding: 0 var(--pp-space-3);
   border: 0;
+  border-radius: var(--pp-radius-sm);
+  background: transparent;
+  color: var(--pp-text-muted);
+  font: inherit;
+  font-size: var(--pp-text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out;
+}
+
+.pp-shell__toggle-btn:hover {
+  color: var(--pp-text);
+}
+
+/* The pressed option is raised and bold, so it does not rely on colour. */
+.pp-shell__toggle-btn[aria-pressed='true'] {
   background: var(--pp-surface);
   color: var(--pp-text);
-  cursor: pointer;
+  font-weight: 650;
+  box-shadow: 0 1px 2px rgb(22 25 29 / 0.18);
 }
 
-.pp-shell__toggle-btn + .pp-shell__toggle-btn {
-  border-left: 1px solid var(--pp-border-strong);
-}
-
-/* Pressed state uses weight and a check mark, not colour alone. */
-.pp-shell__toggle-btn[aria-pressed='true'] {
-  background: var(--pp-accent);
-  color: var(--pp-accent-text);
-  font-weight: 600;
-}
-
-.pp-shell__toggle-btn[aria-pressed='true']::before {
-  content: '\2713\00a0';
-}
-
-.pp-shell__btn {
-  border: 1px solid var(--pp-border-strong);
-  border-radius: 6px;
-}
-
-.pp-shell__btn--primary {
-  background: var(--pp-accent);
-  color: var(--pp-accent-text);
-  border-color: var(--pp-accent);
-}
-
-.pp-shell__toggle-btn:focus-visible,
-.pp-shell__btn:focus-visible {
-  outline: 2px solid var(--pp-focus);
-  outline-offset: 2px;
-}
-
-.pp-shell__indicators {
-  min-width: 0;
-  padding: 0.35rem 1rem;
+.pp-shell__statusbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pp-space-2) var(--pp-space-5);
+  padding: var(--pp-space-2) var(--pp-space-4);
   border-top: 1px solid var(--pp-border);
   background: var(--pp-surface-muted);
 }
 
+.pp-shell__status {
+  min-width: 0;
+  flex: 1 1 24rem;
+}
+
+.pp-shell__indicators {
+  min-width: 0;
+  flex: 0 1 auto;
+  margin-left: auto;
+}
+
 .pp-shell__main {
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  grid-template-rows: minmax(0, 3fr) minmax(0, 2fr) auto;
+  grid-template-columns: minmax(18rem, 22rem) minmax(0, 1fr) minmax(17rem, 22rem);
+  grid-template-rows: minmax(0, 1fr) auto;
   grid-template-areas:
-    'board map'
-    'responses responses'
-    'assumptions assumptions';
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
+    'board responses map'
+    'assumptions assumptions assumptions';
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -109,25 +123,74 @@
   min-width: 0;
   min-height: 0;
   overflow: auto;
-  border: 1px solid var(--pp-border);
-  border-radius: 8px;
+  padding: var(--pp-space-4);
   background: var(--pp-surface);
-  padding: 0.75rem;
 }
 
 .pp-shell__board {
   grid-area: board;
-}
-
-.pp-shell__map {
-  grid-area: map;
+  background: var(--pp-surface-muted);
+  border-right: 1px solid var(--pp-border);
 }
 
 .pp-shell__responses {
   grid-area: responses;
 }
 
+.pp-shell__map {
+  grid-area: map;
+  border-left: 1px solid var(--pp-border);
+}
+
 .pp-shell__assumptions {
   grid-area: assumptions;
-  max-height: 8rem;
+  max-height: 9rem;
+  border-top: 1px solid var(--pp-border);
+}
+
+/* Medium screens: the routes pane moves under the comparison. */
+@media (max-width: 1180px) {
+  .pp-shell__main {
+    grid-template-columns: minmax(17rem, 20rem) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 3fr) minmax(0, 2fr) auto;
+    grid-template-areas:
+      'board responses'
+      'board map'
+      'assumptions assumptions';
+  }
+
+  .pp-shell__map {
+    border-left: 0;
+    border-top: 1px solid var(--pp-border);
+  }
+}
+
+/* Narrow screens: one column, and the page scrolls. */
+@media (max-width: 760px) {
+  .pp-shell {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .pp-shell__main {
+    display: block;
+    overflow: visible;
+  }
+
+  .pp-shell__region {
+    overflow: visible;
+    border-left: 0;
+    border-right: 0;
+    border-top: 1px solid var(--pp-border);
+  }
+
+  /* The comparison table keeps its width and scrolls sideways in its own box. */
+  .pp-shell__responses {
+    overflow-x: auto;
+  }
+
+  .pp-shell__assumptions {
+    max-height: none;
+  }
 }

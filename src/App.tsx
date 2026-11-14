@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { TriageBoard } from './components/board/index.ts'
 import { ResponsePanel } from './components/responses/index.ts'
 import { AppShell } from './components/shell/AppShell.tsx'
+import { IncidentBanner } from './components/shell/IncidentBanner.tsx'
 import { IndicatorsBar } from './components/shell/IndicatorsBar.tsx'
-import { facilities, routes, segments } from './data/index.ts'
+import { facilities, getSegment, routes, sampleIncident, segments } from './data/index.ts'
 import { MapPanel } from './map/MapPanel.tsx'
 import {
   buildCards,
@@ -19,6 +20,7 @@ import type { Scenario } from './viewModels.ts'
 function App() {
   const [scenario, setScenario] = useState<Scenario>('normal')
   const [selectedShipmentId, setSelectedShipmentId] = useState<string | null>(null)
+  const incident = scenario === 'disrupted' ? sampleIncident : null
 
   return (
     <AppShell
@@ -28,7 +30,12 @@ function App() {
         setScenario('normal')
         setSelectedShipmentId(null)
       }}
-      onReportIncident={() => {}}
+      status={
+        <IncidentBanner
+          incident={incident}
+          segmentName={incident ? getSegment(incident.segment_id)?.name : undefined}
+        />
+      }
       indicators={<IndicatorsBar atRisk={null} cost={null} co2Kg={null} />}
       board={
         <TriageBoard

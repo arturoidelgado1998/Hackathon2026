@@ -1,7 +1,7 @@
 // Display formatting for the response panel. Text only: no calculations.
 // The single subtraction against the baseline lives in deltas.ts.
 
-import type { ResponseOption, ResponseOptionKind, RiskLabel } from '../../types'
+import type { ResponseOption, ResponseOptionKind } from '../../types'
 
 export const NA = 'n/a'
 
@@ -11,16 +11,8 @@ export const OPTION_TITLES: Record<ResponseOptionKind, string> = {
   request_slot: 'Request later slot',
 }
 
-export const PENDING_SLOT_TEXT = 'Pending confirmation; original deadline still applies'
 export const PENDING_STRIP_TEXT = 'n/a until a new slot is confirmed'
 export const NOT_MODELED_TEXT = 'noise, local air quality, driver pay/hours rules'
-
-export const RISK_TEXT: Record<RiskLabel, string> = {
-  ON_TRACK: 'On track',
-  TIGHT: 'Tight',
-  LATE: 'Late',
-  UNKNOWN: 'Unknown',
-}
 
 export function formatArrival(option: ResponseOption): string {
   const { arrival_min: min, arrival_max: max } = option
@@ -76,15 +68,6 @@ export function formatCo2Delta(d: number | null): string {
 export function formatDutyDelta(d: number | null): string {
   if (d === null) return NA
   return d === 0 ? 'no change' : `${signed(d)} min duty time vs. normal`
-}
-
-/** "+15 mi, +23.5 kg est. tailpipe CO2" or "no added miles or CO2". */
-export function formatEnvironment(milesD: number | null, co2D: number | null): string {
-  if (milesD === null || co2D === null) return NA
-  if (milesD === 0 && co2D === 0) return 'no added miles or CO2'
-  const miles = milesD === 0 ? 'no change in miles' : `${signed(milesD)} mi`
-  const co2 = co2D === 0 ? 'no change in est. tailpipe CO2' : `${signed(co2D)} kg est. tailpipe CO2`
-  return `${miles}, ${co2}`
 }
 
 function plural(n: number, one: string, many: string): string {

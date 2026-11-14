@@ -1,0 +1,21 @@
+.pp-incident {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--pp-space-2);
+  font-size: var(--pp-text-sm);
+  line-height: 1.4;
+}
+
+.pp-incident__icon {
+  display: inline-flex;
+  flex: none;
+  margin-top: 0.125rem;
+}
+
+.pp-incident--clear .pp-incident__icon {
+  color: var(--pp-ok);
+}
+
+.pp-incident--active .pp-incident__icon {
+  color: var(--pp-danger);
+}

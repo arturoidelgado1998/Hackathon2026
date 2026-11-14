@@ -75,14 +75,14 @@ function column(title: string) {
 }
 
 describe('TriageBoard', () => {
-  it('renders the four columns in order with a count in each header', () => {
+  it('renders the four groups most urgent first, with a count in each header', () => {
     render(<TriageBoard cards={FIXTURE} />)
     const regions = screen.getAllByRole('region')
     expect(regions.map((r) => within(r).getByRole('heading').textContent)).toEqual([
-      'Monitoring 2',
       'Needs review 2',
       'Awaiting confirmation 1',
       'Decision recorded 1',
+      'Monitoring 2',
     ])
     expect(screen.getByTestId('count-monitoring')).toHaveTextContent('2')
     expect(screen.getByTestId('count-decision_recorded')).toHaveTextContent('1')
@@ -178,16 +178,26 @@ describe('ShipmentCard arrival', () => {
 
 describe('RiskBadge', () => {
   it.each([
-    ['ON_TRACK', 'ON TRACK', '✓'],
-    ['TIGHT', 'TIGHT', '!'],
-    ['LATE', 'LATE', '✕'],
-    ['UNKNOWN', 'UNKNOWN', '?'],
-  ] as const)('%s shows label and icon', (risk, label, icon) => {
+    ['ON_TRACK', 'ON TRACK'],
+    ['TIGHT', 'TIGHT'],
+    ['LATE', 'LATE'],
+    ['UNKNOWN', 'UNKNOWN'],
+  ] as const)('%s shows a text label and a decorative icon', (risk, label) => {
     const { container } = render(<RiskBadge risk={risk} />)
     expect(screen.getByText(label)).toBeInTheDocument()
-    const iconEl = container.querySelector('.risk-badge__icon')
-    expect(iconEl).toHaveTextContent(icon)
-    expect(iconEl).toHaveAttribute('aria-hidden', 'true')
+    const icon = container.querySelector('.risk-badge__icon svg')
+    expect(icon).not.toBeNull()
+    expect(icon).toHaveAttribute('aria-hidden', 'true')
+  })
+
+  it('uses a different icon for each risk value', () => {
+    const shapes = (['ON_TRACK', 'TIGHT', 'LATE', 'UNKNOWN'] as const).map((risk) => {
+      const { container, unmount } = render(<RiskBadge risk={risk} />)
+      const shape = container.querySelector('.risk-badge__icon svg')?.innerHTML
+      unmount()
+      return shape
+    })
+    expect(new Set(shapes).size).toBe(4)
   })
 })
 
