@@ -1,6 +1,6 @@
 import { Component, Suspense, lazy, useId, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { Facility, Route, RoadSegment } from '../types.ts'
+import type { Decision, Facility, Route, RoadSegment } from '../types.ts'
 import { ClosedIcon, QuestionIcon } from '../components/icons.tsx'
 import './MapPanel.css'
 
@@ -15,6 +15,8 @@ export interface MapPanelProps {
   routes: Route[]
   selectedShipmentId: string | null
   highlightedRouteIds: { original?: string; alternative?: string; chosen?: string }
+  /** Labels the highlighted choice without presenting a preview as committed. */
+  highlightedDecision?: Decision | null
   /** Confirmed closure. */
   incidentSegmentId: string | null
   /** AI match awaiting confirmation. */
@@ -44,7 +46,7 @@ class MapBoundary extends Component<{ onError: () => void; children: ReactNode }
   }
 }
 
-function LegendLine({ kind }: { kind: 'original' | 'alternative' | 'closed' | 'network' }) {
+function LegendLine({ kind }: { kind: 'original' | 'alternative' | 'chosen' | 'closed' | 'network' }) {
   return (
     <svg className={`pp-map__legend-line pp-map__legend-line--${kind}`} width="28" height="8" aria-hidden="true">
       <line x1="2" y1="4" x2="26" y2="4" />
@@ -59,6 +61,7 @@ export function MapPanel({
   routes,
   selectedShipmentId,
   highlightedRouteIds,
+  highlightedDecision = null,
   incidentSegmentId,
   candidateSegmentId,
   onSegmentClick,
@@ -71,7 +74,14 @@ export function MapPanel({
 
   const shown = HIGHLIGHTS.flatMap(({ key, label }) => {
     const routeId = highlightedRouteIds[key]
-    return routeId === undefined ? [] : [{ key, label, routeId }]
+    const choiceLabel = key === 'chosen' && highlightedDecision?.shipment_id === selectedShipmentId
+      ? highlightedDecision.status === 'previewed'
+        ? 'Preview route'
+        : highlightedDecision.status === 'pending_confirmation'
+          ? 'Current route (slot pending confirmation)'
+          : label
+      : label
+    return routeId === undefined ? [] : [{ key, label: choiceLabel, routeId }]
   })
 
   return (
@@ -82,6 +92,7 @@ export function MapPanel({
       </div>
       <p className="pp-map__note">
         Lines are schematic and routes are not verified for trucks.
+        {' '}Distances are simulated estimates.
       </p>
 
       {mapFailed ? (
@@ -112,6 +123,9 @@ export function MapPanel({
             </li>
             <li>
               <LegendLine kind="alternative" /> Alternative route
+            </li>
+            <li>
+              <LegendLine kind="chosen" /> Previewed or chosen
             </li>
             <li>
               <LegendLine kind="closed" /> Closed
@@ -170,7 +184,7 @@ export function MapPanel({
                       <>
                         <span className="pp-map__segment-name">{seg?.name ?? segId}</span>
                         <span className="pp-map__segment-miles pp-num">
-                          {seg ? `${seg.miles} mi` : 'miles unknown'}
+                          {seg ? `Est. ${seg.miles} mi` : 'miles unknown'}
                         </span>
                         {closed && <StatusTag kind="closed" />}
                         {segId === candidateSegmentId && <StatusTag kind="candidate" />}

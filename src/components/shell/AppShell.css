@@ -22,7 +22,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--pp-space-2) var(--pp-space-4);
-  padding: var(--pp-space-2) var(--pp-space-4);
+  padding: var(--pp-space-3) var(--pp-space-5);
 }
 
 .pp-shell__title {
@@ -58,7 +58,7 @@
 }
 
 .pp-shell__toggle-btn {
-  min-height: 1.75rem;
+  min-height: var(--pp-control-height);
   padding: 0 var(--pp-space-3);
   border: 0;
   border-radius: var(--pp-radius-sm);
@@ -91,7 +91,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--pp-space-2) var(--pp-space-5);
-  padding: var(--pp-space-2) var(--pp-space-4);
+  padding: var(--pp-space-3) var(--pp-space-5);
   border-top: 1px solid var(--pp-border);
   background: var(--pp-surface-muted);
 }
@@ -109,7 +109,10 @@
 
 .pp-shell__main {
   display: grid;
-  grid-template-columns: minmax(18rem, 21rem) minmax(0, 1fr) minmax(19rem, 26rem);
+  /* The comparison table needs about 44rem to show all three options without
+     scrolling sideways, so the map pane stays at 21rem on a laptop and only
+     grows on wider screens. */
+  grid-template-columns: minmax(17rem, 20rem) minmax(0, 1fr) minmax(16rem, clamp(21rem, 24vw, 28rem));
   grid-template-rows: minmax(0, 1fr) auto;
   grid-template-areas:
     'board responses map'
@@ -117,6 +120,17 @@
   min-width: 0;
   min-height: 0;
   overflow: hidden;
+}
+
+.pp-shell__guidance {
+  padding: var(--pp-space-3) var(--pp-space-5);
+  border-top: 1px solid var(--pp-border);
+  color: var(--pp-text-muted);
+  font-size: var(--pp-text-sm);
+}
+
+.pp-shell__back-link {
+  display: none;
 }
 
 .pp-shell__region {
@@ -144,12 +158,99 @@
 
 .pp-shell__assumptions {
   grid-area: assumptions;
-  max-height: 9rem;
+  padding: 0;
+  overflow: hidden;
+  border-top: 1px solid var(--pp-border);
+  box-shadow: 0 -4px 16px rgb(22 25 29 / 0.05);
+}
+
+.pp-shell__assumptions-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pp-space-4);
+  width: 100%;
+  min-height: 4rem;
+  padding: var(--pp-space-3) var(--pp-space-5);
+  border: 0;
+  background: var(--pp-surface);
+  color: var(--pp-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pp-shell__assumptions-toggle:hover {
+  background: var(--pp-surface-muted);
+}
+
+.pp-shell__assumptions-toggle:focus-visible {
+  outline-offset: -3px;
+}
+
+.pp-shell__assumptions-title {
+  display: flex;
+  align-items: center;
+  gap: var(--pp-space-3);
+}
+
+.pp-shell__assumptions-title > .pp-icon {
+  flex: none;
+  color: var(--pp-accent);
+}
+
+.pp-shell__assumptions-title strong {
+  display: block;
+  font-size: var(--pp-text-md);
+}
+
+.pp-shell__assumptions-hint {
+  display: block;
+  margin-top: 2px;
+  color: var(--pp-text-muted);
+  font-size: var(--pp-text-xs);
+}
+
+.pp-shell__assumptions-action {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--pp-space-3);
+  padding: var(--pp-space-2) var(--pp-space-3);
+  border: 1px solid var(--pp-border-strong);
+  border-radius: var(--pp-radius);
+  color: var(--pp-accent);
+  font-size: var(--pp-text-sm);
+  font-weight: 600;
+}
+
+.pp-shell__drawer-chevron {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-top: 1.75px solid currentColor;
+  border-right: 1.75px solid currentColor;
+  transform: translateY(2px) rotate(-45deg);
+}
+
+[aria-expanded='true'] .pp-shell__drawer-chevron {
+  transform: translateY(-2px) rotate(135deg);
+}
+
+.pp-shell__assumptions-content {
+  max-height: min(65dvh, 42rem);
+  padding: var(--pp-space-5);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   border-top: 1px solid var(--pp-border);
 }
 
+.pp-shell__assumptions-content[hidden] {
+  display: none;
+}
+
 /* Medium screens: the routes pane moves under the comparison. */
-@media (max-width: 1180px) {
+@media (max-width: 1280px) {
   .pp-shell__main {
     grid-template-columns: minmax(17rem, 20rem) minmax(0, 1fr);
     grid-template-rows: minmax(0, 3fr) minmax(0, 2fr) auto;
@@ -157,6 +258,16 @@
       'board responses'
       'board map'
       'assumptions assumptions';
+  }
+
+  .pp-shell__topbar,
+  .pp-shell__statusbar {
+    padding: var(--pp-space-3) var(--pp-space-4);
+  }
+
+  .pp-shell__indicators {
+    flex-basis: 100%;
+    margin-left: 0;
   }
 
   .pp-shell__map {
@@ -167,6 +278,19 @@
 
 /* Narrow screens: one column, and the page scrolls. */
 @media (max-width: 760px) {
+  .pp-shell__guidance {
+    padding-inline: var(--pp-space-4);
+  }
+
+  .pp-shell__back-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--pp-control-height);
+    margin-bottom: var(--pp-space-3);
+    color: var(--pp-accent);
+    text-underline-offset: 0.2em;
+  }
+
   .pp-shell {
     height: auto;
     min-height: 100dvh;
@@ -176,6 +300,7 @@
   .pp-shell__main {
     display: block;
     overflow: visible;
+    padding-bottom: 5rem;
   }
 
   .pp-shell__region {
@@ -185,12 +310,30 @@
     border-top: 1px solid var(--pp-border);
   }
 
-  /* The comparison table keeps its width and scrolls sideways in its own box. */
-  .pp-shell__responses {
-    overflow-x: auto;
+  .pp-shell__assumptions {
+    position: fixed;
+    z-index: 10;
+    inset: auto 0 0;
+    overflow: hidden;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
-  .pp-shell__assumptions {
-    max-height: none;
+  .pp-shell__assumptions-toggle {
+    gap: var(--pp-space-2);
+    padding: var(--pp-space-3);
+  }
+
+  .pp-shell__assumptions-hint {
+    display: none;
+  }
+
+  .pp-shell__assumptions-action {
+    gap: var(--pp-space-2);
+    padding: var(--pp-space-2);
+    font-size: var(--pp-text-xs);
+  }
+
+  .pp-shell__assumptions-content {
+    padding: var(--pp-space-4);
   }
 }

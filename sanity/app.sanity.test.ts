@@ -111,9 +111,16 @@ describe('built app in a browser', () => {
     expect(await page.locator('[data-shipment-id]').count()).toBe(shipmentIds.length)
     for (const id of shipmentIds) expect(await card(id).count(), id).toBe(1)
 
-    expect(await scenarioButton('Normal').getAttribute('aria-pressed')).toBe('true')
+    // The dashboard opens on the simulated closure, so there is work to triage.
+    expect(await scenarioButton('Disrupted').getAttribute('aria-pressed')).toBe('true')
+    expect(await text(page.getByTestId('count-needs_review'))).toBe(String(affectedIds.length))
+    expect(await text(region('Current situation'))).toContain(responses.incident.segment_id)
+
+    // Normal operations stay one click away.
+    await scenarioButton('Normal').click()
     expect(await text(page.getByTestId('count-monitoring'))).toBe(String(shipmentIds.length))
     expect(await text(region('Current situation'))).toContain('No active incident')
+    await scenarioButton('Disrupted').click()
 
     // The stylesheet applied: the three panes sit side by side on a wide screen.
     const board = await region('Triage board').boundingBox()
@@ -181,15 +188,16 @@ describe('built app in a browser', () => {
     expect(pageErrors).toEqual([])
   })
 
-  it('goes back to normal with nothing selected on Reset', async () => {
+  it('goes back to the starting state with nothing selected on Reset', async () => {
     await openApp()
-    await scenarioButton('Disrupted').click()
+    await scenarioButton('Normal').click()
     await card(referenceId).click()
     await page.getByRole('button', { name: 'Reset', exact: true }).click()
 
-    expect(await scenarioButton('Normal').getAttribute('aria-pressed')).toBe('true')
+    // Reset returns to the simulated closure the dashboard opens on.
+    expect(await scenarioButton('Disrupted').getAttribute('aria-pressed')).toBe('true')
     expect(await card(referenceId).getAttribute('aria-pressed')).toBe('false')
-    expect(await text(page.getByTestId('count-monitoring'))).toBe(String(shipmentIds.length))
+    expect(await text(page.getByTestId('count-needs_review'))).toBe(String(affectedIds.length))
     expect(await text(region('Map panel'))).toContain('Select a shipment to see its routes')
     expect(pageErrors).toEqual([])
   })

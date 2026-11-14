@@ -1,6 +1,5 @@
 // Assembles what each dashboard component displays from the data module.
 // Pure functions with no calculations: they look values up and pass them on.
-// D6 will add decisions on top of these (a decision moves a card's column);
 // E4 will swap the data module calls for engine calls.
 
 import { defaultColumn } from '../components/board/index.ts'
@@ -16,7 +15,7 @@ import {
   shipments,
 } from '../data/index.ts'
 import type { MapPanelProps } from '../map/MapPanel.tsx'
-import type { ResponseOptionKind, Route } from '../types.ts'
+import type { Decision, ResponseOptionKind, Route } from '../types.ts'
 import type {
   CommunityInfo,
   ResponsePanelView,
@@ -41,15 +40,53 @@ function alternativeRouteFor(destinationId: string): Route | undefined {
   return getRoutesForDestination(destinationId).find((r) => r.kind === 'alternative')
 }
 
-/** One card per shipment, each in its starting column for the scenario. */
-export function buildCards(scenario: Scenario): ShipmentCardView[] {
+function summaryFor(shipmentId: string, scenario: Scenario) {
+  const summary = getShipmentSummary(shipmentId, scenario)
+  return scenario === 'disrupted' && !summary.affected
+    ? getShipmentSummary(shipmentId, 'normal')
+    : summary
+}
+
+/** Committed decisions change workflow; previews are deliberately not an input. */
+export function buildCards(
+  scenario: Scenario,
+  decisions: Record<string, Decision> = {},
+  rejectedShipmentIds: string[] = [],
+): ShipmentCardView[] {
   return shipments.map((shipment) => {
-    const summary = getShipmentSummary(shipment.id, scenario)
+    const summary = summaryFor(shipment.id, scenario)
+    const decision = decisions[shipment.id]
+    if (decision && decision.shipment_id !== shipment.id) {
+      throw new Error(`Decision does not match shipment ${shipment.id}`)
+    }
+    if (decision?.status === 'previewed') {
+      throw new Error('Preview decisions must not be stored as committed decisions')
+    }
+    const selectedOption = decision?.status === 'selected'
+      ? getResponseOptions(shipment.id, scenario).find((o) => o.kind === decision.option_kind)
+      : undefined
+    if (decision?.status === 'selected' && !selectedOption) {
+      throw new Error(`No selected option for shipment ${shipment.id} (${scenario})`)
+    }
     return {
       shipment,
       destinationName: destinationName(shipment.destination_id),
-      summary,
-      column: defaultColumn(summary, scenario),
+      summary: selectedOption ? {
+        ...summary,
+        risk: selectedOption.risk,
+        arrival_min: selectedOption.arrival_min,
+        arrival_max: selectedOption.arrival_max,
+        lateness_min: selectedOption.lateness_min,
+        lateness_max: selectedOption.lateness_max,
+        reason: selectedOption.status,
+      } : summary,
+      column: decision
+        ? decision.status === 'pending_confirmation' ? 'awaiting_confirmation' : 'decision_recorded'
+        : defaultColumn(summary, scenario),
+      ...(decision ? { decision } : {}),
+      ...(!decision && rejectedShipmentIds.includes(shipment.id)
+        ? { rejectionNote: 'Dispatcher rejected all options' }
+        : {}),
     }
   })
 }
@@ -72,7 +109,7 @@ export function buildResponseView(
   return {
     shipment,
     destinationName: destinationName(shipment.destination_id),
-    summary: getShipmentSummary(shipmentId, scenario),
+    summary: summaryFor(shipmentId, scenario),
     options: getResponseOptions(shipmentId, scenario),
     baseline: getBaseline(shipmentId),
     community,
@@ -82,14 +119,23 @@ export function buildResponseView(
 /** Which routes the map panel highlights for the selected shipment. */
 export function buildHighlightedRoutes(
   shipmentId: string | null,
+  previewDecision: Decision | null = null,
+  decisions: Record<string, Decision> = {},
 ): MapPanelProps['highlightedRouteIds'] {
   if (!shipmentId) return {}
   const shipment = getShipment(shipmentId)
   if (!shipment) return {}
   const alternative = alternativeRouteFor(shipment.destination_id)
+  const activeDecision = previewDecision?.shipment_id === shipmentId
+    ? previewDecision
+    : decisions[shipmentId]
+  const chosen = activeDecision
+    ? activeDecision.option_kind === 'reroute' ? alternative?.id : shipment.assigned_route_id
+    : undefined
   return {
     original: shipment.assigned_route_id,
     ...(alternative ? { alternative: alternative.id } : {}),
+    ...(chosen ? { chosen } : {}),
   }
 }
 
