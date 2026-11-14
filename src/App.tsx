@@ -7,6 +7,8 @@ import { AppShell } from './components/shell/AppShell.tsx'
 import { IncidentBanner } from './components/shell/IncidentBanner.tsx'
 import { IndicatorsBar } from './components/shell/IndicatorsBar.tsx'
 import { facilities, getSegment, routes, sampleIncident, segments } from './data/index.ts'
+import { clearDriverNotices } from './driver/desk.ts'
+import { DriverNoticeDesk } from './driver/DriverNoticeDesk.tsx'
 import { MapPanel } from './map/MapPanel.tsx'
 import { isResponseOptionAvailable } from './state/options.ts'
 import { appReducer, initialState } from './state/reducer.ts'
@@ -33,7 +35,10 @@ function App() {
     <AppShell
       scenario={scenario}
       onScenarioChange={(next) => dispatch({ type: 'set_scenario', scenario: next })}
-      onReset={() => dispatch({ type: 'reset' })}
+      onReset={() => {
+        clearDriverNotices()
+        dispatch({ type: 'reset' })
+      }}
       status={
         <IncidentBanner
           incident={incident}
@@ -68,66 +73,74 @@ function App() {
         />
       }
       responses={
-        <ResponsePanel
-          key={`${scenario}:${selectedShipmentId ?? 'none'}`}
-          decision={selectedDecision}
-          previewDecision={previewDecision}
-          onCancelPreview={() => dispatch({ type: 'cancel_preview' })}
-          onUndo={
-            state.lastDecisionChange?.shipmentId === selectedShipmentId
-              ? () => dispatch({ type: 'undo_decision' })
-              : undefined
-          }
-          view={
-            responseView && selectedCard
-              ? { ...responseView, summary: selectedCard.summary }
-              : responseView
-          }
-          renderActions={(option) => {
-            if (!selectedShipmentId) return null
-            const unavailable = !isResponseOptionAvailable(option)
-            const title = OPTION_TITLES[option.kind]
-            return (
-              <>
-                <button
-                  type="button"
-                  className="pp-button"
-                  aria-label={`Preview ${title}`}
-                  aria-pressed={previewDecision?.option_kind === option.kind}
-                  disabled={unavailable}
-                  title={unavailable ? option.status : undefined}
-                  onClick={() =>
-                    dispatch({
-                      type: 'preview',
-                      shipmentId: selectedShipmentId,
-                      optionKind: option.kind,
-                      timestamp: new Date().toISOString(),
-                    })
-                  }
-                >
-                  Preview
-                </button>
-                <button
-                  type="button"
-                  className="pp-button pp-button--primary"
-                  aria-pressed={selectedDecision?.option_kind === option.kind}
-                  disabled={unavailable}
-                  title={unavailable ? option.status : undefined}
-                  onClick={() =>
-                    dispatch({
-                      type: 'select_option',
-                      shipmentId: selectedShipmentId,
-                      optionKind: option.kind,
-                      timestamp: new Date().toISOString(),
-                    })
-                  }
-                >
-                  {OPTION_ACTION_LABELS[option.kind]}
-                </button>
-              </>
-            )
-          }}
-        />
+        <>
+          <DriverNoticeDesk
+            view={responseView}
+            scenario={scenario}
+            decisions={decisions}
+            incident={incident}
+          />
+          <ResponsePanel
+            key={`${scenario}:${selectedShipmentId ?? 'none'}`}
+            decision={selectedDecision}
+            previewDecision={previewDecision}
+            onCancelPreview={() => dispatch({ type: 'cancel_preview' })}
+            onUndo={
+              state.lastDecisionChange?.shipmentId === selectedShipmentId
+                ? () => dispatch({ type: 'undo_decision' })
+                : undefined
+            }
+            view={
+              responseView && selectedCard
+                ? { ...responseView, summary: selectedCard.summary }
+                : responseView
+            }
+            renderActions={(option) => {
+              if (!selectedShipmentId) return null
+              const unavailable = !isResponseOptionAvailable(option)
+              const title = OPTION_TITLES[option.kind]
+              return (
+                <>
+                  <button
+                    type="button"
+                    className="pp-button"
+                    aria-label={`Preview ${title}`}
+                    aria-pressed={previewDecision?.option_kind === option.kind}
+                    disabled={unavailable}
+                    title={unavailable ? option.status : undefined}
+                    onClick={() =>
+                      dispatch({
+                        type: 'preview',
+                        shipmentId: selectedShipmentId,
+                        optionKind: option.kind,
+                        timestamp: new Date().toISOString(),
+                      })
+                    }
+                  >
+                    Preview
+                  </button>
+                  <button
+                    type="button"
+                    className="pp-button pp-button--primary"
+                    aria-pressed={selectedDecision?.option_kind === option.kind}
+                    disabled={unavailable}
+                    title={unavailable ? option.status : undefined}
+                    onClick={() =>
+                      dispatch({
+                        type: 'select_option',
+                        shipmentId: selectedShipmentId,
+                        optionKind: option.kind,
+                        timestamp: new Date().toISOString(),
+                      })
+                    }
+                  >
+                    {OPTION_ACTION_LABELS[option.kind]}
+                  </button>
+                </>
+              )
+            }}
+          />
+        </>
       }
       assumptions={<AssumptionsPanel />}
     />

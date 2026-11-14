@@ -62,11 +62,11 @@ describe('AssumptionsPanel', () => {
     expect(legend).toHaveTextContent('Not available or not yet confirmed; not zero.')
   })
 
-  it('shows the eleven reusable limitations verbatim, including the first and last', () => {
+  it('shows the twelve reusable limitations verbatim, including the first and last', () => {
     render(<AssumptionsPanel />)
     const panel = screen.getByRole('region', { name: 'Limitations' })
     const items = within(panel).getAllByRole('listitem')
-    expect(items).toHaveLength(11)
+    expect(items).toHaveLength(12)
     expect(items.map((item) => item.textContent)).toEqual([...limitations])
     expect(items[0]).toHaveTextContent(
       'Routes and travel times are illustrative; route suitability for trucks is not verified.',

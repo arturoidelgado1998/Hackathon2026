@@ -10,4 +10,5 @@ export const limitations = [
   'Flagging an impact is not the same as resolving it. The tool makes trade-offs visible; it does not make a decision fair.',
   'Cost, fuel economy and labor figures are placeholder assumptions until the team confirms and cites them.',
   'Waiting is assumed to be engine-off, and driver pay, legal hours-of-service and fatigue are not modeled.',
+  'Driver notices are simulated: no real message is sent, and nothing confirms that a driver received or read one.',
 ] as const
