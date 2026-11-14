@@ -1,0 +1,868 @@
+{
+  "_meta": {
+    "project": "PortPlan",
+    "repository": "arturoidelgado1998/Hackathon2026",
+    "tracker_issue": 1,
+    "purpose": "One entry per GitHub issue: what changed, where, how it was checked and what is left. Read this before starting an issue; update it in the same pull request that does the work.",
+    "last_updated": "2026-11-14",
+    "status_values": {
+      "not_started": "No work yet",
+      "in_progress": "Someone is working on it; assignee and branch are set",
+      "done": "Merged and verified",
+      "on_hold": "Do not start until the on-hold label is removed"
+    },
+    "how_to_update": [
+      "Starting an issue: set status to in_progress, fill assignee and branch, and assign yourself on GitHub",
+      "Finishing: set status to done, fill commit (hash, date, message, files), changes, verification and deviations_from_issue",
+      "Changing something a finished issue built: add an entry to that issue's revisions with the commit and a one-line summary",
+      "Work that belongs to no single issue goes in other_changes",
+      "Anything the next person must know goes in follow_ups",
+      "Update last_updated and summary.counts"
+    ]
+  },
+  "summary": {
+    "counts": {
+      "done": 5,
+      "not_started": 12,
+      "on_hold": 5
+    },
+    "current_branch_for_phase_1": "phase-1-dashboard",
+    "pull_requests": [
+      {
+        "number": 24,
+        "url": "https://github.com/arturoidelgado1998/Hackathon2026/pull/24",
+        "state": "merged",
+        "merged_at": "2026-11-14T19:30:14Z",
+        "merge_commit": "4b8f069",
+        "base": "main",
+        "head": "phase-1-dashboard"
+      }
+    ],
+    "next_up": [
+      7,
+      8,
+      9
+    ]
+  },
+  "issues": [
+    {
+      "number": 2,
+      "code": "D1",
+      "title": "Scaffold the app and shared types",
+      "phase": "Phase 1: Dashboard",
+      "status": "done",
+      "github_state": "closed",
+      "assignee": "arturoidelgado1998",
+      "built_by": "Opus agent 1",
+      "branch": "phase-1-dashboard",
+      "pull_request": 24,
+      "commit": {
+        "hash": "aba7a14",
+        "date": "2026-11-14T11:07:10-08:00",
+        "message": "D1: Scaffold the app and shared types",
+        "files": {
+          "added": [
+            ".env.example",
+            ".gitignore",
+            "README.md",
+            "eslint.config.js",
+            "index.html",
+            "package-lock.json",
+            "package.json",
+            "src/App.test.tsx",
+            "src/App.tsx",
+            "src/index.css",
+            "src/main.tsx",
+            "src/test/setup.ts",
+            "src/types.ts",
+            "tsconfig.app.json",
+            "tsconfig.json",
+            "tsconfig.node.json",
+            "vite.config.ts"
+          ],
+          "modified": [],
+          "deleted": []
+        }
+      },
+      "changes": [
+        "Vite + React + TypeScript app at the repo root with npm scripts dev, build, typecheck, lint and test",
+        "Vitest with jsdom and Testing Library; ESLint flat config",
+        "src/types.ts with every shared entity (Facility, RoadSegment, Route, Shipment, Incident, Assumptions, ResponseOption, Decision, RiskLabel)",
+        "Folder layout: src/engine, src/data, src/components, src/map, src/state, server, docs",
+        ".gitignore, .env.example (variable names only) and README with run commands"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test all pass (2 tests at this commit)",
+        "Type field names read against the issue"
+      ],
+      "deviations_from_issue": [
+        "TypeScript pinned to ~6.0.3 because typescript-eslint does not support 7 yet"
+      ],
+      "revisions": [],
+      "follow_ups": [
+        "npm audit reports 7 moderate advisories in dev-only lint packages; the only offered fix is a breaking change",
+        "Node is installed at ~/.local/node/bin and is not on PATH on the original machine"
+      ]
+    },
+    {
+      "number": 3,
+      "code": "D2",
+      "title": "Sample data fixtures",
+      "phase": "Phase 1: Dashboard",
+      "status": "done",
+      "github_state": "closed",
+      "assignee": "arturoidelgado1998",
+      "built_by": "Opus agent 2",
+      "branch": "phase-1-dashboard",
+      "pull_request": 24,
+      "commit": {
+        "hash": "ae2c21a",
+        "date": "2026-11-14T11:13:08-08:00",
+        "message": "D2: Sample data fixtures",
+        "files": {
+          "added": [
+            "src/data/README.md",
+            "src/data/assumptions.json",
+            "src/data/data.test.ts",
+            "src/data/facilities.json",
+            "src/data/index.ts",
+            "src/data/routes.json",
+            "src/data/sample-responses.json",
+            "src/data/segments.json",
+            "src/data/shipments.json"
+          ],
+          "modified": [],
+          "deleted": []
+        }
+      },
+      "changes": [
+        "Synthetic data in src/data: 1 port, 3 fictional warehouses, 8 segments, 6 routes, 10 shipments, assumptions",
+        "sample-responses.json: a summary per shipment for the normal and disrupted scenarios, normal baselines, and Wait / Reroute / Request later slot options for affected shipments",
+        "src/data/index.ts: typed access module (getShipmentSummary, getResponseOptions, getBaseline and lookups)",
+        "src/data/README.md: JSON shapes, calculation rules and the expected risk label per shipment",
+        "Sample incident: NB-03 closed from 10:00, reported reopening 11:10"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test all pass (23 tests at this commit)",
+        "Coordinator recalculated every shipment independently from the team plan's formulas: all values match",
+        "Reference shipment SHP-001 reproduces the plan's table (wait 30 min late at $161; reroute on time at $158, +15 mi, +23.5 kg CO2)",
+        "Mix after the closure: 4 unaffected, 2 affected but ON_TRACK, 4 TIGHT or LATE, 1 fixed by reroute, 2 with no fix"
+      ],
+      "deviations_from_issue": [
+        "Response options exist only for affected shipments in the disrupted scenario; the normal scenario has none",
+        "Routes carry extra stored fields (sensitive_zone_note, totals) typed as RouteRecord in src/data, not in src/types.ts",
+        "Per-value placeholder flags for assumptions are exposed as assumptionPlaceholders"
+      ],
+      "revisions": [],
+      "follow_ups": [
+        "Reroute is unavailable for every Warehouse B shipment because its alternative route also uses NB-03",
+        "Sensitive-zone values are placeholders until G3 (#21)",
+        "sample-responses.json becomes a test fixture once the engine is wired in (E4, #14)"
+      ]
+    },
+    {
+      "number": 4,
+      "code": "D3",
+      "title": "App shell and map panel placeholder",
+      "phase": "Phase 1: Dashboard",
+      "status": "done",
+      "github_state": "closed",
+      "assignee": "arturoidelgado1998",
+      "built_by": "Opus agent 3",
+      "branch": "phase-1-dashboard",
+      "pull_request": 24,
+      "commit": {
+        "hash": "7be1786",
+        "date": "2026-11-14T11:14:17-08:00",
+        "message": "D3: App shell and map panel placeholder",
+        "files": {
+          "added": [
+            "src/components/shell/AppShell.css",
+            "src/components/shell/AppShell.test.tsx",
+            "src/components/shell/AppShell.tsx",
+            "src/components/shell/IndicatorsBar.css",
+            "src/components/shell/IndicatorsBar.test.tsx",
+            "src/components/shell/IndicatorsBar.tsx",
+            "src/map/MapPanel.css",
+            "src/map/MapPanel.test.tsx",
+            "src/map/MapPanel.tsx"
+          ],
+          "modified": [
+            "src/App.test.tsx",
+            "src/App.tsx",
+            "src/index.css"
+          ],
+          "deleted": []
+        }
+      },
+      "changes": [
+        "AppShell: single-screen layout with slots for indicators, board, map, responses and assumptions",
+        "IndicatorsBar: At risk, Est. cost, Est. tailpipe CO2 and a permanent SIMULATED badge",
+        "MapPanel: schematic placeholder behind the fixed MapPanelProps contract that Phase 5 reuses",
+        "Shared colour tokens in src/index.css"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test all pass (69 tests on the merged branch at this commit)",
+        "No horizontal page scroll at 1366x768 or 1920x1080"
+      ],
+      "deviations_from_issue": [],
+      "revisions": [
+        {
+          "commit": "cc37ead",
+          "summary": "Layout changed to three panes (queue, comparison, routes); added an optional status slot; onReportIncident became optional and the button is disabled without it; MapPanel segments are only buttons when onSegmentClick is given; route drawn as a line of stops"
+        }
+      ],
+      "follow_ups": []
+    },
+    {
+      "number": 5,
+      "code": "D4",
+      "title": "Triage board and shipment cards",
+      "phase": "Phase 1: Dashboard",
+      "status": "done",
+      "github_state": "closed",
+      "assignee": "arturoidelgado1998",
+      "built_by": "Opus agent 4",
+      "branch": "phase-1-dashboard",
+      "pull_request": 24,
+      "commit": {
+        "hash": "2be7aa6",
+        "date": "2026-11-14T11:13:21-08:00",
+        "message": "D4: Triage board and shipment cards",
+        "files": {
+          "added": [
+            "src/components/board/RiskBadge.tsx",
+            "src/components/board/ShipmentCard.tsx",
+            "src/components/board/TriageBoard.test.tsx",
+            "src/components/board/TriageBoard.tsx",
+            "src/components/board/board.css",
+            "src/components/board/columns.ts",
+            "src/components/board/index.ts"
+          ],
+          "modified": [],
+          "deleted": []
+        }
+      },
+      "changes": [
+        "TriageBoard with the four workflow states and a count per state",
+        "ShipmentCard: id, destination, appointment window, estimated arrival, risk badge and reason",
+        "RiskBadge with text and an icon for each risk value",
+        "defaultColumn helper: affected shipments start in Needs review in the disrupted scenario"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test all pass (39 tests on the merged branch at this commit)",
+        "Code read against the issue"
+      ],
+      "deviations_from_issue": [
+        "The board takes its data through props; src/state/selectors.ts reads the data module",
+        "Buttons that move a card between states are left to D6 (#7)"
+      ],
+      "revisions": [
+        {
+          "commit": "cc37ead",
+          "summary": "Four side-by-side columns became one queue grouped by state, most urgent first (BOARD_COLUMNS reordered); empty groups collapse to one line; text symbols replaced by SVG icons; selected row no longer uses a thick side bar"
+        }
+      ],
+      "follow_ups": []
+    },
+    {
+      "number": 6,
+      "code": "D5",
+      "title": "Response comparison cards and stakeholder strip",
+      "phase": "Phase 1: Dashboard",
+      "status": "done",
+      "github_state": "closed",
+      "assignee": "arturoidelgado1998",
+      "built_by": "Opus agent 5",
+      "branch": "phase-1-dashboard",
+      "pull_request": 24,
+      "commit": {
+        "hash": "bebc8a8",
+        "date": "2026-11-14T11:13:41-08:00",
+        "message": "D5: Response comparison cards and stakeholder strip",
+        "files": {
+          "added": [
+            "src/components/responses/ResponseCard.tsx",
+            "src/components/responses/ResponsePanel.test.tsx",
+            "src/components/responses/ResponsePanel.tsx",
+            "src/components/responses/StakeholderStrip.tsx",
+            "src/components/responses/deltas.ts",
+            "src/components/responses/format.ts",
+            "src/components/responses/index.ts",
+            "src/components/responses/responses.css"
+          ],
+          "modified": [],
+          "deleted": []
+        }
+      },
+      "changes": [
+        "ResponsePanel comparing Wait, Reroute and Request later slot for the selected shipment",
+        "Changes against the normal scenario for miles, CO2 and driver duty (the only arithmetic in the UI, in deltas.ts)",
+        "Stakeholder impact: driver, community, environment and what is not modeled",
+        "No-feasible-response banner; empty states; onWhy callback and renderActions slot for later issues",
+        "No best option, ranking or score anywhere"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test all pass (52 tests on the merged branch at this commit)",
+        "Confirmed the only arithmetic is the baseline subtraction and that no ranking wording exists"
+      ],
+      "deviations_from_issue": [],
+      "revisions": [
+        {
+          "commit": "0dde800",
+          "summary": "Removed a duplicate nested landmark named Response options, found by integration tests"
+        },
+        {
+          "commit": "cc37ead",
+          "summary": "Three cards became one comparison table (options as columns, measures as rows); stakeholder impact became a group of rows; Not modeled is stated once; action row stays in view; ResponseCard and StakeholderStrip components deleted; risk shown with the shared RiskBadge"
+        }
+      ],
+      "follow_ups": []
+    },
+    {
+      "number": 7,
+      "code": "D6",
+      "title": "Selection, Preview, Select and decisions",
+      "phase": "Phase 1: Dashboard",
+      "status": "not_started",
+      "github_state": "open",
+      "assignee": null,
+      "built_by": null,
+      "branch": null,
+      "pull_request": null,
+      "commit": null,
+      "depends_on": [
+        "D4",
+        "D5"
+      ],
+      "already_in_place": [
+        "Scenario and selection live in useState in src/App.tsx; replace with the store",
+        "src/state/selectors.ts builds the card, response and route views; add decisions on top",
+        "ResponsePanel has a renderActions slot for Preview and Select buttons"
+      ],
+      "changes": [],
+      "verification": [],
+      "deviations_from_issue": [],
+      "revisions": [],
+      "follow_ups": []
+    },
+    {
+      "number": 8,
+      "code": "D7",
+      "title": "Indicators bar, scenario toggle and Reset",
+      "phase": "Phase 1: Dashboard",
+      "status": "not_started",
+      "github_state": "open",
+      "assignee": null,
+      "built_by": null,
+      "branch": null,
+      "pull_request": null,
+      "commit": null,
+      "depends_on": [
+        "D6"
+      ],
+      "already_in_place": [
+        "IndicatorsBar renders totals it is given; App passes nulls today",
+        "Scenario toggle and Reset already work at a basic level in src/App.tsx"
+      ],
+      "changes": [],
+      "verification": [],
+      "deviations_from_issue": [],
+      "revisions": [],
+      "follow_ups": []
+    },
+    {
+      "number": 9,
+      "code": "D8",
+      "title": "\"Why?\" panel, assumptions panel and estimate labels",
+      "phase": "Phase 1: Dashboard",
+      "status": "not_started",
+      "github_state": "open",
+      "assignee": null,
+      "built_by": null,
+      "branch": null,
+      "pull_request": null,
+      "commit": null,
+      "depends_on": [
+        "D5"
+      ],
+      "already_in_place": [
+        "ResponsePanel calls onWhy(kind); every option carries explanation_inputs",
+        "AppShell has an assumptions slot; src/data exports assumptions and assumptionPlaceholders"
+      ],
+      "changes": [],
+      "verification": [],
+      "deviations_from_issue": [],
+      "revisions": [],
+      "follow_ups": []
+    },
+    {
+      "number": 10,
+      "code": "D9",
+      "title": "Empty, error and loading states; accessibility pass",
+      "phase": "Phase 1: Dashboard",
+      "status": "not_started",
+      "github_state": "open",
+      "assignee": null,
+      "built_by": null,
+      "branch": null,
+      "pull_request": null,
+      "commit": null,
+      "depends_on": [
+        "D4",
+        "D5",
+        "D6",
+        "D7",
+        "D8"
+      ],
+      "already_in_place": [
+        "Empty states exist for no selection and no options; contrast measured at 5.8:1 or better; focus rings themed"
+      ],
+      "changes": [],
+      "verification": [],
+      "deviations_from_issue": [],
+      "revisions": [],
+      "follow_ups": [
+        "At 768 px tall the comparison table scrolls by about 50 px"
+      ]
+    },
+    {
+      "number": 11,
+      "code": "E1",
+      "title": "Engine: departure, route timing and closure wait",
+      "phase": "Phase 2: Engine",
+      "status": "not_started",
+      "github_state": "open",
+      "assignee": null,
+      "built_by": null,
+      "branch": null,
+      "pull_request": null,
+      "commit": null,
+      "depends_on": [
+        "D1",
+        "D2"
+      ],
+      "already_in_place": [
+        "src/data/README.md lists the expected values the engine must reproduce"
+      ],
+      "changes": [],
+      "verification": [],
+      "deviations_from_issue": [],
+      "revisions": [],
+      "follow_ups": []
+    },
+    {
+      "number": 12,
+      "code": "E2",
+      "title": "Engine: appointment, lateness, risk, cost, CO2 and driver duty",
+      "phase": "Phase 2: Engine",
+      "status": "not_started",
+      "github_state": "open",
+      "assignee": null,
+      "built_by": null,
+      "branch": null,
+      "pull_request": null,
+      "commit": null,
+      "depends_on": [
+        "E1"
+      ],
+      "already_in_place": [],
+      "changes": [],
+      "verification": [],
+      "deviations_from_issue": [],
+      "revisions": [],
+      "follow_ups": []
+    },
+    {
+      "number": 13,
+      "code": "E3",
+      "title": "Engine: response options, totals and scenario comparison",
+      "phase": "Phase 2: Engine",
+      "status": "not_started",
+      "github_state": "open",
+      "assignee": null,
+      "built_by": null,
+      "branch": null,
+      "pull_request": null,
+      "commit": null,
+      "depends_on": [
+        "E2"
+      ],
+      "already_in_place": [],
+      "changes": [],
+      "verification": [],
+      "deviations_from_issue": [],
+      "revisions": [],
+      "follow_ups": []
+    },
+    {
+      "number": 14,
+      "code": "E4",
+      "title": "Wire the dashboard to the engine and export the evaluation table",
+      "phase": "Phase 2: Engine",
+      "status": "not_started",
+      "github_state": "open",
+      "assignee": null,
+      "built_by": null,
+      "branch": null,
+      "pull_request": null,
+      "commit": null,
+      "depends_on": [
+        "E3",
+        "D7",
+        "D8"
+      ],
+      "already_in_place": [
+        "src/state/selectors.ts is the single place that reads the data module"
+      ],
+      "changes": [],
+      "verification": [],
+      "deviations_from_issue": [],
+      "revisions": [],
+      "follow_ups": []
+    },
+    {
+      "number": 15,
+      "code": "A1",
+      "title": "Incident interpretation endpoint and validator",
+      "phase": "Phase 3: AI incident",
+      "status": "not_started",
+      "github_state": "open",
+      "assignee": null,
+      "built_by": null,
+      "branch": null,
+      "pull_request": null,
+      "commit": null,
+      "depends_on": [
+        "D1",
+        "D2"
+      ],
+      "already_in_place": [],
+      "changes": [],
+      "verification": [],
+      "deviations_from_issue": [],
+      "revisions": [],
+      "follow_ups": []
+    },
+    {
+      "number": 16,
+      "code": "A2",
+      "title": "Report-incident flow: review, confirm and manual fallback",
+      "phase": "Phase 3: AI incident",
+      "status": "not_started",
+      "github_state": "open",
+      "assignee": null,
+      "built_by": null,
+      "branch": null,
+      "pull_request": null,
+      "commit": null,
+      "depends_on": [
+        "A1",
+        "D6",
+        "D9"
+      ],
+      "already_in_place": [
+        "Report incident button is disabled until AppShell receives onReportIncident",
+        "MapPanel already shows a candidateSegmentId as Awaiting confirmation",
+        "IncidentBanner already labels a dispatcher assumption and an unknown reopening time"
+      ],
+      "changes": [],
+      "verification": [],
+      "deviations_from_issue": [],
+      "revisions": [],
+      "follow_ups": []
+    },
+    {
+      "number": 17,
+      "code": "A3",
+      "title": "End-to-end incident flow, AI test record and prompt-injection check",
+      "phase": "Phase 3: AI incident",
+      "status": "not_started",
+      "github_state": "open",
+      "assignee": null,
+      "built_by": null,
+      "branch": null,
+      "pull_request": null,
+      "commit": null,
+      "depends_on": [
+        "A2",
+        "E4"
+      ],
+      "already_in_place": [],
+      "changes": [],
+      "verification": [],
+      "deviations_from_issue": [],
+      "revisions": [],
+      "follow_ups": []
+    },
+    {
+      "number": 18,
+      "code": "R1",
+      "title": "Workflow tests, stable build and run instructions",
+      "phase": "Phase 4: Release",
+      "status": "not_started",
+      "github_state": "open",
+      "assignee": null,
+      "built_by": null,
+      "branch": null,
+      "pull_request": null,
+      "commit": null,
+      "depends_on": [
+        "A3"
+      ],
+      "already_in_place": [],
+      "changes": [],
+      "verification": [],
+      "deviations_from_issue": [],
+      "revisions": [],
+      "follow_ups": [
+        "The repo has no CI workflow yet"
+      ]
+    },
+    {
+      "number": 19,
+      "code": "G1",
+      "title": "Geography data: real locations and segment geometry",
+      "phase": "Phase 5: GIS / ArcGIS",
+      "status": "on_hold",
+      "github_state": "open",
+      "assignee": null,
+      "built_by": null,
+      "branch": null,
+      "pull_request": null,
+      "commit": null,
+      "depends_on": [
+        "R1"
+      ],
+      "already_in_place": [],
+      "changes": [],
+      "verification": [],
+      "deviations_from_issue": [],
+      "revisions": [],
+      "follow_ups": []
+    },
+    {
+      "number": 20,
+      "code": "G2",
+      "title": "ArcGIS map component replacing the placeholder",
+      "phase": "Phase 5: GIS / ArcGIS",
+      "status": "on_hold",
+      "github_state": "open",
+      "assignee": null,
+      "built_by": null,
+      "branch": null,
+      "pull_request": null,
+      "commit": null,
+      "depends_on": [
+        "G1"
+      ],
+      "already_in_place": [
+        "MapPanelProps contract is fixed in src/map/MapPanel.tsx"
+      ],
+      "changes": [],
+      "verification": [],
+      "deviations_from_issue": [],
+      "revisions": [],
+      "follow_ups": []
+    },
+    {
+      "number": 21,
+      "code": "G3",
+      "title": "150 m corridor analysis with real school and SB 535 layers",
+      "phase": "Phase 5: GIS / ArcGIS",
+      "status": "on_hold",
+      "github_state": "open",
+      "assignee": null,
+      "built_by": null,
+      "branch": null,
+      "pull_request": null,
+      "commit": null,
+      "depends_on": [
+        "G1"
+      ],
+      "already_in_place": [
+        "Route fields schools_150m, dac_tracts and max_diesel_pm_pctl exist and are null",
+        "ResponsePanel already switches its community wording when the counts are filled"
+      ],
+      "changes": [],
+      "verification": [],
+      "deviations_from_issue": [],
+      "revisions": [],
+      "follow_ups": []
+    },
+    {
+      "number": 22,
+      "code": "G4",
+      "title": "Map overlays: schools, disadvantaged tracts and corridor",
+      "phase": "Phase 5: GIS / ArcGIS",
+      "status": "on_hold",
+      "github_state": "open",
+      "assignee": null,
+      "built_by": null,
+      "branch": null,
+      "pull_request": null,
+      "commit": null,
+      "depends_on": [
+        "G2",
+        "G3"
+      ],
+      "already_in_place": [],
+      "changes": [],
+      "verification": [],
+      "deviations_from_issue": [],
+      "revisions": [],
+      "follow_ups": []
+    },
+    {
+      "number": 23,
+      "code": "G5",
+      "title": "Stretch: hazard polygon and truck-route check",
+      "phase": "Phase 5: GIS / ArcGIS",
+      "status": "on_hold",
+      "github_state": "open",
+      "assignee": null,
+      "built_by": null,
+      "branch": null,
+      "pull_request": null,
+      "commit": null,
+      "depends_on": [
+        "G4"
+      ],
+      "already_in_place": [],
+      "changes": [],
+      "verification": [],
+      "deviations_from_issue": [],
+      "revisions": [],
+      "follow_ups": []
+    }
+  ],
+  "other_changes": [
+    {
+      "id": "shared-contract",
+      "title": "Shared dashboard view-model types",
+      "related_issues": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "built_by": "Coordinator",
+      "branch": "phase-1-dashboard",
+      "pull_request": 24,
+      "commit": {
+        "hash": "1e09cb0",
+        "date": "2026-11-14T11:09:13-08:00",
+        "message": "Add shared dashboard view-model types",
+        "files": {
+          "added": [
+            "src/viewModels.ts"
+          ],
+          "modified": [],
+          "deleted": []
+        }
+      },
+      "why": "Let D2 to D5 be built in parallel against one agreed set of shapes",
+      "changes": [
+        "src/viewModels.ts: Scenario, BoardColumn, BOARD_COLUMNS, ShipmentSummary, Baseline, ShipmentCardView, CommunityInfo, ResponsePanelView"
+      ]
+    },
+    {
+      "id": "wiring",
+      "title": "Wire the board, response panel and map placeholder to the sample data",
+      "related_issues": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "built_by": "Coordinator",
+      "branch": "phase-1-dashboard",
+      "pull_request": 24,
+      "commit": {
+        "hash": "0dde800",
+        "date": "2026-11-14T11:15:55-08:00",
+        "message": "Wire the board, response panel and map placeholder to the sample data",
+        "files": {
+          "added": [
+            "src/state/selectors.ts"
+          ],
+          "modified": [
+            "src/App.test.tsx",
+            "src/App.tsx",
+            "src/components/responses/ResponsePanel.tsx"
+          ],
+          "deleted": []
+        }
+      },
+      "why": "The four pieces were built separately and had to be connected into one working screen",
+      "changes": [
+        "src/state/selectors.ts: buildCards, buildResponseView, buildHighlightedRoutes, incidentSegmentFor",
+        "src/App.tsx connects scenario and selection across the board, map panel and response panel",
+        "7 integration tests in src/App.test.tsx"
+      ]
+    },
+    {
+      "id": "design-pass",
+      "title": "Redesign the dashboard for usability",
+      "related_issues": [
+        4,
+        5,
+        6
+      ],
+      "built_by": "Coordinator",
+      "branch": "phase-1-dashboard",
+      "pull_request": 24,
+      "commit": {
+        "hash": "cc37ead",
+        "date": "2026-11-14T11:26:17-08:00",
+        "message": "Redesign the dashboard for usability",
+        "files": {
+          "added": [
+            "src/components/board/RiskBadge.css",
+            "src/components/icons.tsx",
+            "src/components/shell/IncidentBanner.css",
+            "src/components/shell/IncidentBanner.test.tsx",
+            "src/components/shell/IncidentBanner.tsx"
+          ],
+          "modified": [
+            "src/App.test.tsx",
+            "src/App.tsx",
+            "src/components/board/RiskBadge.tsx",
+            "src/components/board/ShipmentCard.tsx",
+            "src/components/board/TriageBoard.test.tsx",
+            "src/components/board/TriageBoard.tsx",
+            "src/components/board/board.css",
+            "src/components/responses/ResponsePanel.test.tsx",
+            "src/components/responses/ResponsePanel.tsx",
+            "src/components/responses/format.ts",
+            "src/components/responses/index.ts",
+            "src/components/responses/responses.css",
+            "src/components/shell/AppShell.css",
+            "src/components/shell/AppShell.tsx",
+            "src/components/shell/IndicatorsBar.css",
+            "src/index.css",
+            "src/map/MapPanel.css",
+            "src/map/MapPanel.test.tsx",
+            "src/map/MapPanel.tsx",
+            "src/state/selectors.ts",
+            "src/viewModels.ts"
+          ],
+          "deleted": [
+            "src/components/responses/ResponseCard.tsx",
+            "src/components/responses/StakeholderStrip.tsx"
+          ]
+        }
+      },
+      "why": "The first layout cramped the comparison into a short strip and squeezed cards into four narrow columns",
+      "changes": [
+        "Three panes read left to right: shipment queue, response comparison, routes",
+        "IncidentBanner says what changed and labels reopening as an estimate",
+        "Comparison table with a sticky action row; queue grouped by state with urgency first",
+        "Design tokens in src/index.css; one SVG icon set in src/components/icons.tsx",
+        "Responsive: routes move under the comparison below 1180 px, single column below 760 px",
+        "ResponsePanelView gained an optional summary field; AppShell gained an optional status slot",
+        "81 tests pass; checked at 1366x768, 1920x1080, 1024x768 and phone width"
+      ]
+    }
+  ]
+}
