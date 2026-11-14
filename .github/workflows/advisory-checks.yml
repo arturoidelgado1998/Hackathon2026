@@ -1,0 +1,69 @@
+# Advisory checks for the staging -> main flow.
+#
+# Branch protection is not available for this repository's plan, so nothing
+# here can block a merge or a direct push. These jobs only mark a pull request
+# or a commit red so the team can see a problem before it reaches main.
+#
+# Flow: feature branch -> pull request into staging -> pull request from
+# staging into main.
+name: Advisory checks
+
+on:
+  pull_request:
+    branches: [main, staging]
+  push:
+    branches: [main, staging]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-branch:
+    name: Main only takes pull requests from staging
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the source branch
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_REPO: ${{ github.repository }}
+        run: |
+          if [ "$HEAD_REPO" != "$BASE_REPO" ] || [ "$HEAD_REF" != "staging" ]; then
+            echo "::error::Pull requests into main must come from staging. Retarget this pull request to staging, then open a pull request from staging into main."
+            exit 1
+          fi
+          echo "Source branch is staging."
+
+  quality:
+    name: Lint, typecheck, test and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        if: ${{ !cancelled() }}
+        run: npm run typecheck
+
+      - name: Test
+        if: ${{ !cancelled() }}
+        run: npm test
+
+      - name: Build
+        if: ${{ !cancelled() }}
+        run: npm run build
