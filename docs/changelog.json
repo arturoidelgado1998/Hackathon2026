@@ -1074,6 +1074,65 @@
         "Automatic Impeccable hooks are not enabled. Use its documented manual detector, or configure hooks separately.",
         "D9 and the later engine, AI and GIS phases are outside this delivery."
       ]
+    },
+    {
+      "id": "dispatcher-workflow-clarity",
+      "title": "Clarify response choices, Undo and mobile navigation",
+      "related_issues": [7, 8, 9],
+      "built_by": "Copilot coordinator",
+      "branch": "nicole/d6-d8-dashboard",
+      "pull_request": null,
+      "commit": {
+        "hash": "18867352c1ff5ecfb3e0a6807eff7419ee6ef1fe",
+        "date": "2026-11-14T13:18:54-08:00",
+        "message": "Polish dispatcher decisions and mobile workflow",
+        "files": {
+          "modified": [
+            "README.md",
+            "src/App.tsx",
+            "src/App.test.tsx",
+            "src/components/board/ShipmentCard.tsx",
+            "src/components/board/TriageBoard.tsx",
+            "src/components/board/TriageBoard.test.tsx",
+            "src/components/board/board.css",
+            "src/components/responses/ResponsePanel.tsx",
+            "src/components/responses/ResponsePanel.test.tsx",
+            "src/components/responses/format.ts",
+            "src/components/responses/responses.css",
+            "src/components/shell/AppShell.tsx",
+            "src/components/shell/AppShell.css",
+            "src/state/reducer.ts",
+            "src/state/reducer.test.ts",
+            "src/state/scenarios.test.ts",
+            "src/state/totals.test.ts"
+          ]
+        }
+      },
+      "changes": [
+        "Replaced generic Select actions with Choose wait, Use reroute and Request slot.",
+        "Added explicit recorded-choice and Preview only notices. New choices and previews focus their notices so confirmation is visible, without stealing focus when revisiting a shipment.",
+        "Added Cancel preview, restoring the recorded route without changing the decision, risk or totals.",
+        "Added one-step Undo for the most recent response choice. It restores the prior decision or Needs review state and any prior rejection note without discarding other shipments' changes.",
+        "Changed the slot status to Requires confirmation until a request is actually recorded, then Awaiting confirmation. Pending requests still retain original risk and current-plan totals.",
+        "Added Normal-scenario guidance and collapsible empty groups on small screens. Selected shipments expose a View responses shortcut; Back to shipments restores queue focus.",
+        "Kept horizontal scrolling inside the comparison table on mobile so its shipment context and confirmation notices remain fully visible.",
+        "Changed the starting and Reset scenario to Disrupted at the user's request. Reset clears decisions, previews, Undo and empty-group disclosure; Normal remains available.",
+        "Separated Reject all from the selected shipment outline with 8px of vertical spacing so its border and keyboard focus ring are not cut off."
+      ],
+      "verification": [
+        "Typecheck, lint, production build and the complete 167-test suite passed after the workflow and default-scenario changes.",
+        "After the final border and mobile-scroll fixes, reran lint, production build (including typecheck) and all 74 tests in the four affected UI test files; all passed.",
+        "At a 390x844 emulated browser viewport, exercised the response shortcut, preview, recorded reroute, Cancel preview, slot request and Undo. Notices were fully visible above the fixed assumptions bar, and there was no page-level horizontal overflow.",
+        "Verified Back to shipments returns focus to the queue.",
+        "At 390px, 760px, 1024px and 1440px widths, Reject all retained its complete 1px border, 44px target height, 8px gap from selection and at least 8px bottom clearance.",
+        "The final local Impeccable detector scan returned [] with exit code 0."
+      ],
+      "notes": [
+        "Recorded on Nicole's feature branch; no pull request has been opened or merged.",
+        "The Disrupted starting/Reset scenario intentionally supersedes the earlier Normal default; the user explicitly chose the matching Reset behavior.",
+        "Undo reverses a local sample decision, not an external warehouse request. It is not a multi-step history.",
+        "Historical route comparison remains on hold; no new dependencies, calculations or route rankings were introduced."
+      ]
     }
   ]
 }
