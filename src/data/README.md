@@ -1,6 +1,6 @@
 # Sample data
 
-Everything in this folder is **SIMULATED**. The Port of Long Beach is at its real location; the warehouses, shipments, travel times and the incident are fictional. Routes are illustrative and not verified for trucks.
+Everything in this folder is **SIMULATED**, with two exceptions described below: the community counts from the corridor analysis, and the `real/` subfolder. The Port of Long Beach is at its real location; the warehouses, shipments, travel times and the incident are fictional. Routes are illustrative and not verified for trucks.
 
 ## Where it comes from
 
@@ -30,6 +30,8 @@ CLI reads raw JSON via `fs` and imports the pure engine, without a Vite loader.
 | `routes.json` | One original and one alternative route per warehouse, as ordered segment ids, with stored totals |
 | `shipments.json` | Ten shipments: readiness, appointment window and assigned route |
 | `assumptions.json` | Cost, fuel economy and emission factor placeholders, each with a source |
+| `corridor.json` | The corridor analysis: REAL schools and disadvantaged tracts within 150 m of each ILLUSTRATIVE route, with sources and dates. Written by `scripts/corridor_analysis.py` |
+| `corridor-layers.json` | The places counted in `corridor.json` (school points, tract outlines), for the map only |
 | `sample-responses.json` | Generated regression test fixture only: summaries, baselines and options. Never imported by the app or evaluation exporter |
 | `demoIncident.ts` | Independent typed SIMULATED NB-03 incident input; not generated |
 
@@ -76,30 +78,32 @@ evaluation-only selection rule and export metadata.
 
 ## Segments
 
-| Id | Name | Miles | Minutes | Near a flagged zone |
-| --- | --- | --- | --- | --- |
-| `PORT-01` | Port exit to I-710 (Ocean Blvd / I-710 ramps) | 5 | 10 to 12 | no |
-| `NB-03` | I-710 northbound to SR-60 east (shared corridor) | 25 | 30 to 38 | no |
-| `WH-A-APPR` | SR-60 east to WH-A | 15 | 20 to 24 | no |
-| `EB-405` | I-405 east / I-605 north to SR-60 (alternative corridor) | 40 | 45 to 52 | yes: Passes SYNTHETIC school zone (Z-01) |
-| `WH-B-APPR` | I-605 north to WH-B | 10 | 15 to 18 | no |
-| `HARBOR-110` | I-110 Harbor Fwy northbound (alternative corridor) | 24 | 35 to 45 | yes: Passes SYNTHETIC residential area (Z-02) |
-| `XTOWN-B` | I-10 east to WH-B | 21 | 30 to 38 | no |
-| `WEST-405` | I-405 west to WH-C | 11 | 18 to 23 | no |
-| `C-LOCAL` | Alameda St / local streets to WH-C | 12 | 32 to 38 | no |
+| Id | Name | Miles | Minutes | Schools within 150 m | Disadvantaged tracts within 150 m |
+| --- | --- | --- | --- | --- | --- |
+| `PORT-01` | Port exit to I-710 (Ocean Blvd / I-710 ramps) | 5 | 10 to 12 | 0 | 7 |
+| `NB-03` | I-710 northbound to SR-60 east (shared corridor) | 25 | 30 to 38 | 5 | 39 |
+| `WH-A-APPR` | SR-60 east to WH-A | 15 | 20 to 24 | 2 | 10 |
+| `EB-405` | I-405 east / I-605 north to SR-60 (alternative corridor) | 40 | 45 to 52 | 7 | 17 |
+| `WH-B-APPR` | I-605 north to WH-B | 10 | 15 to 18 | 0 | 8 |
+| `HARBOR-110` | I-110 Harbor Fwy northbound (alternative corridor) | 24 | 35 to 45 | 12 | 53 |
+| `XTOWN-B` | I-10 east to WH-B | 21 | 30 to 38 | 6 | 27 |
+| `WEST-405` | I-405 west to WH-C | 11 | 18 to 23 | 0 | 10 |
+| `C-LOCAL` | Alameda St / local streets to WH-C | 12 | 32 to 38 | 0 | 9 |
 
-The flagged zones are two hand-drawn SYNTHETIC rectangles in the feature service. Real school and community layers arrive with the corridor analysis (G3).
+The counts are real places beside a schematic line; see Corridor analysis below. The feature service's two hand-drawn SYNTHETIC zones are no longer used.
 
 ## Routes
 
-| Id | To | Kind | Segments | Miles | Minutes |
-| --- | --- | --- | --- | --- | --- |
-| `R-A-ORIG` | WH-A | original | PORT-01, NB-03, WH-A-APPR | 45 | 60 to 74 |
-| `R-A-ALT` | WH-A | alternative | PORT-01, EB-405, WH-A-APPR | 60 | 75 to 88 |
-| `R-B-ORIG` | WH-B | original | PORT-01, NB-03, WH-B-APPR | 40 | 55 to 68 |
-| `R-B-ALT` | WH-B | alternative | HARBOR-110, XTOWN-B | 45 | 65 to 83 |
-| `R-C-ORIG` | WH-C | original | PORT-01, WEST-405 | 16 | 28 to 35 |
-| `R-C-ALT` | WH-C | alternative | C-LOCAL | 12 | 32 to 38 |
+| Id | To | Kind | Segments | Miles | Minutes | Schools | Tracts |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `R-A-ORIG` | WH-A | original | PORT-01, NB-03, WH-A-APPR | 45 | 60 to 74 | 7 | 53 |
+| `R-A-ALT` | WH-A | alternative | PORT-01, EB-405, WH-A-APPR | 60 | 75 to 88 | 9 | 31 |
+| `R-B-ORIG` | WH-B | original | PORT-01, NB-03, WH-B-APPR | 40 | 55 to 68 | 5 | 51 |
+| `R-B-ALT` | WH-B | alternative | HARBOR-110, XTOWN-B | 45 | 65 to 83 | 18 | 79 |
+| `R-C-ORIG` | WH-C | original | PORT-01, WEST-405 | 16 | 28 to 35 | 0 | 15 |
+| `R-C-ALT` | WH-C | alternative | C-LOCAL | 12 | 32 to 38 | 0 | 9 |
+
+Schools and tracts are counted once per route, within 150 m (real locations, illustrative route).
 
 ## Shipments and expected results
 
@@ -117,3 +121,51 @@ The flagged zones are two hand-drawn SYNTHETIC rectangles in the feature service
 | S-10 | WH-C | 13:00-14:00 | 12:30 | 12:58 to 13:05 ON_TRACK | 12:58 to 13:05 ON_TRACK | none | Unaffected |
 
 The mix covers: unaffected shipments, affected shipments that stay on track, tight and late shipments, shipments that rerouting fixes, and one (S-03) that no confirmed response fixes.
+
+## Corridor analysis (150 m)
+
+`scripts/corridor_analysis.py` counts the real schools and SB 535 disadvantaged community tracts within 150 m of each route's drawn line, and writes the result to `corridor.json`, `corridor-layers.json`, `routes.json`, `segments.json` and the sample responses.
+
+```bash
+python3 scripts/corridor_analysis.py           # analyse and write
+python3 scripts/corridor_analysis.py --check   # analyse and report only
+```
+
+Run it after `import_map_data.py` and again whenever a segment line changes. `import_map_data.py` copies the stored counts in on every run; if the lines no longer match the stored analysis it leaves the counts out and says so.
+
+| Layer | Publisher | Edition | Downloaded |
+| --- | --- | --- | --- |
+| Public School Locations, Current | National Center for Education Statistics | 2024-2025 | 2026-11-14 |
+| SB 535 Disadvantaged Communities 2022 | California Office of Environmental Health Hazard Assessment (CalEPA) | 2022 | 2026-11-14 |
+
+- **What 150 m means.** It is a proximity measure, not measured exposure and not a health impact. The distance follows Kozawa, Fruin and Winer (2009), who measured raised diesel pollutants within about 150 m downwind of freeways next to the Ports of Los Angeles and Long Beach.
+- **How it is measured.** A school counts when it lies within 150 m of the line; a tract counts when any part of it does. Distances are in metres in California Albers (EPSG:3310). A route's count is the set of places near any of its segments, so a school beside two segments is counted once.
+- **The lines are schematic.** They are a few points along each corridor, not the road itself. Measured against Caltrans highway lines on 2026-11-14, the drawn segments sit a median of about 150 m to 1,900 m from the real highway, and only 0% to 50% of each segment is within 150 m of it. The counts are therefore real places near a drawn line, and will change when the lines are redrawn along the roads. Rerun the script after that.
+- **The trade-off in the data.** For Warehouse B the alternative passes more of both: 18 schools and 79 tracts against 5 and 51. No alternative passes fewer schools and fewer tracts than its original over more miles, which the GIS brief also asks for. The brief's answer to that is to change which route is used, never the data.
+- **Diesel percentile.** `max_diesel_pm_pctl` is the highest CalEnviroScreen 4.0 diesel particulate percentile among the tracts a route passes. It is 99.8 for every route, so it does not tell the routes apart and the dashboard does not show it.
+
+## Real reference data (`real/`)
+
+The two files in `real/` are labelled **REAL**. They come from public Caltrans sources and are matched to the simulated segments above. They are reference only: the app does not calculate with them, they are a snapshot and not a live feed, and nothing in them says a route is legal or suitable for trucks.
+
+Rebuild them after `import_map_data.py` with:
+
+```bash
+python3 scripts/import_reference_data.py
+```
+
+`python3 scripts/import_reference_data.py --check` fetches and reports without writing. Import from `real/index.ts`, never from the JSON files directly.
+
+| File | Contents | Source |
+| --- | --- | --- |
+| `real/lane-closures.json` | Planned and current lane closures on the highways the segments follow: lanes closed, planned start and end, actual start and end where recorded | Caltrans Lane Closure System, District 7 |
+| `real/truck-network.json` | The truck designation Caltrans records for the state highways each segment follows, and where it has no record | Caltrans Truck Network layer |
+
+Things to know before using them:
+
+- **Matching is approximate.** Segment lines are schematic, so a closure or highway stretch is matched by highway number and direction first, then by distance (3 km for closures, 2.5 km for the truck network). Which highway each segment follows is a table at the top of the script, read from the segment names; the import stops if a segment has no entry.
+- **Closures are mostly planned roadwork**, about nine days around the import date. They are not a record of crashes or emergency closures.
+- **Ramp closures are left out**, because the illustrative routes do not say which ramps they use. The file records how many were left out.
+- **Each run merges with the last.** Closures seen before are kept and updated, so running the import on later days builds up actual end times. Two runs do not give the same file.
+- **The truck network has gaps.** It has no rows for SR-60, and it does not cover surface streets (`C-LOCAL`). A missing record does not mean trucks are barred. Times in the closures file are Pacific local time.
+- **Used by the dashboard.** The truck network file feeds the "Truck network (Caltrans record)" row of the response comparison (G5). It reports what Caltrans records and where it has no record; it never says a truck may or may not use a route. Set `VITE_TRUCK_NETWORK_CHECK=off` to hide the row. The lane closures file is not used by the dashboard.

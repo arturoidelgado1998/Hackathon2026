@@ -188,15 +188,26 @@ describe('unavailable routes and pending appointments', () => {
   })
 
   it('preserves supplied community facts in metrics rather than inventing zeroes', () => {
+    const note = 'Supplied corridor screening note; not measured exposure.'
     const result = assessShipment(reference, sampleIncident, {
       ...data,
-      routes: routes.map((route) => route.id === 'R-A-ALT'
-        ? { ...route, schools_150m: 3, dac_tracts: ['tract-1'], max_diesel_pm_pctl: 92 }
-        : route),
+      routes: routes.map((route) => {
+        if (route.id === 'R-A-ALT') {
+          return {
+            ...route, schools_150m: 3, dac_tracts: ['tract-1'], max_diesel_pm_pctl: 92,
+            sensitive_zone_note: note,
+          }
+        }
+        if (route.id === reference.assigned_route_id) {
+          return { ...route, schools_150m: null, dac_tracts: null, max_diesel_pm_pctl: null }
+        }
+        return route
+      }),
     }, assumptions)
     expect(result.options[1].metrics).toMatchObject({
       schools_150m: 3, dac_tracts: ['tract-1'], max_diesel_pm_pctl: 92,
     })
+    expect(result.options[1].stakeholder_notes).toContain(note)
     expect(result.baseline).toMatchObject({
       schools_150m: null, dac_tracts: null, max_diesel_pm_pctl: null,
     })

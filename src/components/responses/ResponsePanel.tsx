@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import type { Decision, ResponseOption, ResponseOptionKind } from '../../types'
-import type { Baseline, CommunityInfo, ResponsePanelView } from '../../viewModels'
+import type { Baseline, CommunityInfo, ResponsePanelView, TruckNetworkInfo } from '../../viewModels'
 import { isResponseOptionAvailable } from '../../state/options'
 import { RiskBadge } from '../board/RiskBadge'
 import { AlertIcon, ClockIcon } from '../icons'
@@ -76,6 +76,41 @@ function communityCell(option: ResponseOption, community?: CommunityInfo): React
   const text = formatCommunityCounts(schools, tracts)
   return schools > 0 || (tracts !== null && tracts > 0) ? <Warning>{text}</Warning> : text
 }
+
+/** What Caltrans records for the route's highways, with gaps called out. Never a verdict. */
+function truckCell(option: ResponseOption, trucks?: TruckNetworkInfo): ReactNode {
+  if (isPending(option)) return PENDING_STRIP_TEXT
+  if (!trucks || option.miles === null) return NA
+  return (
+    <ul className="responses-trucks">
+      {trucks.recorded.map(({ designation, highways }) => (
+        <li key={designation}>
+          {highways.join(', ')}: {designation}
+        </li>
+      ))}
+      {trucks.restrictions.map((restriction) => (
+        <li key={restriction}>
+          <Warning>Recorded restriction on {restriction}</Warning>
+        </li>
+      ))}
+      {trucks.noRecord.length > 0 && (
+        <li>
+          <Warning>No Caltrans record for {trucks.noRecord.join(', ')}</Warning>
+        </li>
+      )}
+      {trucks.notCovered.map((segment) => (
+        <li key={segment}>
+          <Warning>Not on the state truck network, not checked: {segment}</Warning>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+const TRUCK_ROW_LABEL = 'Truck network (Caltrans record)'
+const TRUCK_ROW_ESTIMATE =
+  'The designation Caltrans records for the state highways this illustrative route follows. ' +
+  'A record, not a check that a truck may use the route.'
 
 /** A value with its change against the normal scenario underneath. */
 function withChange(value: string, change: string | null): ReactNode {
@@ -205,7 +240,7 @@ function ShipmentResponses({
   const whyRefs = useRef<Partial<Record<ResponseOptionKind, HTMLButtonElement>>>({})
   const headingRef = useRef<HTMLHeadingElement>(null)
   const feedbackRef = useRef<HTMLDivElement>(null)
-  const { shipment, destinationName, summary, options, baseline, community } = view
+  const { shipment, destinationName, summary, options, baseline, community, truckNetwork } = view
   const preview = previewDecision?.shipment_id === shipment.id ? previewDecision : null
   const awaitingConfirmation = decision?.status === 'pending_confirmation'
   const previousFeedback = useRef({ decision, preview })
@@ -415,6 +450,16 @@ function ShipmentResponses({
               ))}
             </tr>
           ))}
+          {truckNetwork && (
+            <tr>
+              <th scope="row">{TRUCK_ROW_LABEL}</th>
+              {options.map((o) => (
+                <td key={o.kind} data-kind={o.kind} title={TRUCK_ROW_ESTIMATE}>
+                  {truckCell(o, truckNetwork[o.kind])}
+                </td>
+              ))}
+            </tr>
+          )}
           <tr>
             <th scope="row">Not modeled</th>
             <td colSpan={options.length} className="responses-not-modeled">

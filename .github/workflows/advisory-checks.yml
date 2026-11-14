@@ -87,10 +87,17 @@ jobs:
       - name: Install the browser
         run: npx playwright install --with-deps --only-shell chromium
 
+      # The data checks in sanity/data.sanity.test.ts import the Python scripts
+      # in scripts/ (standard library only, Python 3.9 or later, no network).
+      - name: Check Python is available
+        run: python3 --version
+
       - name: Build
         run: npm run build
 
-      # Repository hygiene, the change log, the build output, and the built
-      # app driven through its main flow in a real browser.
+      # Repository hygiene, the change log, the build output, the generated
+      # data files and the scripts that write them, and the built app driven
+      # through its main flow in a real browser. Every file matching
+      # sanity/**/*.sanity.test.ts is run.
       - name: Sanity checks
         run: npm run test:sanity

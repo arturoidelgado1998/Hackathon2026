@@ -112,6 +112,7 @@ function notes(route: Route, metrics: MetricsResult): string[] {
     route.near_sensitive_zone
       ? 'Community: route passes a flagged sensitive zone; this is a screening flag, not a measured exposure estimate.'
       : 'Community: route is not flagged as passing a sensitive zone; this does not establish zero exposure.',
+    ...(route.sensitive_zone_note ? [route.sensitive_zone_note] : []),
     `Truck suitability: ${route.truck_suitability_note}`,
   ]
 }

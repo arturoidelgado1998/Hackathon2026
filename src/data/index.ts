@@ -15,6 +15,7 @@ import { assessShipment } from '../engine/responses.ts'
 import type { EngineResponseOption, ShipmentAssessment } from '../engine/responses.ts'
 import { sampleIncident } from './demoIncident.ts'
 import assumptionsJson from './assumptions.json'
+import corridorJson from './corridor.json'
 import facilitiesJson from './facilities.json'
 import routesJson from './routes.json'
 import segmentsJson from './segments.json'
@@ -22,6 +23,49 @@ import shipmentsJson from './shipments.json'
 
 export type { Baseline, Scenario, ShipmentSummary }
 export { sampleIncident }
+
+/** One real public layer used by the corridor analysis. */
+export interface CorridorSource {
+  id: 'schools' | 'dac_tracts'
+  name: string
+  publisher: string
+  /** School year or release, as published. */
+  edition: string
+  url: string
+  /** Date the layer was downloaded, YYYY-MM-DD. */
+  retrieved: string
+  features_in_study_box: number
+}
+
+/** What the corridor analysis found beside one route. */
+export interface RouteCorridor {
+  schools_150m: number
+  /** NCES school ids. */
+  schools: string[]
+  /** Census tract ids. */
+  dac_tracts: string[]
+  max_diesel_pm_pctl: number | null
+  near_sensitive_zone: boolean
+  note: string
+}
+
+/**
+ * The corridor analysis (G3): REAL schools and disadvantaged tracts within
+ * 150 m of each ILLUSTRATIVE route. Written by scripts/corridor_analysis.py.
+ * A proximity measure, not measured exposure.
+ */
+export interface CorridorFile {
+  label: string
+  buffer_m: number
+  method: string
+  meaning: string
+  basis: string
+  sources: CorridorSource[]
+  routes: Record<string, RouteCorridor>
+  segments: Record<string, { schools: string[]; dac_tracts: string[]; near_sensitive_zone: boolean }>
+}
+
+export const corridor = corridorJson as unknown as CorridorFile
 
 /** Every sample data file carries this label. */
 export const DATA_LABEL = 'SIMULATED' as const

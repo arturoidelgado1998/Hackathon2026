@@ -9,6 +9,7 @@ import shipmentsJson from './shipments.json'
 import {
   REFERENCE_SHIPMENT_ID,
   assumptions,
+  corridor,
   facilities,
   getBaseline,
   getFacility,
@@ -162,18 +163,62 @@ describe('counts and route totals', () => {
     }
   })
 
-  it('keeps sensitive-zone fields as placeholders', () => {
+  it('carries the corridor analysis: real places counted beside every route', () => {
     for (const r of routes) {
-      expect(r.schools_150m).toBeNull()
-      expect(r.dac_tracts).toBeNull()
-      expect(r.max_diesel_pm_pctl).toBeNull()
+      const counted = corridor.routes[r.id]
+      expect(counted).toBeDefined()
+      expect(r.schools_150m).toBe(counted.schools.length)
+      expect(r.dac_tracts).toEqual(counted.dac_tracts)
+      expect(r.max_diesel_pm_pctl).toBe(counted.max_diesel_pm_pctl)
+      expect(r.near_sensitive_zone).toBe(counted.schools.length > 0 || counted.dac_tracts.length > 0)
+      // A route counts each place once, however many of its segments pass it.
+      const schools = new Set(r.segment_ids.flatMap((id) => corridor.segments[id].schools))
+      const tracts = new Set(r.segment_ids.flatMap((id) => corridor.segments[id].dac_tracts))
+      expect(counted.schools).toEqual([...schools].sort())
+      expect(counted.dac_tracts).toEqual([...tracts].sort())
+      if (r.near_sensitive_zone) {
+        expect(r.sensitive_zone_note).toMatch(/within 150 m \(real locations, illustrative route\)$/)
+      }
+      // The hand-drawn zones from the feature service are no longer used.
+      expect(r.sensitive_zone_note).not.toMatch(/SYNTHETIC/)
     }
-    const flagged = routes.filter((r) => r.near_sensitive_zone)
-    expect(flagged.length).toBeGreaterThanOrEqual(1)
-    for (const r of flagged) {
-      expect(r.kind).toBe('alternative')
-      // Hand-drawn zones from the feature service, until the corridor analysis (G3).
-      expect(r.sensitive_zone_note).toMatch(/SYNTHETIC/)
+    for (const s of segments) {
+      expect(s.near_sensitive_zone).toBe(corridor.segments[s.id].near_sensitive_zone)
+    }
+  })
+
+  it('names the source, publisher, edition and download date of each real layer', () => {
+    expect(corridor.buffer_m).toBe(150)
+    expect(corridor.meaning).toMatch(/not measured exposure/)
+    expect(corridor.basis).toMatch(/Kozawa, Fruin and Winer \(2009\)/)
+    expect(corridor.sources.map((s) => s.id)).toEqual(['schools', 'dac_tracts'])
+    for (const source of corridor.sources) {
+      expect(source.publisher).toMatch(/\S/)
+      expect(source.edition).toMatch(/\d{4}/)
+      expect(source.url).toMatch(/^https:\/\//)
+      expect(source.retrieved).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    }
+  })
+
+  it('shows the trade-off the dispatcher weighs: a reroute that passes more schools', () => {
+    const original = corridor.routes['R-B-ORIG']
+    const alternative = corridor.routes['R-B-ALT']
+    expect(alternative.schools_150m).toBeGreaterThan(original.schools_150m)
+    expect(alternative.dac_tracts.length).toBeGreaterThan(original.dac_tracts.length)
+  })
+
+  it('mirrors each route in its response options', () => {
+    for (const s of shipments) {
+      const original = getRoute(s.assigned_route_id)!
+      const alternative = getRoutesForDestination(s.destination_id).find((r) => r.kind === 'alternative')!
+      for (const option of getResponseOptions(s.id, 'disrupted')) {
+        if (option.kind === 'wait') expect(option.passes_sensitive_zone).toBe(original.near_sensitive_zone)
+        if (option.kind === 'reroute' && option.miles !== null) {
+          expect(option.passes_sensitive_zone).toBe(alternative.near_sensitive_zone)
+          expect(option.stakeholder_notes).toContain(alternative.sensitive_zone_note)
+          expect(option.stakeholder_notes.join(' ')).not.toMatch(/SYNTHETIC/)
+        }
+      }
     }
   })
 })

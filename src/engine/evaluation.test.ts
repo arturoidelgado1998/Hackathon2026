@@ -12,19 +12,19 @@ const timestamp = '2026-11-14T18:00:00.000Z'
 const decision = (shipment_id: string, option_kind: Decision['option_kind'], status: Decision['status']): Decision =>
   ({ shipment_id, option_kind, status, timestamp })
 
-// Independently calculated from the immutable ArcGIS fixture snapshot.
+// Independently calculated from the ArcGIS inputs and stored corridor analysis.
 const EXPECTED: Record<ComparisonScenario, EvaluationTotals> = {
   normal: {
     late: 0, tightOrUnknown: 0, latenessMax: 0, cost: 1027, addedMiles: 0,
-    co2Kg: 546.5, pending: 0, addedDriverDuty: 0, flaggedRoutes: 0,
+    co2Kg: 546.5, pending: 0, addedDriverDuty: 0, flaggedRoutes: 10,
   },
   disrupted_no_action: {
     late: 3, tightOrUnknown: 1, latenessMax: 132, cost: 1204, addedMiles: 0,
-    co2Kg: 546.5, pending: 0, addedDriverDuty: 263, flaggedRoutes: 0,
+    co2Kg: 546.5, pending: 0, addedDriverDuty: 263, flaggedRoutes: 10,
   },
   disrupted_selected_responses: {
     late: 2, tightOrUnknown: 0, latenessMax: 84, cost: 1182, addedMiles: 20,
-    co2Kg: 577.9, pending: 2, addedDriverDuty: 176, flaggedRoutes: 2,
+    co2Kg: 577.9, pending: 2, addedDriverDuty: 176, flaggedRoutes: 10,
   },
 }
 
@@ -77,7 +77,7 @@ describe('committed evaluation', () => {
     ], data, assumptions)
     expect(result.totals).toEqual({
       late: 0, tightOrUnknown: 1, latenessMax: null, cost: null, addedMiles: 0,
-      co2Kg: 70.7, pending: 1, addedDriverDuty: null, flaggedRoutes: 0,
+      co2Kg: 70.7, pending: 1, addedDriverDuty: null, flaggedRoutes: 1,
     })
     const mixed = evaluateAll(shipments, unknown, [], data, assumptions)
     expect(mixed.totals).toMatchObject({
@@ -87,7 +87,8 @@ describe('committed evaluation', () => {
   })
 
   it('counts sensitive-route uses per shipment rather than unique route ids', () => {
-    const result = evaluateAll(shipments, sampleIncident, [
+    const repeatedRoute = shipments.filter((shipment) => shipment.id === 'S-01' || shipment.id === 'S-02')
+    const result = evaluateAll(repeatedRoute, sampleIncident, [
       decision('S-01', 'reroute', 'selected'), decision('S-02', 'reroute', 'selected'),
     ], data, assumptions)
     expect(result.shipments.filter((item) => item.route_id === 'R-A-ALT')).toHaveLength(2)

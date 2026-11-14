@@ -202,7 +202,10 @@ describe('cost, emissions and sensitive-zone context', () => {
       passes_sensitive_zone: sensitive, schools_150m: 3,
       dac_tracts: context.dac_tracts, max_diesel_pm_pctl: 93.5,
     })
-    expect(calculateMetrics(base)).toMatchObject({
+    expect(calculateMetrics({
+      ...base,
+      route: { ...route, schools_150m: null, dac_tracts: null, max_diesel_pm_pctl: null },
+    })).toMatchObject({
       schools_150m: null, dac_tracts: null, max_diesel_pm_pctl: null,
     })
   })

@@ -447,9 +447,9 @@
     "estimated": true,
     "data_label": "SIMULATED",
     "values": {
-      "normal": 0,
-      "disrupted_no_action": 0,
-      "disrupted_selected_responses": 2
+      "normal": 10,
+      "disrupted_no_action": 10,
+      "disrupted_selected_responses": 10
     },
     "simulation": {
       "selection_rule": "Evaluation only: choose an available ON_TRACK Wait or Reroute whose full service range meets the original appointment, with the fewest added miles versus the assigned normal route; ties use Wait before Reroute. If neither is ON_TRACK, request a later slot and retain the current Wait metrics until confirmation. Unaffected shipments keep their assigned route. This rule does not select or rank UI responses.",

@@ -2,6 +2,7 @@ import { Component, Suspense, lazy, useId, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { Decision, Facility, Route, RoadSegment } from '../types.ts'
 import { ClosedIcon, QuestionIcon } from '../components/icons.tsx'
+import { corridor } from '../data/index.ts'
 import './MapPanel.css'
 
 // The ArcGIS map is loaded on demand. If it cannot load, the route list below
@@ -54,6 +55,22 @@ function LegendLine({ kind }: { kind: 'original' | 'alternative' | 'chosen' | 'c
   )
 }
 
+/** Legend symbols for the community layers: a shape or pattern each, never colour alone. */
+function LegendMark({ kind }: { kind: 'school' | 'tract' | 'corridor' }) {
+  return (
+    <svg className={`pp-map__legend-mark pp-map__legend-mark--${kind}`} width="16" height="14" aria-hidden="true">
+      {kind === 'school' && <path d="M8 1.5 13.5 7 8 12.5 2.5 7Z" />}
+      {kind === 'tract' && (
+        <>
+          <rect x="1.5" y="1.5" width="13" height="11" />
+          <path d="M1.5 6.5 6.5 1.5M1.5 12.5 12.5 1.5M6.5 12.5 14.5 4.5M11.5 12.5 14.5 9.5" />
+        </>
+      )}
+      {kind === 'corridor' && <rect x="1.5" y="4" width="13" height="6" />}
+    </svg>
+  )
+}
+
 /** The map, a legend, and the highlighted routes as ordered segment lists. */
 export function MapPanel({
   facilities,
@@ -71,6 +88,17 @@ export function MapPanel({
   const segmentById = new Map(segments.map((s) => [s.id, s]))
   const facilityName = (id: string) => facilities.find((f) => f.id === id)?.name ?? id
   const segmentName = (id: string) => segmentById.get(id)?.name ?? id
+
+  // The corridor analysis is shown for one route: the previewed or chosen one,
+  // otherwise the shipment's original route. Counts come from the route itself,
+  // so the map, this legend and the response comparison always agree.
+  const corridorRoute = routes.find(
+    (r) => r.id === (highlightedRouteIds.chosen ?? highlightedRouteIds.original),
+  )
+  const community =
+    corridorRoute && corridorRoute.schools_150m !== null && corridorRoute.dac_tracts !== null
+      ? { routeId: corridorRoute.id, schools: corridorRoute.schools_150m, tracts: corridorRoute.dac_tracts.length }
+      : null
 
   const shown = HIGHLIGHTS.flatMap(({ key, label }) => {
     const routeId = highlightedRouteIds[key]
@@ -111,6 +139,7 @@ export function MapPanel({
                   highlightedRouteIds={highlightedRouteIds}
                   incidentSegmentId={incidentSegmentId}
                   candidateSegmentId={candidateSegmentId}
+                  corridorRouteId={community?.routeId ?? null}
                   onSegmentClick={onSegmentClick}
                   onError={() => setMapFailed(true)}
                 />
@@ -133,8 +162,43 @@ export function MapPanel({
             <li>
               <LegendLine kind="network" /> Other segments
             </li>
+            {community && (
+              <>
+                <li>
+                  <LegendMark kind="corridor" /> {corridor.buffer_m} m corridor
+                </li>
+                <li>
+                  <LegendMark kind="school" /> School
+                </li>
+                <li>
+                  <LegendMark kind="tract" /> Disadvantaged tract
+                </li>
+              </>
+            )}
           </ul>
         </>
+      )}
+
+      {community && (
+        <section className="pp-map__community" aria-label="Community near the route">
+          <p>
+            Within {corridor.buffer_m} m of <strong>{community.routeId}</strong>:{' '}
+            <strong className="pp-num">{community.schools}</strong>{' '}
+            {community.schools === 1 ? 'school' : 'schools'} and{' '}
+            <strong className="pp-num">{community.tracts}</strong> disadvantaged{' '}
+            {community.tracts === 1 ? 'tract' : 'tracts'}.
+          </p>
+          <p className="pp-map__community-note">
+            Real locations beside an illustrative route: proximity, not measured exposure.
+          </p>
+          <ul className="pp-map__sources" aria-label="Sources of the real layers">
+            {corridor.sources.map((source) => (
+              <li key={source.id}>
+                {source.name}: {source.publisher}, {source.edition}; downloaded {source.retrieved}
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       {(incidentSegmentId !== null || candidateSegmentId !== null) && (
