@@ -51,6 +51,16 @@ function defaultOpenStream(): RelayDeps['openStream'] {
   return typeof EventSource === 'undefined' ? null : (url) => new EventSource(url)
 }
 
+/**
+ * Runs `start` once the page has finished loading. A stream opened while a
+ * page is still loading keeps some phone browsers showing "loading" for as
+ * long as the stream stays open, which is forever.
+ */
+function afterPageLoad(start: () => void): void {
+  if (typeof document === 'undefined' || document.readyState === 'complete') start()
+  else window.addEventListener('load', () => setTimeout(start, 0), { once: true })
+}
+
 function parse(data: string): unknown {
   try {
     return JSON.parse(data)
@@ -126,7 +136,9 @@ export function createRelayedChannel(
   })
 
   interface Stream {
-    source: StreamLike
+    /** Null until the page has loaded, and after the last listener leaves. */
+    source: StreamLike | null
+    closed: boolean
     listeners: Set<NoticeListener>
   }
   const streams = new Map<string, Stream>()
@@ -141,8 +153,21 @@ export function createRelayedChannel(
     const existing = streams.get(shipmentId)
     if (existing) return existing
     if (!openStream) return null
-    const source = openStream(`${RELAY_PATH}/${encodeURIComponent(shipmentId)}/stream`)
-    const stream: Stream = { source, listeners: new Set() }
+    const stream: Stream = { source: null, closed: false, listeners: new Set() }
+    streams.set(shipmentId, stream)
+    afterPageLoad(() => {
+      if (stream.closed) return
+      stream.source = connect(shipmentId, stream, openStream)
+    })
+    return stream
+  }
+
+  function connect(
+    shipmentId: string,
+    stream: Stream,
+    open: NonNullable<RelayDeps['openStream']>,
+  ): StreamLike {
+    const source = open(`${RELAY_PATH}/${encodeURIComponent(shipmentId)}/stream`)
     const deliver = (notice: DriverNotice | null) =>
       stream.listeners.forEach((listener) => listener(notice))
 
@@ -165,8 +190,7 @@ export function createRelayedChannel(
       }
     })
     source.addEventListener('clear', () => deliver(null))
-    streams.set(shipmentId, stream)
-    return stream
+    return source
   }
 
   return {
@@ -192,7 +216,8 @@ export function createRelayedChannel(
         if (!stream) return
         stream.listeners.delete(listener)
         if (stream.listeners.size === 0) {
-          stream.source.close()
+          stream.closed = true
+          stream.source?.close()
           streams.delete(shipmentId)
         }
       }

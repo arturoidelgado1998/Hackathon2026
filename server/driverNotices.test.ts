@@ -152,6 +152,8 @@ describe('driver notice relay', () => {
     expect(first.response.headers.get('content-type')).toBe('text/event-stream')
     expect(await first.next()).toEqual({ event: 'snapshot', data: { notice } })
     expect(await other.next()).toEqual({ event: 'snapshot', data: { notice: null } })
+    const info = (await (await fetch(url())).json()) as { connected: Record<string, number> }
+    expect(info.connected).toEqual({ 'S-01': 1, 'S-02': 1 })
 
     const update = { ...notice, version: 2, instruction: 'Keep the original route.' }
     await put('S-01', update)

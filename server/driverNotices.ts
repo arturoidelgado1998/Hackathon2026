@@ -149,6 +149,10 @@ export function createDriverNoticeRelay(options: RelayOptions): RelayHandler {
         return sendJson(res, 200, {
           relay: 'portplan-driver-notices',
           notices: notices.size,
+          // Driver pages following each shipment right now. Counts only.
+          connected: Object.fromEntries(
+            [...streams].filter(([, set]) => set.size > 0).map(([id, set]) => [id, set.size]),
+          ),
           lan_urls: lanUrls(options.listening?.() ?? null),
         })
       }
