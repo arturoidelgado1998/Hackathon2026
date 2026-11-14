@@ -1,0 +1,142 @@
+.pp-map {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.pp-map__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.pp-map__title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.pp-map__badge {
+  padding: 0.1rem 0.5rem;
+  border: 1px dashed var(--pp-border-strong);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.pp-map__note,
+.pp-map__selection,
+.pp-map__empty,
+.pp-map__missing {
+  margin: 0;
+}
+
+.pp-map__note {
+  font-size: 0.8rem;
+  color: var(--pp-text-muted);
+}
+
+.pp-map__empty {
+  padding: 1.5rem 0.5rem;
+  text-align: center;
+  color: var(--pp-text-muted);
+}
+
+.pp-map__incidents {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pp-map__route {
+  border-left: 4px solid var(--pp-border-strong);
+  padding-left: 0.5rem;
+}
+
+.pp-map__route--alternative {
+  border-left-style: dashed;
+}
+
+.pp-map__route--chosen {
+  border-left-style: double;
+  border-left-width: 6px;
+}
+
+.pp-map__route-title {
+  margin: 0 0 0.25rem;
+  font-size: 0.9rem;
+}
+
+.pp-map__route-ends {
+  font-weight: 400;
+  color: var(--pp-text-muted);
+}
+
+.pp-map__segments {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.pp-map__segments li + li {
+  margin-top: 0.2rem;
+}
+
+.pp-map__segment {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--pp-border);
+  border-radius: 4px;
+  background: var(--pp-surface);
+  color: var(--pp-text);
+  cursor: pointer;
+}
+
+.pp-map__segment:hover {
+  background: var(--pp-surface-muted);
+}
+
+.pp-map__segment:focus-visible {
+  outline: 2px solid var(--pp-focus);
+  outline-offset: 2px;
+}
+
+.pp-map__segment-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.pp-map__segment-miles {
+  font-variant-numeric: tabular-nums;
+  color: var(--pp-text-muted);
+}
+
+/* Tags always carry text and an icon; colour is secondary. */
+.pp-map__tag {
+  display: inline-block;
+  padding: 0 0.4rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid currentColor;
+}
+
+.pp-map__tag--closed {
+  color: var(--pp-danger);
+}
+
+.pp-map__tag--candidate {
+  color: var(--pp-warning);
+  border-style: dashed;
+}

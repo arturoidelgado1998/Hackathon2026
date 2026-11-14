@@ -1,0 +1,133 @@
+.pp-shell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100vh;
+  height: 100dvh;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.pp-shell__header {
+  min-width: 0;
+  border-bottom: 1px solid var(--pp-border);
+  background: var(--pp-surface);
+}
+
+.pp-shell__topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.5rem 1rem;
+}
+
+.pp-shell__title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.pp-shell__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pp-shell__toggle {
+  display: inline-flex;
+  border: 1px solid var(--pp-border-strong);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.pp-shell__toggle-btn,
+.pp-shell__btn {
+  font: inherit;
+  padding: 0.3rem 0.75rem;
+  border: 0;
+  background: var(--pp-surface);
+  color: var(--pp-text);
+  cursor: pointer;
+}
+
+.pp-shell__toggle-btn + .pp-shell__toggle-btn {
+  border-left: 1px solid var(--pp-border-strong);
+}
+
+/* Pressed state uses weight and a check mark, not colour alone. */
+.pp-shell__toggle-btn[aria-pressed='true'] {
+  background: var(--pp-accent);
+  color: var(--pp-accent-text);
+  font-weight: 600;
+}
+
+.pp-shell__toggle-btn[aria-pressed='true']::before {
+  content: '\2713\00a0';
+}
+
+.pp-shell__btn {
+  border: 1px solid var(--pp-border-strong);
+  border-radius: 6px;
+}
+
+.pp-shell__btn--primary {
+  background: var(--pp-accent);
+  color: var(--pp-accent-text);
+  border-color: var(--pp-accent);
+}
+
+.pp-shell__toggle-btn:focus-visible,
+.pp-shell__btn:focus-visible {
+  outline: 2px solid var(--pp-focus);
+  outline-offset: 2px;
+}
+
+.pp-shell__indicators {
+  min-width: 0;
+  padding: 0.35rem 1rem;
+  border-top: 1px solid var(--pp-border);
+  background: var(--pp-surface-muted);
+}
+
+.pp-shell__main {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  grid-template-rows: minmax(0, 3fr) minmax(0, 2fr) auto;
+  grid-template-areas:
+    'board map'
+    'responses responses'
+    'assumptions assumptions';
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pp-shell__region {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--pp-border);
+  border-radius: 8px;
+  background: var(--pp-surface);
+  padding: 0.75rem;
+}
+
+.pp-shell__board {
+  grid-area: board;
+}
+
+.pp-shell__map {
+  grid-area: map;
+}
+
+.pp-shell__responses {
+  grid-area: responses;
+}
+
+.pp-shell__assumptions {
+  grid-area: assumptions;
+  max-height: 8rem;
+}
