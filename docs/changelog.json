@@ -9,7 +9,8 @@
       "not_started": "No work yet",
       "in_progress": "Someone is working on it; assignee and branch are set",
       "done": "Merged and verified",
-      "on_hold": "Do not start until the on-hold label is removed"
+      "on_hold": "Do not start until the on-hold label is removed",
+      "in_review": "Work is in an open pull request"
     },
     "how_to_update": [
       "Starting an issue: set status to in_progress, fill assignee and branch, and assign yourself on GitHub",
@@ -23,7 +24,8 @@
   "summary": {
     "counts": {
       "done": 5,
-      "not_started": 14,
+      "not_started": 13,
+      "in_review": 1,
       "on_hold": 3
     },
     "current_branch_for_phase_1": "phase-1-dashboard",
@@ -44,13 +46,22 @@
         "merge_commit": "9810047",
         "base": "main",
         "head": "phase-1-dashboard"
+      },
+      {
+        "number": 26,
+        "url": "https://github.com/arturoidelgado1998/Hackathon2026/pull/26",
+        "state": "open",
+        "base": "main",
+        "head": "phase-1-dashboard"
       }
     ],
     "next_up": [
       7,
       8,
-      9
-    ]
+      9,
+      20
+    ],
+    "data_source": "ArcGIS feature service, imported by scripts/import_map_data.py"
   },
   "issues": [
     {
@@ -161,11 +172,16 @@
         "Routes carry extra stored fields (sensitive_zone_note, totals) typed as RouteRecord in src/data, not in src/types.ts",
         "Per-value placeholder flags for assumptions are exposed as assumptionPlaceholders"
       ],
-      "revisions": [],
+      "revisions": [
+        {
+          "commit": "0c661fc",
+          "summary": "Sample data replaced by an import from the team's feature service: new shipment ids (S-01 to S-10), names, segments with geometry and min/max minutes; sample responses regenerated and verified against the service"
+        }
+      ],
       "follow_ups": [
-        "Reroute is unavailable for every Warehouse B shipment because its alternative route also uses NB-03",
         "Sensitive-zone values are placeholders until G3 (#21)",
-        "sample-responses.json becomes a test fixture once the engine is wired in (E4, #14)"
+        "sample-responses.json becomes a test fixture once the engine is wired in (E4, #14)",
+        "Warehouse B's alternative route now avoids NB-03, so rerouting is available there"
       ]
     },
     {
@@ -459,7 +475,9 @@
       "verification": [],
       "deviations_from_issue": [],
       "revisions": [],
-      "follow_ups": []
+      "follow_ups": [
+        "Reference values updated in the issue text on 2026-11-14 (S-01, ranges)"
+      ]
     },
     {
       "number": 12,
@@ -481,7 +499,9 @@
       "verification": [],
       "deviations_from_issue": [],
       "revisions": [],
-      "follow_ups": []
+      "follow_ups": [
+        "Reference values updated in the issue text on 2026-11-14 (max-arrival case)"
+      ]
     },
     {
       "number": 13,
@@ -503,7 +523,9 @@
       "verification": [],
       "deviations_from_issue": [],
       "revisions": [],
-      "follow_ups": []
+      "follow_ups": [
+        "Decision deadlines updated in the issue text on 2026-11-14: 10:28 and 10:02"
+      ]
     },
     {
       "number": 14,
@@ -529,7 +551,9 @@
       "verification": [],
       "deviations_from_issue": [],
       "revisions": [],
-      "follow_ups": []
+      "follow_ups": [
+        "Decision deadline wording updated in the issue text on 2026-11-14"
+      ]
     },
     {
       "number": 15,
@@ -603,7 +627,9 @@
       "verification": [],
       "deviations_from_issue": [],
       "revisions": [],
-      "follow_ups": []
+      "follow_ups": [
+        "Reference values updated in the issue text on 2026-11-14"
+      ]
     },
     {
       "number": 18,
@@ -635,27 +661,62 @@
       "code": "G1",
       "title": "Geography data: real locations and segment geometry",
       "phase": "Phase 5: GIS / ArcGIS",
-      "status": "not_started",
+      "status": "in_review",
       "github_state": "open",
       "assignee": "arturoidelgado1998",
-      "built_by": null,
-      "branch": null,
-      "pull_request": null,
-      "commit": null,
+      "built_by": "Coordinator",
+      "branch": "phase-1-dashboard",
+      "pull_request": 26,
+      "commit": {
+        "hash": "0c661fc",
+        "date": "2026-11-14T12:08:28-08:00",
+        "message": "G1: Adopt the team's ArcGIS feature service as the data source",
+        "files": {
+          "added": [
+            "scripts/import_map_data.py"
+          ],
+          "modified": [
+            "src/App.test.tsx",
+            "src/data/README.md",
+            "src/data/assumptions.json",
+            "src/data/data.test.ts",
+            "src/data/facilities.json",
+            "src/data/index.ts",
+            "src/data/routes.json",
+            "src/data/sample-responses.json",
+            "src/data/segments.json",
+            "src/data/shipments.json"
+          ],
+          "deleted": []
+        }
+      },
       "depends_on": [
         "R1"
       ],
       "already_in_place": [
         "Team feature service with facilities, 9 segments, 30 shipment routes and 2 synthetic zones: https://services.arcgis.com/QPnoxtBFXm6yYtyc/arcgis/rest/services/PortPlan_%E2%80%94_Disruption_Triage_WFL1/FeatureServer"
       ],
-      "changes": [],
-      "verification": [],
-      "deviations_from_issue": [],
+      "changes": [
+        "The team's ArcGIS feature service is the source of truth for facilities, segments (with geometry), routes and shipments",
+        "scripts/import_map_data.py rebuilds src/data from the service and pre-calculates the sample responses; --check verifies without writing",
+        "Shipment ids are S-01 to S-10; warehouses and segments use the service's names along real corridors",
+        "Every segment has min and max minutes, so arrivals are ranges; cost and driver duty use the max-arrival case"
+      ],
+      "verification": [
+        "Import script results match the service's own rows for all three scenarios: 30 rows, 0 mismatches",
+        "npm run build, typecheck, lint and test all pass (82 tests)",
+        "Viewed in the browser: 6 shipments in Needs review after the closure; S-03 shows the no-feasible-response banner"
+      ],
+      "deviations_from_issue": [
+        "Miles are the service's stated values, not measured from the lines, which are schematic and shorter; the issue's criterion was changed to match",
+        "Done before R1 (#18) at the team's request"
+      ],
       "revisions": [],
       "follow_ups": [
-        "2026-11-14: on-hold lifted and assigned. Blocked on a decision: the feature service is a different dataset from src/data (shipment ids, warehouse names, segment ids, travel-time ranges, Warehouse B alternative). Details in the issue comment",
-        "Drawn segment lengths are shorter than the stated miles, so the 'within 0.5 mi' criterion fails as written",
-        "The service's capabilities include Create, Update and Delete; check that the public cannot edit it"
+        "Edited the feature service: S-03's appointment changed from 11:00-11:40 to 11:00-11:34 (3 rows) so one shipment has no confirmed fix",
+        "The feature service can be edited without signing in; tighten its sharing settings",
+        "Sensitive-zone flags come from the service's two SYNTHETIC rectangles until G3 (#21)",
+        "Reference values changed: the plan's $121/$161/$158 is the min case; stored values are the max case $130/$169/$167. Issues #11-#14 and #17 were updated"
       ]
     },
     {
@@ -676,15 +737,16 @@
       "already_in_place": [
         "MapPanelProps contract is fixed in src/map/MapPanel.tsx",
         "@arcgis/core 5.1.27, @arcgis/map-components 5.1.27 and @esri/calcite-components 5.1.2 installed locally (package.json not yet committed)",
-        "Layer 2 of the feature service has route lines per shipment and scenario, ready for display"
+        "Layer 2 of the feature service has route lines per shipment and scenario, ready for display",
+        "src/data segments now carry LineString geometry and facilities carry coordinates, matching the feature service"
       ],
       "changes": [],
       "verification": [],
       "deviations_from_issue": [],
       "revisions": [],
       "follow_ups": [
-        "2026-11-14: on-hold lifted and assigned. Wait for the G1 data decision so the map matches the queue",
-        "No .env yet; a basemap needs VITE_ARCGIS_API_KEY"
+        "No .env yet; a basemap needs VITE_ARCGIS_API_KEY",
+        "Data is reconciled (G1); the map can be built against the feature service or src/data"
       ]
     },
     {
