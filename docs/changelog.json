@@ -56,9 +56,18 @@
       {
         "number": 26,
         "url": "https://github.com/arturoidelgado1998/Hackathon2026/pull/26",
-        "state": "open",
+        "state": "merged",
+        "merged_at": "2026-11-14T20:52:10Z",
+        "merge_commit": "4296815",
         "base": "staging",
         "head": "phase-1-dashboard"
+      },
+      {
+        "number": 27,
+        "url": "https://github.com/arturoidelgado1998/Hackathon2026/pull/27",
+        "state": "open",
+        "base": "main",
+        "head": "staging"
       }
     ],
     "next_up": [
@@ -67,7 +76,8 @@
       9,
       21
     ],
-    "data_source": "ArcGIS feature service, imported by scripts/import_map_data.py"
+    "data_source": "ArcGIS feature service, imported by scripts/import_map_data.py",
+    "sanity_checks": "npm run sanity: 28 checks in sanity/, also run by the pipeline's sanity job"
   },
   "issues": [
     {
@@ -788,7 +798,8 @@
         "Clicking a segment on the map calls onSegmentClick, but nothing passes that handler yet (A2, #16), so it is untested in the app",
         "The candidate (Awaiting confirmation) style is implemented but not yet exercised by the app",
         "The production build is about 19 MB because the SDK ships many on-demand chunks",
-        "Sensitive-zone overlays are G4 (#22)"
+        "Sensitive-zone overlays are G4 (#22)",
+        "Found by the sanity checks: when the browser has no WebGL, or cannot reach Esri's servers, the map view never starts and the pane does not show its 'The map could not load' message (it only does when the map chunk itself fails to load); without WebGL the SDK also throws an uncaught error. The route list below the map still shows"
       ]
     },
     {
@@ -993,9 +1004,138 @@
         "ResponsePanelView gained an optional summary field; AppShell gained an optional status slot",
         "81 tests pass; checked at 1366x768, 1920x1080, 1024x768 and phone width"
       ]
+    },
+    {
+      "id": "sanity-checks",
+      "title": "Sanity checks on the repository, the change log, the build and the built app",
+      "related_issues": [
+        20
+      ],
+      "built_by": "Claude Code session",
+      "branch": "staging",
+      "pull_request": null,
+      "commit": {
+        "hash": "3ef09ca",
+        "date": "2026-11-14T13:04:55-08:00",
+        "message": "Add sanity checks and run them in the pipeline",
+        "files": {
+          "added": [
+            "sanity/app.sanity.test.ts",
+            "sanity/build.sanity.test.ts",
+            "sanity/changelog.sanity.test.ts",
+            "sanity/helpers.ts",
+            "sanity/repo.sanity.test.ts",
+            "tsconfig.sanity.json",
+            "vitest.sanity.config.ts"
+          ],
+          "modified": [
+            ".github/workflows/advisory-checks.yml",
+            "README.md",
+            "eslint.config.js",
+            "package-lock.json",
+            "package.json",
+            "tsconfig.json"
+          ],
+          "deleted": []
+        }
+      },
+      "why": "The unit tests run in jsdom with the ArcGIS map replaced by a stand-in, so nothing checked that the built app works in a browser, and nothing checked this change log",
+      "changes": [
+        "npm run sanity builds the app and runs 28 checks in sanity/ with Vitest; npm run test:sanity reruns them without rebuilding",
+        "sanity/repo.sanity.test.ts: scripts the README and workflows call exist, the README layout is in place, no .env file, key or build output is tracked, browser code reads only VITE_ variables",
+        "sanity/changelog.sanity.test.ts: this file's counts match its issues, it refers only to issues and pull requests that exist, and every file it lists as added or modified still exists unless it is also listed as deleted",
+        "sanity/build.sanity.test.ts: dist/ is complete, the ArcGIS SDK stays in its own chunk and first-load JavaScript stays under 500 kB",
+        "sanity/app.sanity.test.ts: serves dist/ and drives headless Chromium through start, closure, comparing responses, every shipment in both scenarios, reset and the real map",
+        "New job 'Sanity checks on the built app' in .github/workflows/advisory-checks.yml, on pull requests and pushes to main and staging",
+        "Playwright 1.65.0 added as a dev dependency, pinned; tsconfig.sanity.json and an ESLint entry so the checks are typechecked and linted"
+      ]
     }
   ],
   "entries": [
+    {
+      "id": "2026-11-14-sanity-checks",
+      "date": "2026-11-14",
+      "title": "Added sanity checks and a pipeline job that runs them",
+      "summary": "A new suite checks that the project as a whole still works: the repository, this change log, the production build, and the built app driven through its main flow in a real browser. The pipeline runs it on every pull request and push to main and staging.",
+      "issues": [],
+      "related_issues": [
+        20
+      ],
+      "branch": "staging",
+      "pull_request": null,
+      "commits": [
+        {
+          "hash": "3ef09ca",
+          "date": "2026-11-14T13:04:55-08:00",
+          "message": "Add sanity checks and run them in the pipeline",
+          "files": {
+            "added": [
+              "sanity/app.sanity.test.ts",
+              "sanity/build.sanity.test.ts",
+              "sanity/changelog.sanity.test.ts",
+              "sanity/helpers.ts",
+              "sanity/repo.sanity.test.ts",
+              "tsconfig.sanity.json",
+              "vitest.sanity.config.ts"
+            ],
+            "modified": [
+              ".github/workflows/advisory-checks.yml",
+              "README.md",
+              "eslint.config.js",
+              "package-lock.json",
+              "package.json",
+              "tsconfig.json"
+            ],
+            "deleted": []
+          }
+        }
+      ],
+      "changes": {
+        "checks": [
+          "Repository (9 checks): npm scripts named in the README and workflows, README layout, valid Python in scripts/, no tracked .env, keys or build output, .env.example has names only, browser code reads only VITE_ variables",
+          "Change log (9 checks): sections, dates newest first, unique issue numbers and codes, known statuses, summary counts match, worked-on issues have an assignee, branch, commit, changes and verification, references resolve, listed files still exist",
+          "Build (4 checks): page has its root and title, every script and stylesheet it loads exists, the ArcGIS map is one separate chunk and first-load JavaScript is under 500 kB, no server-side variable names in the bundle",
+          "Browser (6 checks): starts with no errors and one card per shipment, the closure moves the affected shipments to Needs review, the reference shipment shows Wait, Reroute and Request later slot, every shipment opens in both scenarios, Reset clears everything, the real map chunk loads and the view starts cleanly where it can"
+        ],
+        "pipeline": [
+          "Job 'Sanity checks on the built app' added to .github/workflows/advisory-checks.yml: npm ci, install headless Chromium, npm run build, npm run test:sanity",
+          "The workflow itself was added in 9511f83 and had no change log record until now"
+        ],
+        "project": [
+          "package.json: scripts test:sanity and sanity; dev dependency playwright 1.65.0",
+          "vitest.sanity.config.ts keeps the sanity checks out of npm test; tsconfig.sanity.json and eslint.config.js cover sanity/",
+          "README: a Sanity checks section and the sanity/ folder in the layout"
+        ],
+        "change_log": [
+          "summary.pull_requests: #26 marked merged into staging (4296815); #27 (staging to main) added",
+          "G2 (#20) follow_ups: the map fallback gap described under known_gaps"
+        ]
+      },
+      "decisions": [
+        "The browser values are read from src/data, so refreshing the data from the feature service does not break the checks",
+        "The dashboard checks hold the map chunk back: without WebGL the SDK throws an uncaught error, which would fail them on a runner with no graphics. This also exercises the pane's fallback in a real browser",
+        "One check loads the real map. Where the browser has WebGL and reaches Esri, the view must start with no uncaught errors; otherwise the check passes with a warning that the view was not checked",
+        "scripts/import_map_data.py --check is not in the pipeline: it depends on the live feature service, which anyone can edit, so it would fail unrelated pull requests"
+      ],
+      "verification": [
+        "npm run sanity: 28 of 28 checks pass locally (macOS, Node 24, headless Chromium), in about 8 seconds after the build",
+        "npm run lint, typecheck and test pass (84 unit tests, unchanged)",
+        "The real map view started in headless Chromium with no uncaught errors",
+        "Checks fail when they should, each tried and then undone: a wrong count in this file, a listed file renamed, a server-side variable read in src, a missing npm script named in the README, the map imported without lazy loading, a crash on one shipment",
+        "With WebGL turned off in the browser, all six browser checks still pass and the map check prints its warning"
+      ],
+      "not_verified": [
+        "The new job has not run on GitHub: the commit is local and has not been pushed",
+        "Whether the map view starts on GitHub's Linux runner. The browser is started with software WebGL allowed, but this was only tried on macOS",
+        "Docker was not running, so the checks were not tried in a Linux container"
+      ],
+      "known_gaps": [
+        "Map fallback: with no WebGL, or with Esri's servers unreachable, the map view never starts and the pane does not show 'The map could not load'; that message only appears when the map chunk fails to load. Without WebGL the SDK also throws an uncaught error. Not fixed here; noted on G2 (#20)",
+        "The change log check on listed files will fail a pull request that removes or renames a file without listing the old path under deleted",
+        "The key scan looks for a few common key formats; it is not a full secret scanner",
+        "Issues #19 and #20 stay in_review until staging reaches main"
+      ]
+    },
     {
       "id": "2026-11-14-map-data-and-arcgis-map",
       "date": "2026-11-14",
