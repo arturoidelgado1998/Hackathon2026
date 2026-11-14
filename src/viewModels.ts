@@ -59,6 +59,11 @@ export interface ShipmentCardView {
   destinationName: string
   summary: ShipmentSummary
   column: BoardColumn
+  /** E3 estimates; only affected shipments carry incident decision deadlines. */
+  incidentSegmentId?: string
+  reopen_needed_by?: TimeHHMM | null
+  reroute_decide_by?: TimeHHMM | null
+  no_feasible_response?: boolean
   /** Committed choice only; previews never change the queue. */
   decision?: Decision
   rejectionNote?: string

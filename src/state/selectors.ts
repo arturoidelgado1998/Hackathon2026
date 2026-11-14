@@ -1,6 +1,5 @@
 // Assembles what each dashboard component displays from the data module.
-// Pure functions with no calculations: they look values up and pass them on.
-// E4 will swap the data module calls for engine calls.
+// Engine estimates and raw route facts are passed through, never recalculated here.
 
 import { defaultColumn } from '../components/board/index.ts'
 import {
@@ -10,6 +9,7 @@ import {
   getRoute,
   getRoutesForDestination,
   getShipment,
+  getShipmentAssessment,
   getShipmentSummary,
   sampleIncident,
   shipments,
@@ -54,6 +54,7 @@ export function buildCards(
   rejectedShipmentIds: string[] = [],
 ): ShipmentCardView[] {
   return shipments.map((shipment) => {
+    const assessment = getShipmentAssessment(shipment.id, scenario)
     const summary = summaryFor(shipment.id, scenario)
     const decision = decisions[shipment.id]
     if (decision && decision.shipment_id !== shipment.id) {
@@ -83,6 +84,12 @@ export function buildCards(
       column: decision
         ? decision.status === 'pending_confirmation' ? 'awaiting_confirmation' : 'decision_recorded'
         : defaultColumn(summary, scenario),
+      ...(summary.affected ? {
+        incidentSegmentId: sampleIncident.segment_id,
+        reopen_needed_by: assessment.reopen_needed_by,
+        reroute_decide_by: assessment.reroute_decide_by,
+        no_feasible_response: assessment.no_feasible_response,
+      } : {}),
       ...(decision ? { decision } : {}),
       ...(!decision && rejectedShipmentIds.includes(shipment.id)
         ? { rejectionNote: 'Dispatcher rejected all options' }

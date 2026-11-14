@@ -1,0 +1,24 @@
+.pp-interpretation {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--pp-space-2);
+  margin-top: var(--pp-space-3);
+  padding: var(--pp-space-3);
+  border: 1px solid var(--pp-border-strong);
+  border-radius: var(--pp-radius);
+  background: var(--pp-surface);
+  color: var(--pp-text);
+  font-size: var(--pp-text-sm);
+  overflow-wrap: anywhere;
+}
+
+.pp-interpretation > .pp-icon {
+  flex: none;
+  margin-top: 0.125rem;
+}
+
+.pp-interpretation--unavailable {
+  border-color: var(--pp-warning);
+  background: var(--pp-warning-soft);
+  color: var(--pp-warning);
+}

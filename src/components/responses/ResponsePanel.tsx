@@ -1,9 +1,10 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import type { Decision, ResponseOption, ResponseOptionKind } from '../../types'
 import type { Baseline, CommunityInfo, ResponsePanelView } from '../../viewModels'
+import { isResponseOptionAvailable } from '../../state/options'
 import { RiskBadge } from '../board/RiskBadge'
 import { AlertIcon, ClockIcon } from '../icons'
-import { delta, deltaOneDecimal } from './deltas'
+import { delta, deltaOneDecimal } from '../../engine/deltas.ts'
 import {
   NA,
   NOT_MODELED_TEXT,
@@ -38,11 +39,20 @@ const FEASIBLE: ResponseOption['risk'][] = ['ON_TRACK', 'TIGHT']
 
 function hasFeasibleOption(options: ResponseOption[]): boolean {
   return options.some(
-    (o) => (o.kind === 'wait' || o.kind === 'reroute') && FEASIBLE.includes(o.risk),
+    (o) => o.kind !== 'request_slot' && isResponseOptionAvailable(o) && FEASIBLE.includes(o.risk),
   )
 }
 
 const isPending = (o: ResponseOption) => o.kind === 'request_slot'
+
+function NoFeasibleResponse() {
+  return (
+    <p className="responses-banner" role="alert">
+      <AlertIcon size={14} label="Warning" />
+      <span>No currently feasible response: review with warehouse or customer.</span>
+    </p>
+  )
+}
 
 function Warning({ children }: { children: ReactNode }) {
   return (
@@ -259,9 +269,13 @@ function ShipmentResponses({
     return (
       <div className="responses-panel">
         {header}
-        <p className="responses-empty">
-          No response needed: this shipment is not affected by an incident.
-        </p>
+        {summary?.affected ? (
+          <NoFeasibleResponse />
+        ) : (
+          <p className="responses-empty">
+            No response needed: this shipment is not affected by an incident.
+          </p>
+        )}
       </div>
     )
   }
@@ -324,12 +338,7 @@ function ShipmentResponses({
           </div>
         )}
       </div>
-      {!hasFeasibleOption(options) && (
-        <p className="responses-banner" role="alert">
-          <AlertIcon size={14} label="Warning" />
-          <span>No currently feasible response: review with warehouse or customer.</span>
-        </p>
-      )}
+      {!hasFeasibleOption(options) && <NoFeasibleResponse />}
       <div
         className="responses-table-scroll"
         role="region"

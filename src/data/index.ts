@@ -6,21 +6,22 @@
 import type {
   Assumptions,
   Facility,
-  Incident,
-  ResponseOption,
   RoadSegment,
   Route,
   Shipment,
 } from '../types'
 import type { Baseline, Scenario, ShipmentSummary } from '../viewModels'
+import { assessShipment } from '../engine/responses.ts'
+import type { EngineResponseOption, ShipmentAssessment } from '../engine/responses.ts'
+import { sampleIncident } from './demoIncident.ts'
 import assumptionsJson from './assumptions.json'
 import facilitiesJson from './facilities.json'
 import routesJson from './routes.json'
-import sampleResponsesJson from './sample-responses.json'
 import segmentsJson from './segments.json'
 import shipmentsJson from './shipments.json'
 
 export type { Baseline, Scenario, ShipmentSummary }
+export { sampleIncident }
 
 /** Every sample data file carries this label. */
 export const DATA_LABEL = 'SIMULATED' as const
@@ -35,25 +36,6 @@ export type RouteRecord = Route & {
   total_minutes_min: number
   total_minutes_max: number
 }
-
-/** One shipment in one scenario, as stored in sample-responses.json. */
-export interface ScenarioEntry {
-  summary: ShipmentSummary
-  /** wait, reroute, request_slot; empty when the shipment is unaffected. */
-  options: ResponseOption[]
-}
-
-/** Shape of sample-responses.json. */
-export interface SampleResponsesFile {
-  label: typeof DATA_LABEL
-  note: string
-  reference_shipment_id: string
-  incident: Incident
-  baselines: Record<string, Baseline>
-  scenarios: Record<Scenario, Record<string, ScenarioEntry>>
-}
-
-const responses = sampleResponsesJson as unknown as SampleResponsesFile
 
 export const facilities: Facility[] = facilitiesJson.items as Facility[]
 export const segments: RoadSegment[] = segmentsJson.items as unknown as RoadSegment[]
@@ -72,36 +54,39 @@ export const assumptions: Assumptions = {
 /** Assumption field name -> true when the value is a placeholder (all are). */
 export const assumptionPlaceholders: Record<string, boolean> = assumptionsJson.placeholders
 
-/** The sample incident: NB-03 closed from 10:00, reported reopening 11:10. */
-export const sampleIncident: Incident = responses.incident
-
 /** S-01 to WH-A: the team plan's reference shipment (45 mi original, 60 mi alternative). */
 export const REFERENCE_SHIPMENT_ID = 'S-01'
 
-const ORDER: ResponseOption['kind'][] = ['wait', 'reroute', 'request_slot']
-
-function entry(shipmentId: string, scenario: Scenario): ScenarioEntry {
-  const found = responses.scenarios[scenario][shipmentId]
-  if (!found) throw new Error(`No sample data for shipment ${shipmentId} (${scenario})`)
-  return found
+/** Reassess raw inputs on every call; never cache generated response values. */
+export function getShipmentAssessment(shipmentId: string, scenario: Scenario): ShipmentAssessment {
+  const shipment = getShipment(shipmentId)
+  if (!shipment) throw new Error(`Unknown shipment: ${shipmentId}`)
+  return assessShipment(
+    shipment, scenario === 'disrupted' ? sampleIncident : null, { routes, segments }, assumptions,
+  )
 }
 
 /** Current status of a shipment in a scenario. Throws for an unknown id. */
 export function getShipmentSummary(shipmentId: string, scenario: Scenario): ShipmentSummary {
-  return entry(shipmentId, scenario).summary
+  const { risk, arrival_min, arrival_max, lateness_min, lateness_max, reason, affected } =
+    getShipmentAssessment(shipmentId, scenario).summary
+  return { risk, arrival_min, arrival_max, lateness_min, lateness_max, reason, affected }
 }
 
 /** Response options in the order wait, reroute, request_slot; [] when none. */
-export function getResponseOptions(shipmentId: string, scenario: Scenario): ResponseOption[] {
-  const options = responses.scenarios[scenario][shipmentId]?.options ?? []
-  return [...options].sort((a, b) => ORDER.indexOf(a.kind) - ORDER.indexOf(b.kind))
+export function getResponseOptions(shipmentId: string, scenario: Scenario): EngineResponseOption[] {
+  return getShipment(shipmentId) ? getShipmentAssessment(shipmentId, scenario).options : []
 }
 
 /** Normal-scenario metrics on the assigned route. Throws for an unknown id. */
 export function getBaseline(shipmentId: string): Baseline {
-  const found = responses.baselines[shipmentId]
-  if (!found) throw new Error(`No baseline for shipment ${shipmentId}`)
-  return found
+  const baseline = getShipmentAssessment(shipmentId, 'normal').baseline
+  return {
+    miles: baseline.miles,
+    cost: baseline.cost!,
+    co2_kg: baseline.co2_kg,
+    driver_duty_min: baseline.driver_duty_min!,
+  }
 }
 
 export function getFacility(id: string): Facility | undefined {
