@@ -57,7 +57,7 @@
         "number": 26,
         "url": "https://github.com/arturoidelgado1998/Hackathon2026/pull/26",
         "state": "open",
-        "base": "main",
+        "base": "staging",
         "head": "phase-1-dashboard"
       }
     ],
@@ -1018,7 +1018,7 @@
       "pull_request": {
         "number": 26,
         "state": "open",
-        "base": "main",
+        "base": "staging",
         "title": "G1 and G2: adopt the map's data and add the ArcGIS map"
       },
       "commits": [
@@ -1199,7 +1199,8 @@
           "Edited the reference values in the text of #11, #12, #13, #14 and #17",
           "Edited #19's task and acceptance criterion on miles, and removed its on-hold note",
           "Commented on #3, #19, #20 and #22 with findings and results",
-          "Opened pull request #26 and later retitled it to cover the map"
+          "Opened pull request #26 and later retitled it to cover the map",
+          "Retargeted pull request #26 from main to staging"
         ]
       },
       "verification": [
@@ -1220,7 +1221,7 @@
         "The map draws from src/data, so the import script must be rerun after the feature service changes",
         "Segment lines are schematic and shorter than the stated miles; calculations use the stated miles",
         "The production build is about 19 MB because the SDK ships many on-demand chunks",
-        "Pull request #26 targets main; a staging branch and pull request #27 propose that main only takes pull requests from staging"
+        "Pull request #26 was retargeted from main to staging to follow the proposed flow (feature branch to staging, staging to main); issues #19 and #20 will only close automatically when the work reaches main"
       ]
     }
   ]
