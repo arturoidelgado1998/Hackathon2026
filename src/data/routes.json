@@ -1,0 +1,127 @@
+{
+  "label": "SIMULATED",
+  "items": [
+    {
+      "id": "R-A-ORIG",
+      "origin": "PORT-LB",
+      "destination": "WH-A",
+      "segment_ids": [
+        "PORT-01",
+        "NB-03",
+        "WH-A-APPR"
+      ],
+      "kind": "original",
+      "truck_suitability_note": "PLACEHOLDER: synthetic route, not verified as truck-legal or truck-suitable.",
+      "near_sensitive_zone": false,
+      "sensitive_zone_note": "",
+      "schools_150m": null,
+      "dac_tracts": null,
+      "max_diesel_pm_pctl": null,
+      "total_miles": 45,
+      "total_minutes_min": 60,
+      "total_minutes_max": 60
+    },
+    {
+      "id": "R-A-ALT",
+      "origin": "PORT-LB",
+      "destination": "WH-A",
+      "segment_ids": [
+        "PORT-01",
+        "EW-07",
+        "WH-A-APPR"
+      ],
+      "kind": "alternative",
+      "truck_suitability_note": "PLACEHOLDER: synthetic route, not verified as truck-legal or truck-suitable.",
+      "near_sensitive_zone": true,
+      "sensitive_zone_note": "PLACEHOLDER, replaced by corridor analysis (G3)",
+      "schools_150m": null,
+      "dac_tracts": null,
+      "max_diesel_pm_pctl": null,
+      "total_miles": 60,
+      "total_minutes_min": 75,
+      "total_minutes_max": 75
+    },
+    {
+      "id": "R-B-ORIG",
+      "origin": "PORT-LB",
+      "destination": "WH-B",
+      "segment_ids": [
+        "PORT-01",
+        "NB-03",
+        "WH-B-APPR"
+      ],
+      "kind": "original",
+      "truck_suitability_note": "PLACEHOLDER: synthetic route, not verified as truck-legal or truck-suitable.",
+      "near_sensitive_zone": false,
+      "sensitive_zone_note": "",
+      "schools_150m": null,
+      "dac_tracts": null,
+      "max_diesel_pm_pctl": null,
+      "total_miles": 38,
+      "total_minutes_min": 55,
+      "total_minutes_max": 65
+    },
+    {
+      "id": "R-B-ALT",
+      "origin": "PORT-LB",
+      "destination": "WH-B",
+      "segment_ids": [
+        "PORT-01",
+        "LNK-06",
+        "NB-03",
+        "WH-B-APPR"
+      ],
+      "kind": "alternative",
+      "truck_suitability_note": "PLACEHOLDER: synthetic route, not verified as truck-legal or truck-suitable.",
+      "near_sensitive_zone": false,
+      "sensitive_zone_note": "",
+      "schools_150m": null,
+      "dac_tracts": null,
+      "max_diesel_pm_pctl": null,
+      "total_miles": 44,
+      "total_minutes_min": 65,
+      "total_minutes_max": 80
+    },
+    {
+      "id": "R-C-ORIG",
+      "origin": "PORT-LB",
+      "destination": "WH-C",
+      "segment_ids": [
+        "PORT-01",
+        "HBR-02",
+        "WH-C-APPR"
+      ],
+      "kind": "original",
+      "truck_suitability_note": "PLACEHOLDER: synthetic route, not verified as truck-legal or truck-suitable.",
+      "near_sensitive_zone": false,
+      "sensitive_zone_note": "",
+      "schools_150m": null,
+      "dac_tracts": null,
+      "max_diesel_pm_pctl": null,
+      "total_miles": 37,
+      "total_minutes_min": 55,
+      "total_minutes_max": 75
+    },
+    {
+      "id": "R-C-ALT",
+      "origin": "PORT-LB",
+      "destination": "WH-C",
+      "segment_ids": [
+        "PORT-01",
+        "NB-03",
+        "LNK-06",
+        "WH-C-APPR"
+      ],
+      "kind": "alternative",
+      "truck_suitability_note": "PLACEHOLDER: synthetic route, not verified as truck-legal or truck-suitable.",
+      "near_sensitive_zone": false,
+      "sensitive_zone_note": "",
+      "schools_150m": null,
+      "dac_tracts": null,
+      "max_diesel_pm_pctl": null,
+      "total_miles": 56,
+      "total_minutes_min": 75,
+      "total_minutes_max": 90
+    }
+  ]
+}

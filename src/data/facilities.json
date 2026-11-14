@@ -1,0 +1,33 @@
+{
+  "label": "SIMULATED",
+  "items": [
+    {
+      "id": "PORT-LB",
+      "name": "Port of Long Beach",
+      "type": "port",
+      "lat": 33.754,
+      "lon": -118.216
+    },
+    {
+      "id": "WH-A",
+      "name": "Mesa Ridge Distribution (fictional)",
+      "type": "warehouse",
+      "lat": 34.05,
+      "lon": -117.59
+    },
+    {
+      "id": "WH-B",
+      "name": "Cedar Flats Logistics (fictional)",
+      "type": "warehouse",
+      "lat": 33.99,
+      "lon": -117.69
+    },
+    {
+      "id": "WH-C",
+      "name": "Juniper Point Fulfillment (fictional)",
+      "type": "warehouse",
+      "lat": 33.875,
+      "lon": -117.566
+    }
+  ]
+}
