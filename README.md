@@ -38,6 +38,14 @@ The LLM key is server-side only (`server/`); only `VITE_`-prefixed variables rea
 - `server/`: small Node endpoint for the LLM call
 - `docs/`: project documentation
 
+## Map
+
+The Routes pane draws the port, warehouses and routes with the ArcGIS Maps SDK for JavaScript (`src/map/ArcgisMap.tsx`). It is loaded on demand, and if it cannot load the pane falls back to the route list.
+
+- **No API key is needed.** Without one the map uses Esri's keyless light gray basemap.
+- **Optional key:** put `VITE_ARCGIS_API_KEY=...` in a local `.env` (never commit it) to use the `arcgis/light-gray` basemap style.
+- **Data:** the map draws the same data as the rest of the app, from `src/data`. Refresh it from the team's feature service with `python3 scripts/import_map_data.py`.
+
 ## Change log
 
 [`docs/changelog.json`](docs/changelog.json) has one entry per GitHub issue: what changed, which files, how it was checked and what is left. Read it before starting an issue and update your issue's entry in the same pull request. The file's `_meta.how_to_update` lists the steps.
