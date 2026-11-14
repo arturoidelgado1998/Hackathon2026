@@ -1,0 +1,167 @@
+/* Response comparison: one table, options as columns, measures as rows,
+   so the same measure reads straight across. No option is highlighted. */
+
+.responses-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pp-space-3);
+  min-width: 0;
+  /* On very wide panes the columns stay close enough to compare. */
+  max-width: 60rem;
+}
+
+.responses-panel--empty {
+  max-width: 34rem;
+}
+
+.responses-heading {
+  font-size: var(--pp-text-lg);
+  font-weight: 650;
+  text-wrap: balance;
+}
+
+.responses-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--pp-space-1) var(--pp-space-3);
+  margin-top: var(--pp-space-1);
+  font-size: var(--pp-text-sm);
+}
+
+.responses-reason {
+  flex: 1 1 16rem;
+  color: var(--pp-text-muted);
+}
+
+.responses-empty {
+  font-size: var(--pp-text-md);
+}
+
+.responses-hint {
+  color: var(--pp-text-muted);
+  font-size: var(--pp-text-sm);
+}
+
+.responses-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--pp-space-2);
+  padding: var(--pp-space-2) var(--pp-space-3);
+  border: 1px solid var(--pp-danger);
+  border-radius: var(--pp-radius);
+  background: var(--pp-danger-soft);
+  color: var(--pp-danger);
+  font-size: var(--pp-text-sm);
+  font-weight: 600;
+}
+
+.responses-banner .pp-icon {
+  flex: none;
+  margin-top: 0.1875rem;
+}
+
+.responses-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: var(--pp-text-sm);
+}
+
+.responses-note {
+  caption-side: top;
+  padding-bottom: var(--pp-space-3);
+  color: var(--pp-text-muted);
+  font-size: var(--pp-text-xs);
+  text-align: left;
+}
+
+.responses-table th,
+.responses-table td {
+  padding: 0.3125rem var(--pp-space-3);
+  border-bottom: 1px solid var(--pp-border);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+/* Row labels */
+.responses-table tbody th[scope='row'],
+.responses-table tfoot th[scope='row'] {
+  width: 9.5rem;
+  padding-left: 0;
+  color: var(--pp-text-muted);
+  font-weight: 500;
+}
+
+/* Option names */
+.responses-table thead th {
+  padding-top: 0;
+  padding-bottom: var(--pp-space-2);
+  border-bottom: 2px solid var(--pp-text);
+  font-size: var(--pp-text-md);
+  font-weight: 650;
+}
+
+.responses-table thead th:first-child {
+  width: 9.5rem;
+}
+
+/* Group headings: more space above than below. */
+.responses-group th {
+  padding: var(--pp-space-3) 0 var(--pp-space-1);
+  border-bottom: 1px solid var(--pp-border-strong);
+  color: var(--pp-text);
+  font-size: var(--pp-text-xs);
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
+.responses-table tbody:first-of-type .responses-group th {
+  padding-top: var(--pp-space-2);
+}
+
+.responses-change {
+  display: block;
+  color: var(--pp-text-muted);
+  font-size: var(--pp-text-xs);
+}
+
+.responses-warning {
+  color: var(--pp-warning);
+  font-weight: 600;
+}
+
+.responses-warning .pp-icon,
+.responses-pending .pp-icon {
+  vertical-align: -0.125em;
+}
+
+.responses-not-modeled {
+  color: var(--pp-text-muted);
+}
+
+/* The action row stays in view while the measures scroll, so the
+   decision controls are never below the fold. */
+.responses-table tfoot td,
+.responses-table tfoot th {
+  position: sticky;
+  bottom: 0;
+  padding-top: var(--pp-space-2);
+  padding-bottom: var(--pp-space-3);
+  border-bottom: 0;
+  /* A shadow, not a border: collapsed borders do not travel with sticky cells. */
+  box-shadow: inset 0 1px 0 var(--pp-border-strong);
+  background: var(--pp-surface);
+}
+
+.responses-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pp-space-2);
+}
+
+/* Narrow panes: the table keeps a readable width and its pane scrolls. */
+.responses-table {
+  min-width: 30rem;
+}

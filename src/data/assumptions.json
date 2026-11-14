@@ -1,0 +1,23 @@
+{
+  "label": "SIMULATED",
+  "placeholder": true,
+  "pickup_handling_min": 30,
+  "mpg": 6.5,
+  "nonlabor_cost_per_mile": 1.8,
+  "labor_rate_per_hr": 40,
+  "diesel_kgCO2_per_gal": 10.21,
+  "sources": {
+    "pickup_handling_min": "PLACEHOLDER: team assumption, chosen so the reference shipment SHP-001 departs 10:00",
+    "mpg": "PLACEHOLDER: team assumption for a loaded Class 8 drayage truck",
+    "nonlabor_cost_per_mile": "PLACEHOLDER: team assumption (fuel, maintenance, tires, tolls)",
+    "labor_rate_per_hr": "PLACEHOLDER: team assumption for loaded driver labor cost",
+    "diesel_kgCO2_per_gal": "EPA GHG Emission Factors Hub, 2025 edition (PLACEHOLDER until verified)"
+  },
+  "placeholders": {
+    "pickup_handling_min": true,
+    "mpg": true,
+    "nonlabor_cost_per_mile": true,
+    "labor_rate_per_hr": true,
+    "diesel_kgCO2_per_gal": true
+  }
+}

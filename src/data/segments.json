@@ -1,0 +1,85 @@
+{
+  "label": "SIMULATED",
+  "items": [
+    {
+      "id": "PORT-01",
+      "name": "Port terminal exit (synthetic)",
+      "geometry": null,
+      "miles": 5,
+      "minutes_min": 10,
+      "minutes_max": 10,
+      "near_sensitive_zone": false,
+      "sensitive_zone_note": ""
+    },
+    {
+      "id": "NB-03",
+      "name": "Northbound freight corridor (synthetic)",
+      "geometry": null,
+      "miles": 25,
+      "minutes_min": 30,
+      "minutes_max": 30,
+      "near_sensitive_zone": false,
+      "sensitive_zone_note": ""
+    },
+    {
+      "id": "WH-A-APPR",
+      "name": "WH-A approach (synthetic)",
+      "geometry": null,
+      "miles": 15,
+      "minutes_min": 20,
+      "minutes_max": 20,
+      "near_sensitive_zone": false,
+      "sensitive_zone_note": ""
+    },
+    {
+      "id": "EW-07",
+      "name": "East-west bypass (synthetic)",
+      "geometry": null,
+      "miles": 40,
+      "minutes_min": 45,
+      "minutes_max": 45,
+      "near_sensitive_zone": true,
+      "sensitive_zone_note": "PLACEHOLDER, replaced by corridor analysis (G3)"
+    },
+    {
+      "id": "WH-B-APPR",
+      "name": "WH-B approach (synthetic)",
+      "geometry": null,
+      "miles": 8,
+      "minutes_min": 15,
+      "minutes_max": 25,
+      "near_sensitive_zone": false,
+      "sensitive_zone_note": ""
+    },
+    {
+      "id": "HBR-02",
+      "name": "Harbor surface arterial (synthetic)",
+      "geometry": null,
+      "miles": 12,
+      "minutes_min": 20,
+      "minutes_max": 30,
+      "near_sensitive_zone": false,
+      "sensitive_zone_note": ""
+    },
+    {
+      "id": "WH-C-APPR",
+      "name": "WH-C approach (synthetic)",
+      "geometry": null,
+      "miles": 20,
+      "minutes_min": 25,
+      "minutes_max": 35,
+      "near_sensitive_zone": false,
+      "sensitive_zone_note": ""
+    },
+    {
+      "id": "LNK-06",
+      "name": "Local connector (synthetic)",
+      "geometry": null,
+      "miles": 6,
+      "minutes_min": 10,
+      "minutes_max": 15,
+      "near_sensitive_zone": false,
+      "sensitive_zone_note": ""
+    }
+  ]
+}

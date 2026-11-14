@@ -1,0 +1,39 @@
+/* Delivery risk. Used in the shipment queue and the response comparison. */
+
+.risk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.0625rem 0.4375rem 0.0625rem 0.3125rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.risk-badge__icon {
+  display: inline-flex;
+}
+
+.risk-badge--on_track {
+  color: var(--pp-ok);
+  background: var(--pp-ok-soft);
+}
+
+.risk-badge--tight {
+  color: var(--pp-warning);
+  background: var(--pp-warning-soft);
+}
+
+.risk-badge--late {
+  color: var(--pp-danger);
+  background: var(--pp-danger-soft);
+}
+
+.risk-badge--unknown {
+  color: var(--pp-unknown);
+  background: var(--pp-unknown-soft);
+}

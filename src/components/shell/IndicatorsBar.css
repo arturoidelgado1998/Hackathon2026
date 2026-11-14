@@ -1,0 +1,40 @@
+.pp-indicators {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--pp-space-1) var(--pp-space-5);
+  font-size: var(--pp-text-sm);
+}
+
+.pp-indicators__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pp-space-1) var(--pp-space-5);
+  margin: 0;
+}
+
+.pp-indicators__item {
+  display: flex;
+  gap: 0.375rem;
+  align-items: baseline;
+}
+
+.pp-indicators__item dt {
+  color: var(--pp-text-muted);
+}
+
+.pp-indicators__item dd {
+  margin: 0;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.pp-indicators__badge {
+  padding: 0.0625rem var(--pp-space-2);
+  border: 1px dashed var(--pp-border-strong);
+  border-radius: var(--pp-radius-sm);
+  color: var(--pp-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
