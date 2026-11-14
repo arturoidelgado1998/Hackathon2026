@@ -8,6 +8,7 @@
     "status_values": {
       "not_started": "No work yet",
       "in_progress": "Someone is working on it; assignee and branch are set",
+      "ready_for_review": "Implemented and verified on a feature branch; not merged",
       "done": "Merged and verified",
       "on_hold": "Do not start until the on-hold label is removed"
     },
@@ -23,10 +24,11 @@
   "summary": {
     "counts": {
       "done": 5,
-      "not_started": 12,
+      "not_started": 9,
+      "ready_for_review": 3,
       "on_hold": 5
     },
-    "current_branch_for_phase_1": "phase-1-dashboard",
+    "current_branch_for_phase_1": "nicole/d6-d8-dashboard",
     "pull_requests": [
       {
         "number": 24,
@@ -39,9 +41,54 @@
       }
     ],
     "next_up": [
-      7,
-      8,
-      9
+      10
+    ],
+    "delivery_checklist": [
+      {
+        "task": "Update main and create Nicole's branch",
+        "status": "done",
+        "details": "Fast-forwarded main to 9810047, then created nicole/d6-d8-dashboard. Existing unrelated local skills were preserved."
+      },
+      {
+        "task": "Retrieve D6-D8 and delegate one agent per issue",
+        "status": "done",
+        "details": "Read issues 7, 8 and 9, assigned nmtraboulsi, and ran D6-workflow, D7-indicators and D8-transparency agents with separate ownership."
+      },
+      {
+        "task": "Implement D6-D8",
+        "status": "ready_for_review",
+        "details": "Acceptance criteria are implemented and covered by tests. Issues remain open because the changes have not been merged."
+      },
+      {
+        "task": "Make assumptions and sources fully accessible",
+        "status": "done",
+        "details": "Expandable, scrollable drawer with mobile access, section links, Escape and focus return. All eleven limitations are reachable."
+      },
+      {
+        "task": "Install and apply Impeccable",
+        "status": "done",
+        "details": "Installed the official project-scoped Copilot skill, disabled telemetry, applied its Operate-mode polish guidance, and ran its local detector with no findings. Automatic hooks remain disabled."
+      },
+      {
+        "task": "Make Why explanations discoverable",
+        "status": "done",
+        "details": "Opening Why focuses the supplied explanation and brings it into view. Close or Escape returns focus to the matching Why button."
+      },
+      {
+        "task": "Validate and run the dashboard",
+        "status": "done",
+        "details": "Build, typecheck, lint and all 153 tests pass under Node 24. Browser checks cover desktop explanation focus and mobile sources/limitations access. Preview is available at http://127.0.0.1:5173/."
+      },
+      {
+        "task": "Connect GitHub MCP to the repository",
+        "status": "blocked",
+        "details": "Both available GitHub MCP connections return 404 for this repository. GitHub CLI access works and was used for issue retrieval, assignment and branch publication. MCP credentials still need repository authorization."
+      },
+      {
+        "task": "Compare routes using historical travel-time data",
+        "status": "on_hold",
+        "details": "Deferred at the user's request. No historical dataset has been supplied and simulated fixtures are not presented as historical observations."
+      }
     ]
   },
   "issues": [
@@ -324,13 +371,37 @@
       "code": "D6",
       "title": "Selection, Preview, Select and decisions",
       "phase": "Phase 1: Dashboard",
-      "status": "not_started",
+      "status": "ready_for_review",
       "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
+      "assignee": "nmtraboulsi",
+      "built_by": "Copilot D6-workflow agent",
+      "branch": "nicole/d6-d8-dashboard",
       "pull_request": null,
-      "commit": null,
+      "commit": {
+        "hash": "4eaed53e2fd2c074b8c21800314ab7d80fe09cbc",
+        "date": "2026-11-14T12:48:19-08:00",
+        "message": "D6-D8: Complete dashboard workflow and polish UI",
+        "files": {
+          "added": [
+            "src/state/reducer.ts",
+            "src/state/reducer.test.ts",
+            "src/state/options.ts",
+            "src/state/selectors.test.ts"
+          ],
+          "modified": [
+            "src/App.tsx",
+            "src/App.test.tsx",
+            "src/state/selectors.ts",
+            "src/viewModels.ts",
+            "src/components/board/ShipmentCard.tsx",
+            "src/components/board/TriageBoard.tsx",
+            "src/components/board/TriageBoard.test.tsx",
+            "src/components/board/board.css",
+            "src/map/MapPanel.tsx",
+            "src/map/MapPanel.test.tsx"
+          ]
+        }
+      },
       "depends_on": [
         "D4",
         "D5"
@@ -340,9 +411,23 @@
         "src/state/selectors.ts builds the card, response and route views; add decisions on top",
         "ResponsePanel has a renderActions slot for Preview and Select buttons"
       ],
-      "changes": [],
-      "verification": [],
-      "deviations_from_issue": [],
+      "changes": [
+        "Replaced local scenario/selection state with one app reducer in src/state.",
+        "Synchronized shipment selection across the board, response comparison and highlighted map routes.",
+        "Recorded ISO-timestamped previews separately from committed decisions so previewing never changes columns, risk or totals.",
+        "Recorded Wait/Reroute as selected decisions and later-slot requests as pending confirmation, retaining their original risk.",
+        "Added Reject all to every Needs review shipment with the exact dispatcher rejection note.",
+        "Disabled unavailable responses and surfaced invalid reducer actions explicitly."
+      ],
+      "verification": [
+        "Reducer and selector tests cover preview, selected responses, pending requests, rejection, timestamps and invalid actions.",
+        "Integration tests prove previews preserve an existing committed decision and totals, pending requests retain original risk, and all Needs review shipments expose Reject all.",
+        "Full validation: build, typecheck and lint pass; 13 test files and 153 tests pass under Node 24."
+      ],
+      "deviations_from_issue": [
+        "Used a single App-level useReducer rather than adding context; the current slot-based component tree needs no additional provider.",
+        "D6-D8 share the personal branch requested by the user. No pull request has been opened or merged."
+      ],
       "revisions": [],
       "follow_ups": []
     },
@@ -351,13 +436,31 @@
       "code": "D7",
       "title": "Indicators bar, scenario toggle and Reset",
       "phase": "Phase 1: Dashboard",
-      "status": "not_started",
+      "status": "ready_for_review",
       "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
+      "assignee": "nmtraboulsi",
+      "built_by": "Copilot D7-indicators agent",
+      "branch": "nicole/d6-d8-dashboard",
       "pull_request": null,
-      "commit": null,
+      "commit": {
+        "hash": "4eaed53e2fd2c074b8c21800314ab7d80fe09cbc",
+        "date": "2026-11-14T12:48:19-08:00",
+        "message": "D6-D8: Complete dashboard workflow and polish UI",
+        "files": {
+          "added": [
+            "src/state/totals.ts",
+            "src/state/totals.test.ts",
+            "src/state/scenarios.test.ts"
+          ],
+          "modified": [
+            "src/App.tsx",
+            "src/App.test.tsx",
+            "src/state/reducer.ts",
+            "src/state/selectors.ts",
+            "src/components/shell/IndicatorsBar.css"
+          ]
+        }
+      },
       "depends_on": [
         "D6"
       ],
@@ -365,9 +468,22 @@
         "IndicatorsBar renders totals it is given; App passes nulls today",
         "Scenario toggle and Reset already work at a basic level in src/App.tsx"
       ],
-      "changes": [],
-      "verification": [],
-      "deviations_from_issue": [],
+      "changes": [
+        "Added getTotals(state) as the single sample-data aggregation point for at-risk shipments, estimated cost and tailpipe CO2.",
+        "Counted LATE, TIGHT and UNKNOWN risk; pending requests continue to use current-plan metrics rather than counting as saved.",
+        "Updated totals from selected responses, while previews and rejected options leave them unchanged.",
+        "Kept unaffected shipment cards and their summaries identical across Normal and Disrupted scenarios.",
+        "Reset restores the exact initial reducer state and dashboard, including no decisions, preview, incident, selection or open assumptions drawer."
+      ],
+      "verification": [
+        "Totals tests assert normal/disrupted sample totals, selected options, pending requests, preview isolation and unknown metrics.",
+        "Scenario tests compare unaffected cards across scenarios and deeply compare reset state to initialState.",
+        "App tests compare the reset dashboard DOM to a fresh render.",
+        "Full validation: build, typecheck and lint pass; 13 test files and 153 tests pass under Node 24."
+      ],
+      "deviations_from_issue": [
+        "Changing scenarios clears scenario-specific decisions, previews and rejection notes while retaining a valid shipment selection."
+      ],
       "revisions": [],
       "follow_ups": []
     },
@@ -376,13 +492,37 @@
       "code": "D8",
       "title": "\"Why?\" panel, assumptions panel and estimate labels",
       "phase": "Phase 1: Dashboard",
-      "status": "not_started",
+      "status": "ready_for_review",
       "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
+      "assignee": "nmtraboulsi",
+      "built_by": "Copilot D8-transparency agent",
+      "branch": "nicole/d6-d8-dashboard",
       "pull_request": null,
-      "commit": null,
+      "commit": {
+        "hash": "4eaed53e2fd2c074b8c21800314ab7d80fe09cbc",
+        "date": "2026-11-14T12:48:19-08:00",
+        "message": "D6-D8: Complete dashboard workflow and polish UI",
+        "files": {
+          "added": [
+            "src/components/assumptions/AssumptionsPanel.tsx",
+            "src/components/assumptions/AssumptionsPanel.test.tsx",
+            "src/components/assumptions/assumptions.css",
+            "src/components/assumptions/index.ts",
+            "src/data/limitations.ts"
+          ],
+          "modified": [
+            "src/App.tsx",
+            "src/components/responses/ResponsePanel.tsx",
+            "src/components/responses/ResponsePanel.test.tsx",
+            "src/components/responses/responses.css",
+            "src/components/shell/AppShell.tsx",
+            "src/components/shell/AppShell.css",
+            "src/components/shell/AppShell.test.tsx",
+            "src/components/shell/IncidentBanner.tsx",
+            "README.md"
+          ]
+        }
+      },
       "depends_on": [
         "D5"
       ],
@@ -390,9 +530,25 @@
         "ResponsePanel calls onWhy(kind); every option carries explanation_inputs",
         "AppShell has an assumptions slot; src/data exports assumptions and assumptionPlaceholders"
       ],
-      "changes": [],
-      "verification": [],
-      "deviations_from_issue": [],
+      "changes": [
+        "Why displays each response's supplied explanation_inputs without calculations or AI-generated explanations.",
+        "Added explicit explanation focus on open, Close/Escape controls, and return focus to the corresponding Why button.",
+        "Listed all numeric assumptions with values, units, sources, placeholder flags and the supplied EPA 2025 edition.",
+        "Added the Confirmed, Estimated, Simulated and Unknown legend and estimate/bounds tooltips.",
+        "Stored all eleven updated issue limitations verbatim in one reusable data module.",
+        "Replaced the clipped footer with an expandable sources drawer, section navigation and mobile-readable assumption rows."
+      ],
+      "verification": [
+        "Tests open all three explanations for each shipment with options, and assert the reference Wait timing steps verbatim.",
+        "Tests check explanation focus, Close/Escape return focus, assumption value/unit/source labels and placeholder flags.",
+        "Tests assert all eleven limitations, including exact first and last text, and estimate labels on numeric response cells.",
+        "At a 390x844 emulated browser viewport, sources measured 358px visible/358px total width; all eleven limitations were present and the last item scrolled fully into view.",
+        "At a 1440x1000 browser viewport, Why moved focus to its visible explanation; response controls measured 44px high with no page overflow.",
+        "Full validation: build, typecheck and lint pass; 13 test files and 153 tests pass under Node 24."
+      ],
+      "deviations_from_issue": [
+        "Included the user's follow-up requests for an expandable assumptions panel and a more discoverable Why interaction."
+      ],
       "revisions": [],
       "follow_ups": []
     },
@@ -862,6 +1018,61 @@
         "Responsive: routes move under the comparison below 1180 px, single column below 760 px",
         "ResponsePanelView gained an optional summary field; AppShell gained an optional status slot",
         "81 tests pass; checked at 1366x768, 1920x1080, 1024x768 and phone width"
+      ]
+    },
+    {
+      "id": "nicole-impeccable-polish",
+      "title": "Install Impeccable and finish dashboard usability polish",
+      "related_issues": [7, 8, 9],
+      "built_by": "Copilot coordinator",
+      "branch": "nicole/d6-d8-dashboard",
+      "pull_request": null,
+      "commit": {
+        "hash": "4eaed53e2fd2c074b8c21800314ab7d80fe09cbc",
+        "date": "2026-11-14T12:48:19-08:00",
+        "message": "D6-D8: Complete dashboard workflow and polish UI",
+        "files": {
+          "added": [
+            ".github/skills/impeccable/",
+            ".github/agents/impeccable-asset-producer.agent.md",
+            ".github/agents/impeccable-documenter.agent.md",
+            ".github/agents/impeccable-finish-reviewer.agent.md",
+            ".github/agents/impeccable-manual-edit-applier.agent.md",
+            ".impeccable/config.json"
+          ],
+          "modified": [
+            ".gitignore",
+            "README.md",
+            "src/index.css",
+            "src/components/board/board.css",
+            "src/components/shell/AppShell.css",
+            "src/components/shell/IndicatorsBar.css",
+            "src/components/responses/responses.css",
+            "src/components/assumptions/assumptions.css"
+          ]
+        }
+      },
+      "changes": [
+        "Installed official Impeccable via its 4.9.1 installer, including its project-local Copilot skill, shipped agents, launcher and Apache-2.0 license.",
+        "Kept telemetry disabled, selected code-led refinement, and left automatic hooks off; all scans were local and manual.",
+        "Applied the skill's existing-interface Operate guidance rather than replacing the dashboard's restrained visual identity.",
+        "Raised shared controls and scenario/reject actions to 44px targets, improved table spacing and indicator hierarchy, and gave the response comparison more usable width.",
+        "Added mobile sources layout and in-panel navigation without replacing sample data, calculation rules or decision behavior.",
+        "Excluded downloaded platform engine binaries from version control and preserved upstream skill formatting and Windows launcher line endings."
+      ],
+      "verification": [
+        "Ran Impeccable context and read its audit, polish, Operate-mode and craft-floor references.",
+        "Ran the installed local detector once over changed dashboard UI targets: exit 0, JSON result [].",
+        "Browser checks used emulated desktop/mobile viewports, not a physical touch device; no claim of full assistive-technology certification.",
+        "npm run build, npm run typecheck, npm run lint and npm test pass via Node 24; 153 tests pass in 13 files.",
+        "No application dependency or lockfile changes were required."
+      ],
+      "follow_ups": [
+        "D6-D8 are implemented on the feature branch, not merged; their GitHub issues intentionally remain open.",
+        "Authorize the GitHub MCP connection for this repository; both available MCP issue reads currently return 404 while gh CLI works.",
+        "Historical route comparison is paused at the user's request and needs a real data source before any historical fastest-route claim.",
+        "Automatic Impeccable hooks are not enabled. Use its documented manual detector, or configure hooks separately.",
+        "D9 and the later engine, AI and GIS phases are outside this delivery."
       ]
     }
   ]
