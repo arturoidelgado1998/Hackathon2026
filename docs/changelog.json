@@ -78,7 +78,7 @@
       9
     ],
     "data_source": "ArcGIS feature service, imported by scripts/import_map_data.py",
-    "sanity_checks": "npm run sanity: 28 checks in sanity/, also run by the pipeline's sanity job",
+    "sanity_checks": "npm run sanity: 45 checks in sanity/, also run by the pipeline's sanity job",
     "delivery_checklist": [
       {
         "task": "Update main and create Nicole's branch",
@@ -1444,6 +1444,69 @@
     }
   ],
   "entries": [
+    {
+      "id": "2026-11-14-gis-sanity-checks",
+      "date": "2026-11-14",
+      "title": "Sanity checks for the corridor data, the map layers and the truck record",
+      "summary": "Seventeen new checks guard the G3 to G5 work against future changes: the generated data files must agree with each other and with the scripts that write them, the community counts must match everywhere they are shown, and the pipeline must keep running the whole suite.",
+      "issues": [
+        21,
+        22,
+        23
+      ],
+      "related_issues": [
+        19
+      ],
+      "branch": "gis/g3-g5-corridor",
+      "pull_request": null,
+      "commits": [
+        {
+          "hash": "f9d9bd0",
+          "date": "2026-11-14T14:29:59-08:00",
+          "message": "Add sanity checks for the corridor data, map layers and truck record",
+          "files": {
+            "added": [
+              "sanity/data.sanity.test.ts"
+            ],
+            "modified": [
+              ".github/workflows/advisory-checks.yml",
+              "README.md",
+              "sanity/app.sanity.test.ts",
+              "sanity/repo.sanity.test.ts"
+            ],
+            "deleted": []
+          }
+        }
+      ],
+      "changes": {
+        "checks": [
+          "Data (12 checks, new file sanity/data.sanity.test.ts): the projection and the 150 m distance tests give known values; every script table covers every segment; each script is named in the data README; the corridor analysis matches the current segment lines; reapplying the stored analysis changes no file; each place is counted once per route; the map's layers hold exactly the counted places; Caltrans records point at segments that exist; simulated files stay SIMULATED; real layers keep their label, publisher, edition, address and date; no note says a route is legal, safe or suitable for trucks",
+          "Browser (3 new, 9 in all): community counts match between the comparison table and the map panel and follow a previewed reroute; the truck network row is shown as a record with no verdict; the real map draws one graphic per counted school and tract",
+          "Pipeline (2 new, 11 repository checks in all): the workflow runs lint, typecheck, tests, build and the sanity suite on pull requests into staging and main and has a browser and Python; every test file in sanity/ matches the pattern the suite runs"
+        ],
+        "pipeline": [
+          "The sanity job already runs every file matching sanity/**/*.sanity.test.ts, so the new checks run there with no new job",
+          "Added a step that prints the Python version before the build, so a runner without python3 fails with a clear message instead of inside a check"
+        ]
+      },
+      "decisions": [
+        "The data checks import the Python scripts and run their pure functions; they never call the downloads, so the pipeline needs no network access to Caltrans, NCES, OEHHA or the feature service",
+        "Expected counts in the browser checks are read from src/data, so rerunning the corridor analysis does not break them"
+      ],
+      "verification": [
+        "npm run sanity passes: 45 checks in 5 files; npm test passes (195 tests); typecheck and lint pass",
+        "Each of three deliberate breaks was caught and then undone: a count edited by hand in routes.json, a segment line moved, and a school removed from the map layers",
+        "Locally the real map started in headless Chromium and drew 9 schools and 31 tracts for R-A-ALT, matching the data"
+      ],
+      "not_verified": [
+        "The workflow change has not run on GitHub: the branch is not pushed and no pull request is open",
+        "On a runner with no WebGL the drawn-places check reports that it was skipped instead of failing, as the existing map check does"
+      ],
+      "known_gaps": [
+        "scripts/import_map_data.py against the live feature service is still not checked: it needs the network, and it currently fails on the extended service",
+        "The downloads in the corridor and reference-data scripts are not exercised"
+      ]
+    },
     {
       "id": "2026-11-14-gis-g3-g5",
       "date": "2026-11-14",
