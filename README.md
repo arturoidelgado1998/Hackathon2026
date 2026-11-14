@@ -37,3 +37,7 @@ The LLM key is server-side only (`server/`); only `VITE_`-prefixed variables rea
 - `src/state/`: app state
 - `server/`: small Node endpoint for the LLM call
 - `docs/`: project documentation
+
+## Change log
+
+[`docs/changelog.json`](docs/changelog.json) has one entry per GitHub issue: what changed, which files, how it was checked and what is left. Read it before starting an issue and update your issue's entry in the same pull request. The file's `_meta.how_to_update` lists the steps.
