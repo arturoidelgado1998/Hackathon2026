@@ -31,9 +31,11 @@ npm run sanity      # build, then run the sanity checks (see below)
 - **Repository:** the scripts the README and the pipeline call exist, the layout below is in place, and no `.env` file, key or build output is checked in.
 - **Change log:** `docs/changelog.json` adds up, refers only to issues that exist, and every file it says was built is still there.
 - **Build:** the page and its files are complete, and the ArcGIS map stays out of the first page load.
-- **Browser:** the built app is opened in headless Chromium and taken through the main flow: start, closure, compare responses, every shipment, reset, and the real map.
+- **Data:** the files in `src/data` agree with each other and with the scripts that write them. The corridor analysis matches the segment lines it was run on, the counts in `routes.json` are the stored analysis, the map's layers hold exactly the places counted, every real layer has its source and date, and nothing says a route is legal or safe for trucks.
+- **Browser:** the built app is opened in headless Chromium and taken through the main flow: start, closure, compare responses, every shipment, reset, and the real map. It also checks that the community counts match between the comparison table, the map panel and the places drawn on the map, and that the truck network row stays a record.
+- **Pipeline:** the workflow still runs lint, typecheck, tests, build and these checks on pull requests into `staging` and `main`, and no sanity file is skipped because of its name.
 
-The browser check needs Chromium once per machine: `npx playwright install --only-shell chromium`. Use `npm run test:sanity` to rerun the checks without rebuilding.
+The browser check needs Chromium once per machine: `npx playwright install --only-shell chromium`. The data checks need `python3` (3.9 or later, standard library only) and never use the network. Use `npm run test:sanity` to rerun the checks without rebuilding.
 
 ## Sample dashboard workflow
 

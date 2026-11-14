@@ -35,6 +35,34 @@ describe('npm scripts', () => {
   })
 })
 
+describe('pipeline', () => {
+  const workflows = readdirSync(fromRoot('.github', 'workflows'))
+    .filter((f) => /\.ya?ml$/.test(f))
+    .map((f) => readText('.github', 'workflows', f))
+    .join('\n')
+
+  it('runs the unit tests, the build and the sanity checks on pull requests into staging and main', () => {
+    for (const script of ['lint', 'typecheck', 'build', 'test:sanity']) {
+      expect(workflows, `npm run ${script}`).toMatch(new RegExp(`\\bnpm run ${script}\\b`))
+    }
+    expect(workflows).toMatch(/\bnpm test\b/)
+    expect(workflows).toMatch(/pull_request:\s*\n\s*branches: \[main, staging\]/)
+    // The browser check needs a browser, and the data checks need Python.
+    expect(workflows).toMatch(/playwright install .*chromium/)
+    expect(workflows).toMatch(/python3 --version/)
+  })
+
+  it('picks up every sanity check: none is left out by its file name', () => {
+    expect(pkg.scripts['test:sanity']).toContain('vitest.sanity.config.ts')
+    expect(readText('vitest.sanity.config.ts')).toContain("include: ['sanity/**/*.sanity.test.ts']")
+    const tests = readdirSync(fromRoot('sanity')).filter((f) => /\.test\.tsx?$/.test(f))
+    expect(tests.length).toBeGreaterThanOrEqual(5)
+    expect(tests.filter((f) => !f.endsWith('.sanity.test.ts'))).toEqual([])
+    // And the unit tests do not run them by accident.
+    expect(readdirSync(fromRoot('sanity')).filter((f) => /\.(test|spec)\.tsx?$/.test(f) && !/\.sanity\./.test(f))).toEqual([])
+  })
+})
+
 describe('project layout', () => {
   it('has every path the README layout lists', () => {
     const layout = readme.split(/^## Layout$/m)[1]?.split(/^## /m)[0] ?? ''
