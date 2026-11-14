@@ -31,9 +31,9 @@
   "summary": {
     "counts": {
       "done": 5,
-      "ready_for_review": 5,
+      "ready_for_review": 3,
       "not_started": 9,
-      "in_review": 2,
+      "in_review": 4,
       "in_progress": 1
     },
     "current_branch_for_phase_1": "phase-1-dashboard",
@@ -70,6 +70,13 @@
         "state": "open",
         "base": "main",
         "head": "staging"
+      },
+      {
+        "number": 37,
+        "url": "https://github.com/arturoidelgado1998/Hackathon2026/pull/37",
+        "state": "open",
+        "base": "staging",
+        "head": "gis/g3-g5-corridor"
       }
     ],
     "next_up": [
@@ -965,12 +972,12 @@
       "code": "G3",
       "title": "150 m corridor analysis with real school and SB 535 layers",
       "phase": "Phase 5: GIS / ArcGIS",
-      "status": "ready_for_review",
+      "status": "in_review",
       "github_state": "open",
       "assignee": "arturoidelgado1998",
       "built_by": "Coordinator",
       "branch": "gis/g3-g5-corridor",
-      "pull_request": null,
+      "pull_request": 37,
       "commit": {
         "hash": "1ae86f6",
         "date": "2026-11-14T14:26:17-08:00",
@@ -1035,12 +1042,12 @@
       "code": "G4",
       "title": "Map overlays: schools, disadvantaged tracts and corridor",
       "phase": "Phase 5: GIS / ArcGIS",
-      "status": "ready_for_review",
+      "status": "in_review",
       "github_state": "open",
       "assignee": "arturoidelgado1998",
       "built_by": "Coordinator",
       "branch": "gis/g3-g5-corridor",
-      "pull_request": null,
+      "pull_request": 37,
       "commit": {
         "hash": "d144b7f",
         "date": "2026-11-14T14:26:17-08:00",
@@ -1093,7 +1100,7 @@
       "assignee": "arturoidelgado1998",
       "built_by": "Coordinator",
       "branch": "gis/g3-g5-corridor",
-      "pull_request": null,
+      "pull_request": 37,
       "commit": {
         "hash": "a696460",
         "date": "2026-11-14T14:26:18-08:00",
@@ -1458,7 +1465,7 @@
         19
       ],
       "branch": "gis/g3-g5-corridor",
-      "pull_request": null,
+      "pull_request": 37,
       "commits": [
         {
           "hash": "f9d9bd0",
@@ -1499,7 +1506,7 @@
         "Locally the real map started in headless Chromium and drew 9 schools and 31 tracts for R-A-ALT, matching the data"
       ],
       "not_verified": [
-        "The workflow change has not run on GitHub: the branch is not pushed and no pull request is open",
+        "The pipeline result for pull request #37 was not yet known when this was written",
         "On a runner with no WebGL the drawn-places check reports that it was skipped instead of failing, as the existing map check does"
       ],
       "known_gaps": [
@@ -1522,7 +1529,7 @@
         16
       ],
       "branch": "gis/g3-g5-corridor",
-      "pull_request": null,
+      "pull_request": 37,
       "commits": [
         {
           "hash": "1ae86f6",
@@ -1594,7 +1601,7 @@
         "Viewed in the browser at 1500 x 950 on a local dev server: counts, corridor, schools, hatched tracts and the truck network row, with no console errors"
       ],
       "not_verified": [
-        "Committed on the branch but not pushed; no pull request is open and issue statuses on GitHub were not changed",
+        "Issue statuses and labels on GitHub were not changed",
         "scripts/import_map_data.py with the corridor step could not be run end to end, because the script already fails against the extended feature service before it reaches that step",
         "The corridor band itself was not inspected closely; it is about a pixel wide until zoomed far in",
         "Narrow and phone layouts were not checked with the new map panel section"
