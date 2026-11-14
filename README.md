@@ -91,7 +91,8 @@ The LLM key is server-side only (`server/`); only `VITE_`-prefixed variables rea
 
 - `src/types.ts`: shared entity types used across the app
 - `src/engine/`: pure TypeScript calculation engine (no UI, no network)
-- `src/data/`: JSON sample data
+- `src/data/`: JSON sample data, the corridor analysis results, and `real/` reference data from Caltrans
+- `scripts/`: Python scripts that rebuild `src/data` (standard library only)
 - `src/components/`: React components
 - `src/map/`: map panel
 - `src/state/`: app state
@@ -106,6 +107,18 @@ The Routes pane draws the port, warehouses and routes with the ArcGIS Maps SDK f
 - **No API key is needed.** Without one the map uses Esri's keyless light gray basemap.
 - **Optional key:** put `VITE_ARCGIS_API_KEY=...` in a local `.env` (never commit it) to use the `arcgis/light-gray` basemap style.
 - **Data:** the map draws the same data as the rest of the app, from `src/data`. Refresh it from the team's feature service with `python3 scripts/import_map_data.py`.
+- **Community layers:** for the selected shipment's route (the previewed or chosen one, otherwise the original) the map draws the 150 m corridor, the schools inside it as diamonds and the disadvantaged community tracts it touches as hatching. The legend names each real layer's publisher, edition and download date.
+
+## Community proximity (150 m)
+
+`python3 scripts/corridor_analysis.py` counts the real public schools (NCES) and SB 535 disadvantaged community tracts (OEHHA) within 150 m of each route and writes the counts into `src/data`. The response comparison shows them as, for example, "9 schools and 31 disadvantaged tracts within 150 m (real locations, illustrative route)".
+
+- **150 m is a proximity measure, not measured exposure** and not a health impact. The distance follows Kozawa, Fruin and Winer (2009), *Near-road air pollution impacts of goods movement in communities adjacent to the Ports of Los Angeles and Long Beach*, Atmospheric Environment 43, who measured raised diesel pollutants within about 150 m downwind of freeways.
+- **The places are real; the routes are illustrative.** Route lines are schematic and do not follow the roads exactly, so the counts are indicative. Details and measured offsets are in [`src/data/README.md`](src/data/README.md).
+
+## Truck network record
+
+The response comparison has a "Truck network (Caltrans record)" row: the truck designation Caltrans records for the state highways each route follows, and where it has no record. It is a record, not a check that a truck may use the route; route suitability for trucks is not verified. Refresh it with `python3 scripts/import_reference_data.py`, or hide the row with `VITE_TRUCK_NETWORK_CHECK=off` in a local `.env`.
 
 ## Change log
 
