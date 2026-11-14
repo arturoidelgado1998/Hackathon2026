@@ -290,6 +290,66 @@ describe('built app in a browser', () => {
     expect(pageErrors).toEqual([])
   })
 
+  it('shows an AI suggestion only when asked, and selects nothing when it arrives', async () => {
+    await openApp()
+    let asked = 0
+    await page.route('**/shipment/suggest', (route) => {
+      asked += 1
+      return route.fulfill({
+        json: {
+          suggestion: {
+            suggested_option: 'reroute',
+            because: [{ measure: 'risk', against: 'wait' }],
+            gives_up: [],
+            pending: false,
+            note: 'Rerouting keeps the appointment, at a cost to the people along the alternative route.',
+          },
+        },
+      })
+    })
+    await card(referenceId).click()
+    const options = region('Response options')
+    const panel = options.getByRole('region', { name: 'AI suggestion', exact: true })
+    await panel.getByText('Suggestion only. You decide.').waitFor()
+    expect(asked).toBe(0)
+    const totals = await text(region('Indicators'))
+    const needsReview = await text(page.getByTestId('count-needs_review'))
+
+    await panel.getByRole('button', { name: 'Ask the AI for a suggestion', exact: true }).click()
+    await panel.getByText('The AI leans towards').waitFor()
+    expect(asked).toBe(1)
+
+    // The figures are the dashboard's, and the downsides are listed although the reply gave none.
+    const shown = await text(panel)
+    const { original, alternative } = routesOf(referenceId)
+    expect(shown).toContain('What it gives up')
+    expect(shown).toContain(`Schools within 150 m: ${alternative.schools_150m}, against ${original.schools_150m} for Wait`)
+    expect(shown).toContain('the AI supplied none of them')
+
+    // Nothing is selected, previewed or counted because of the suggestion.
+    expect(await options.locator('button[aria-pressed="true"]').count()).toBe(0)
+    expect(await text(options)).not.toContain(`recorded for ${referenceId}`)
+    expect(await text(region('Indicators'))).toBe(totals)
+    expect(await text(page.getByTestId('count-needs_review'))).toBe(needsReview)
+    // The comparison still ranks nothing, and neither does the suggestion.
+    expect(await text(options)).not.toMatch(/\b(best|recommended)\b/i)
+    expect(pageErrors).toEqual([])
+  })
+
+  it('carries on without a suggestion when the AI cannot be asked', async () => {
+    await openApp()
+    await page.route('**/shipment/suggest', (route) => route.abort())
+    await card(referenceId).click()
+    const panel = region('Response options').getByRole('region', { name: 'AI suggestion', exact: true })
+    await panel.getByRole('button', { name: 'Ask the AI for a suggestion', exact: true }).click()
+    await panel.getByText('No AI suggestion:').waitFor()
+    expect(await text(panel)).toContain('Compare the options in the table yourself.')
+    // The dispatcher can still choose.
+    await page.getByRole('button', { name: 'Preview Reroute', exact: true }).click()
+    await region('Response options').getByText('Preview only: Reroute.').waitFor()
+    expect(pageErrors).toEqual([])
+  })
+
   it('loads the real map chunk, and starts the map where the browser can', async () => {
     await openApp({ realMap: true })
     await scenarioButton('Disrupted').click()

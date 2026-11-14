@@ -22,6 +22,8 @@ npm run build       # type-check and build to dist/
 npm run typecheck   # type-check only
 npm run lint        # ESLint
 npm run sanity      # build, then run the sanity checks (see below)
+npm run server      # start the incident server for the AI step (http://127.0.0.1:8787)
+npm run ai:tests    # ask the real model the five test reports and record its answers
 ```
 
 ## Sanity checks
@@ -33,6 +35,7 @@ npm run sanity      # build, then run the sanity checks (see below)
 - **Build:** the page and its files are complete, and the ArcGIS map stays out of the first page load.
 - **Data:** the files in `src/data` agree with each other and with the scripts that write them. The corridor analysis matches the segment lines it was run on, the counts in `routes.json` are the stored analysis, the map's layers hold exactly the places counted, every real layer has its source and date, and nothing says a route is legal or safe for trucks.
 - **Browser:** the built app is opened in headless Chromium and taken through the main flow: start, closure, compare responses, every shipment, reset, and the real map. It also checks that the community counts match between the comparison table, the map panel and the places drawn on the map, and that the truck network row stays a record.
+- **Incident server:** `node server/index.ts` is started as a real process, with the AI switched off and with a stand-in model, and a report is followed through it. No real model or key is used.
 - **Pipeline:** the workflow still runs lint, typecheck, tests, build and these checks on pull requests into `staging` and `main`, and no sanity file is skipped because of its name.
 
 The browser check needs Chromium once per machine: `npx playwright install --only-shell chromium`. The data checks need `python3` (3.9 or later, standard library only) and never use the network. Use `npm run test:sanity` to rerun the checks without rebuilding.
@@ -89,6 +92,48 @@ dependencies and does not send source files to Impeccable.
 Copy `.env.example` to `.env` and fill in values locally. Never commit `.env`.
 The LLM key is server-side only (`server/`); only `VITE_`-prefixed variables reach the browser.
 
+## AI incident interpretation
+
+The dispatcher pastes an incident report; the AI reads it and returns which segment it names, whether it is a closure, the stated time to reopening, and the exact words it relied on. That is all it does. It calculates nothing, it cannot add a segment or a route, and nothing changes until the dispatcher confirms.
+
+- **Provider:** AI Squared's Bolt (`bolt-instruct-v2`), through an OpenAI-compatible endpoint. No SDK is installed; the server makes a plain HTTPS request.
+- **Setup:** copy `.env.example` to `.env` and fill in `LLM_PROVIDER`, `LLM_BASE_URL`, `LLM_MODEL` and `LLM_API_KEY`. Edit the file in an editor; do not put the key on a command line.
+- **Run:** `npm run server` in one terminal and `npm run dev` in another. The dev server forwards `/incident` to the incident server, so the browser never talks to the model and never sees the key.
+- **Without a key, or without a route to the model**, the server still starts and answers with a clear error. The manual-entry path (A2) is for exactly that.
+
+`POST /incident/interpret` takes `{ "report": "..." }` (up to 2,000 characters) and answers:
+
+| Status | Body | Meaning |
+| --- | --- | --- |
+| 200 | `{ "interpretation": { ... } }` | A reading that passed every check |
+| 400, 413 | `{ "error": "bad_request", ... }` | No report, not JSON, or too long |
+| 422 | `{ "error": "invalid_model_response", "details": [...] }` | The model's answer failed a check and was discarded whole |
+| 502 | `{ "error": "model_unreachable" }` or `"model_rejected"` | The model could not be reached, or refused the request |
+| 503 | `{ "error": "not_configured" }` | The server has no model settings |
+
+**What the model is sent:** the report text, the id and name of each segment, and the six-field answer format. No shipments, routes, times, costs or personal data.
+
+**What is checked before a reading is returned** (`src/incident/interpretation.ts`): the segment exists in `segments.json`; the type is `closure` or `unsupported`; the duration is a number or absent; the evidence is an exact quote from the report; there are no extra fields; and a closure with no segment is sent back as a question, never guessed.
+
+**Test record:** [`docs/ai-tests.md`](docs/ai-tests.md) lists the five SYNTHETIC test reports with expected and actual readings, and the AI's suggestions for three simulated shipments. On GitHub the "Live AI check" job asks the real model the same questions, using the `LLM_API_KEY` repository secret.
+
+## AI suggestion
+
+Below the comparison table the dispatcher can ask the AI which response it would lean towards for the selected shipment. It is a suggestion, not a decision.
+
+- **Asked for, never shown unasked.** Nothing is sent to the model until the dispatcher clicks "Ask the AI for a suggestion".
+- **It selects nothing.** No option is pre-selected or highlighted, and no card, total or map changes. The Preview and Choose buttons work exactly as they do without it.
+- **The AI supplies no figures.** It is given the figures the table already shows and returns an option, up to three measures it rests on, and one sentence with no numbers. The dashboard prints every figure from its own data.
+- **A reason must be true.** A suggestion is discarded whole if a measure it cites is not actually better for that option.
+- **What it gives up is always shown, in full.** The dashboard works that out itself from the figures, so the AI cannot leave a downside out.
+- **What the AI was asked to weigh is shown word for word**, and lives in one place: `WEIGHING` in `src/suggestion/suggestion.ts`. It is a value choice the team should review.
+
+`POST /shipment/suggest` takes `{ "facts": { ... } }` (the option figures for one shipment) and answers with `{ "suggestion": { ... } }` or the same errors as the endpoint above.
+
+**This changes a project rule.** The tracker's rule 4 says "No single best option, ranking or ethics score anywhere". The comparison table still ranks and scores nothing, and the words "best" and "recommended" are still never shown, but an AI suggestion now exists. The repository owner decided this on 2026-11-14; the tracker issue's text has not been edited.
+
+**Network note:** on 2026-11-14 the venue network blocked the model's address, so calls from a laptop on that network fail with `model_unreachable`. A phone hotspot and GitHub's runners are outside it.
+
 ## Layout
 
 - `src/types.ts`: shared entity types used across the app
@@ -99,6 +144,7 @@ The LLM key is server-side only (`server/`); only `VITE_`-prefixed variables rea
 - `src/map/`: map panel
 - `src/state/`: app state
 - `server/`: small Node endpoint for the LLM call
+- `src/incident/`: what the AI may return, and the check every answer must pass
 - `sanity/`: sanity checks on the repository, the change log, the build and the built app
 - `docs/`: project documentation
 

@@ -10,7 +10,9 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:sanity": "vitest run --config vitest.sanity.config.ts",
-    "sanity": "npm run build && npm run test:sanity"
+    "sanity": "npm run build && npm run test:sanity",
+    "server": "node --env-file-if-exists=.env server/index.ts",
+    "ai:tests": "node --env-file-if-exists=.env server/ai-tests.ts"
   },
   "dependencies": {
     "@arcgis/core": "5.1.27",

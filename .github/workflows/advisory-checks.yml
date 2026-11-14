@@ -13,6 +13,8 @@ on:
     branches: [main, staging]
   push:
     branches: [main, staging]
+  # Lets the live AI check be rerun by hand from the Actions tab.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -101,3 +103,36 @@ jobs:
       # sanity/**/*.sanity.test.ts is run.
       - name: Sanity checks
         run: npm run test:sanity
+
+  # The unit tests and sanity checks replace the model with canned answers, so
+  # they run without a key. This job asks the real model the five SYNTHETIC
+  # test reports and compares its readings with what is expected, then asks it
+  # for a suggestion on three simulated shipments and checks each one.
+  # The key is the repository secret LLM_API_KEY; the address and model are
+  # repository variables. Pull requests from forks get no secret and skip.
+  ai-live:
+    name: Live AI check on the test reports and suggestions
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      HAS_KEY: ${{ secrets.LLM_API_KEY != '' }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Skipped, no key
+        if: env.HAS_KEY != 'true'
+        run: echo "::notice::LLM_API_KEY is not available to this run, so the live AI check was skipped."
+
+      # Needs no install: the script uses Node only. It never prints the key.
+      - name: Ask the model
+        if: env.HAS_KEY == 'true'
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
+        run: npm run ai:tests -- --check
