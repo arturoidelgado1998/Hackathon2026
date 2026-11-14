@@ -33,8 +33,8 @@
       "done": 5,
       "ready_for_review": 3,
       "not_started": 9,
-      "in_review": 2,
-      "on_hold": 3
+      "in_review": 4,
+      "in_progress": 1
     },
     "current_branch_for_phase_1": "phase-1-dashboard",
     "pull_requests": [
@@ -70,16 +70,22 @@
         "state": "open",
         "base": "main",
         "head": "staging"
+      },
+      {
+        "number": 37,
+        "url": "https://github.com/arturoidelgado1998/Hackathon2026/pull/37",
+        "state": "open",
+        "base": "staging",
+        "head": "gis/g3-g5-corridor"
       }
     ],
     "next_up": [
       7,
       8,
-      9,
-      21
+      9
     ],
     "data_source": "ArcGIS feature service, imported by scripts/import_map_data.py",
-    "sanity_checks": "npm run sanity: 28 checks in sanity/, also run by the pipeline's sanity job",
+    "sanity_checks": "npm run sanity: 45 checks in sanity/, also run by the pipeline's sanity job",
     "delivery_checklist": [
       {
         "task": "Update main and create Nicole's branch",
@@ -890,7 +896,8 @@
         "Edited the feature service: S-03's appointment changed from 11:00-11:40 to 11:00-11:34 (3 rows) so one shipment has no confirmed fix",
         "The feature service can be edited without signing in; tighten its sharing settings",
         "Sensitive-zone flags come from the service's two SYNTHETIC rectangles until G3 (#21)",
-        "Reference values changed: the plan's $121/$161/$158 is the min case; stored values are the max case $130/$169/$167. Issues #11-#14 and #17 were updated"
+        "Reference values changed: the plan's $121/$161/$158 is the min case; stored values are the max case $130/$169/$167. Issues #11-#14 and #17 were updated",
+        "2026-11-14: the feature service now has 15 segments, 7 facilities (a second port, PORT-LA, and warehouses WH-D and WH-E) and 16 shipments. scripts/import_map_data.py stops with KeyError 'R-LA-D-ORIG' because its route table lists only the first six routes. src/data still holds the earlier 9 segments and 10 shipments"
       ]
     },
     {
@@ -965,13 +972,37 @@
       "code": "G3",
       "title": "150 m corridor analysis with real school and SB 535 layers",
       "phase": "Phase 5: GIS / ArcGIS",
-      "status": "on_hold",
-      "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
-      "pull_request": null,
-      "commit": null,
+      "status": "in_review",
+      "github_state": "closed",
+      "assignee": "arturoidelgado1998",
+      "built_by": "Coordinator",
+      "branch": "gis/g3-g5-corridor",
+      "pull_request": 37,
+      "commit": {
+        "hash": "1ae86f6",
+        "date": "2026-11-14T14:26:17-08:00",
+        "message": "G3: Count real schools and disadvantaged tracts within 150 m of each route",
+        "files": {
+          "added": [
+            "scripts/corridor_analysis.py",
+            "src/data/corridor-layers.json",
+            "src/data/corridor.json",
+            "src/data/corridorLayers.ts"
+          ],
+          "modified": [
+            "scripts/import_map_data.py",
+            "src/App.test.tsx",
+            "src/components/assumptions/AssumptionsPanel.test.tsx",
+            "src/components/assumptions/AssumptionsPanel.tsx",
+            "src/data/data.test.ts",
+            "src/data/index.ts",
+            "src/data/routes.json",
+            "src/data/sample-responses.json",
+            "src/data/segments.json"
+          ],
+          "deleted": []
+        }
+      },
       "depends_on": [
         "G1"
       ],
@@ -979,24 +1010,59 @@
         "Route fields schools_150m, dac_tracts and max_diesel_pm_pctl exist and are null",
         "ResponsePanel already switches its community wording when the counts are filled"
       ],
-      "changes": [],
-      "verification": [],
-      "deviations_from_issue": [],
+      "changes": [
+        "scripts/corridor_analysis.py: downloads the NCES public school layer and the SB 535 disadvantaged community tracts, measures 150 m around each route in California Albers (EPSG:3310), and writes src/data/corridor.json (counts, sources, dates) and corridor-layers.json (the places, for the map)",
+        "routes.json now carries schools_150m, dac_tracts and max_diesel_pm_pctl for all six routes; near_sensitive_zone is computed from them for routes and segments; the sample responses' passes_sensitive_zone and reroute notes follow",
+        "scripts/import_map_data.py copies the stored counts in on every run through one shared function, and leaves them out with a warning when the segment lines no longer match the stored analysis",
+        "The response comparison's community row now reads, for example, '9 schools and 31 disadvantaged tracts within 150 m (real locations, illustrative route)'",
+        "Assumptions & sources gained a Community proximity (150 m) section: method, what it means, the Kozawa et al. (2009) basis, and each layer's publisher, edition and download date",
+        "README.md and src/data/README.md describe 150 m as a proximity measure, not measured exposure"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test pass (195 tests); npm run sanity passes (28 checks)",
+        "The script was run twice and gave the same files",
+        "Result: R-A-ORIG 7 schools and 53 tracts, R-A-ALT 9 and 31, R-B-ORIG 5 and 51, R-B-ALT 18 and 79, R-C-ORIG 0 and 15, R-C-ALT 0 and 9",
+        "Viewed in the browser: S-01 and S-07 show the counts in the comparison table"
+      ],
+      "deviations_from_issue": [
+        "The analysis reads the segment lines already in src/data, not a fresh pull from the feature service, because the service has since been extended and import_map_data.py can no longer read it (see follow-ups)",
+        "The study box is the segment lines padded by about 2 km (1,359 schools, 853 tracts), not the brief's port-to-Ontario box",
+        "Acceptance criterion 3 is half met: an alternative passes more schools and tracts (R-B-ALT), but no alternative passes fewer of both than its original over more miles. The routes were not changed; that is the team's decision",
+        "max_diesel_pm_pctl is 99.8 for every route, so it is stored but not shown",
+        "Limitation 8 in src/data/limitations.ts still says the flags are placeholders until G3; its text is fixed by D8 (#9) and was left for the team to reword"
+      ],
       "revisions": [],
-      "follow_ups": []
+      "follow_ups": [
+        "The segment lines are schematic: measured against Caltrans highway lines, they sit a median of about 150 m to 1,900 m from the real highway, and 0% to 50% of each segment is within 150 m of it. The counts are real places near a drawn line. Redraw the lines along the roads in the feature service, then rerun scripts/corridor_analysis.py",
+        "The response comparison's group heading still reads 'Stakeholder impact (SIMULATED)' although the community row now holds real locations"
+      ]
     },
     {
       "number": 22,
       "code": "G4",
       "title": "Map overlays: schools, disadvantaged tracts and corridor",
       "phase": "Phase 5: GIS / ArcGIS",
-      "status": "on_hold",
-      "github_state": "open",
+      "status": "in_review",
+      "github_state": "closed",
       "assignee": "arturoidelgado1998",
-      "built_by": null,
-      "branch": null,
-      "pull_request": null,
-      "commit": null,
+      "built_by": "Coordinator",
+      "branch": "gis/g3-g5-corridor",
+      "pull_request": 37,
+      "commit": {
+        "hash": "d144b7f",
+        "date": "2026-11-14T14:26:17-08:00",
+        "message": "G4: Draw the 150 m corridor, schools and tracts on the map",
+        "files": {
+          "added": [],
+          "modified": [
+            "src/map/ArcgisMap.tsx",
+            "src/map/MapPanel.css",
+            "src/map/MapPanel.test.tsx",
+            "src/map/MapPanel.tsx"
+          ],
+          "deleted": []
+        }
+      },
       "depends_on": [
         "G2",
         "G3"
@@ -1004,12 +1070,24 @@
       "already_in_place": [
         "Layer 3 of the feature service has two SYNTHETIC zone polygons usable as a placeholder overlay"
       ],
-      "changes": [],
-      "verification": [],
-      "deviations_from_issue": [],
+      "changes": [
+        "src/map/ArcgisMap.tsx draws, for one route at a time, the 150 m corridor (a geodesic buffer from the SDK's geometry operator), the schools inside it as diamonds and the disadvantaged tracts it touches as diagonal hatching",
+        "The corridor follows the previewed or chosen route, otherwise the selected shipment's original route",
+        "src/map/MapPanel.tsx adds legend entries for the corridor, schools and tracts, a 'Within 150 m of <route>' line with the same counts the route carries, and each real layer's publisher, edition and download date",
+        "The counts and sources stay in the panel when the map cannot load",
+        "MapPanelProps is unchanged; the map component gained one optional prop, corridorRouteId"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test pass (195 tests, 6 new in MapPanel.test.tsx)",
+        "Viewed in the browser: previewing Reroute for S-07 switches the corridor to R-B-ALT and shows 18 schools and 79 tracts on the map panel and in the comparison table; hatched tracts and school diamonds seen after zooming in; no console errors"
+      ],
+      "deviations_from_issue": [
+        "No screenshots were saved to docs/screenshots: the tools used here can view the app but cannot write an image file"
+      ],
       "revisions": [],
       "follow_ups": [
-        "2026-11-14: assigned; stays on hold until G3 provides real layers"
+        "At the default zoom the 150 m corridor is about a pixel wide and tract hatching is faint; both are clear after zooming in",
+        "Take the slide screenshots by hand: Disrupted, select S-07, Preview Reroute, zoom into the I-110 corridor"
       ]
     },
     {
@@ -1017,22 +1095,64 @@
       "code": "G5",
       "title": "Stretch: hazard polygon and truck-route check",
       "phase": "Phase 5: GIS / ArcGIS",
-      "status": "on_hold",
-      "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
-      "pull_request": null,
-      "commit": null,
+      "status": "in_progress",
+      "github_state": "closed",
+      "assignee": "arturoidelgado1998",
+      "built_by": "Coordinator",
+      "branch": "gis/g3-g5-corridor",
+      "pull_request": 37,
+      "commit": {
+        "hash": "a696460",
+        "date": "2026-11-14T14:26:18-08:00",
+        "message": "G5: Show the Caltrans truck network record on each response",
+        "files": {
+          "added": [
+            "scripts/import_reference_data.py",
+            "src/data/real/index.ts",
+            "src/data/real/lane-closures.json",
+            "src/data/real/real.test.ts",
+            "src/data/real/truck-network.json",
+            "src/state/features.ts"
+          ],
+          "modified": [
+            ".env.example",
+            "src/components/responses/ResponsePanel.test.tsx",
+            "src/components/responses/ResponsePanel.tsx",
+            "src/components/responses/responses.css",
+            "src/state/selectors.test.ts",
+            "src/state/selectors.ts",
+            "src/viewModels.ts"
+          ],
+          "deleted": []
+        }
+      },
       "depends_on": [
         "G4"
       ],
       "already_in_place": [],
-      "changes": [],
-      "verification": [],
-      "deviations_from_issue": [],
+      "changes": [
+        "Truck-route check: the response comparison has a 'Truck network (Caltrans record)' row showing the designation Caltrans records for the state highways each route follows, with text warnings where the layer has no record or a segment is on surface streets",
+        "scripts/import_reference_data.py and src/data/real/ supply the record (Caltrans Truck Network layer) and a snapshot of Caltrans District 7 lane closures, both labelled REAL",
+        "The row can be switched off with VITE_TRUCK_NETWORK_CHECK=off; with it off the view carries no truck data and the row is not rendered",
+        "Hazard polygon: not built (see deviations)"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test pass (195 tests: 8 on the real data, 5 on the selector, 2 on the row)",
+        "Viewed in the browser: S-01 shows 'I-710: National Network (STAA trucks)' and 'No Caltrans record for SR-60' for Wait, and I-710, I-605, I-405 for Reroute",
+        "A test checks the row never uses the words legal, allowed, suitable or safe"
+      ],
+      "deviations_from_issue": [
+        "Uses the Caltrans Truck Network layer, not the City of Los Angeles Goods Movement layer the issue names. The routes are mostly freeways outside the city, and the drawn lines sit too far from the real roads to compare with a street-level layer; the Caltrans record is matched by highway number instead",
+        "The hazard polygon is not built. The issue sends crossed segments through the A2 (#16) confirm step, which does not exist yet, and the WFIGS current fire perimeter layer had no perimeter in the study area on 2026-11-14, so only a drawn polygon could have been shown",
+        "Started while G4 is not merged, at the owner's request"
+      ],
       "revisions": [],
-      "follow_ups": []
+      "follow_ups": [
+        "2026-11-14: closed on GitHub at the owner's request with the hazard polygon not built; reopen it or open a new issue when A2 (#16) exists",
+        "The Caltrans layer has no rows for SR-60 and does not cover surface streets (C-LOCAL)",
+        "Which highway each segment follows is a table in scripts/import_reference_data.py, read from the segment names; the team should confirm it",
+        "Build the hazard polygon after A2 (#16): flag crossed segments as 'possibly affected, needs review' and never close one without the dispatcher"
+      ]
     }
   ],
   "other_changes": [
@@ -1332,6 +1452,172 @@
     }
   ],
   "entries": [
+    {
+      "id": "2026-11-14-gis-sanity-checks",
+      "date": "2026-11-14",
+      "title": "Sanity checks for the corridor data, the map layers and the truck record",
+      "summary": "Seventeen new checks guard the G3 to G5 work against future changes: the generated data files must agree with each other and with the scripts that write them, the community counts must match everywhere they are shown, and the pipeline must keep running the whole suite.",
+      "issues": [
+        21,
+        22,
+        23
+      ],
+      "related_issues": [
+        19
+      ],
+      "branch": "gis/g3-g5-corridor",
+      "pull_request": 37,
+      "commits": [
+        {
+          "hash": "f9d9bd0",
+          "date": "2026-11-14T14:29:59-08:00",
+          "message": "Add sanity checks for the corridor data, map layers and truck record",
+          "files": {
+            "added": [
+              "sanity/data.sanity.test.ts"
+            ],
+            "modified": [
+              ".github/workflows/advisory-checks.yml",
+              "README.md",
+              "sanity/app.sanity.test.ts",
+              "sanity/repo.sanity.test.ts"
+            ],
+            "deleted": []
+          }
+        }
+      ],
+      "changes": {
+        "checks": [
+          "Data (12 checks, new file sanity/data.sanity.test.ts): the projection and the 150 m distance tests give known values; every script table covers every segment; each script is named in the data README; the corridor analysis matches the current segment lines; reapplying the stored analysis changes no file; each place is counted once per route; the map's layers hold exactly the counted places; Caltrans records point at segments that exist; simulated files stay SIMULATED; real layers keep their label, publisher, edition, address and date; no note says a route is legal, safe or suitable for trucks",
+          "Browser (3 new, 9 in all): community counts match between the comparison table and the map panel and follow a previewed reroute; the truck network row is shown as a record with no verdict; the real map draws one graphic per counted school and tract",
+          "Pipeline (2 new, 11 repository checks in all): the workflow runs lint, typecheck, tests, build and the sanity suite on pull requests into staging and main and has a browser and Python; every test file in sanity/ matches the pattern the suite runs"
+        ],
+        "pipeline": [
+          "The sanity job already runs every file matching sanity/**/*.sanity.test.ts, so the new checks run there with no new job",
+          "Added a step that prints the Python version before the build, so a runner without python3 fails with a clear message instead of inside a check"
+        ]
+      },
+      "decisions": [
+        "The data checks import the Python scripts and run their pure functions; they never call the downloads, so the pipeline needs no network access to Caltrans, NCES, OEHHA or the feature service",
+        "Expected counts in the browser checks are read from src/data, so rerunning the corridor analysis does not break them"
+      ],
+      "verification": [
+        "npm run sanity passes: 45 checks in 5 files; npm test passes (195 tests); typecheck and lint pass",
+        "Each of three deliberate breaks was caught and then undone: a count edited by hand in routes.json, a segment line moved, and a school removed from the map layers",
+        "Locally the real map started in headless Chromium and drew 9 schools and 31 tracts for R-A-ALT, matching the data"
+      ],
+      "not_verified": [
+        "The pipeline result for pull request #37 was not yet known when this was written",
+        "On a runner with no WebGL the drawn-places check reports that it was skipped instead of failing, as the existing map check does"
+      ],
+      "known_gaps": [
+        "scripts/import_map_data.py against the live feature service is still not checked: it needs the network, and it currently fails on the extended service",
+        "The downloads in the corridor and reference-data scripts are not exercised"
+      ]
+    },
+    {
+      "id": "2026-11-14-gis-g3-g5",
+      "date": "2026-11-14",
+      "title": "Corridor analysis, map overlays and the truck network record (G3, G4 and part of G5)",
+      "summary": "Each route now carries real counts of the schools and disadvantaged community tracts within 150 m, the map draws them with the corridor, and the response comparison shows what Caltrans records about trucks on each route's highways. The hazard polygon half of G5 is not built.",
+      "issues": [
+        21,
+        22,
+        23
+      ],
+      "related_issues": [
+        19,
+        16
+      ],
+      "branch": "gis/g3-g5-corridor",
+      "pull_request": 37,
+      "commits": [
+        {
+          "hash": "1ae86f6",
+          "message": "G3: Count real schools and disadvantaged tracts within 150 m of each route"
+        },
+        {
+          "hash": "d144b7f",
+          "message": "G4: Draw the 150 m corridor, schools and tracts on the map"
+        },
+        {
+          "hash": "a696460",
+          "message": "G5: Show the Caltrans truck network record on each response"
+        }
+      ],
+      "files": {
+        "added": [
+          "scripts/corridor_analysis.py",
+          "scripts/import_reference_data.py",
+          "src/data/corridor-layers.json",
+          "src/data/corridor.json",
+          "src/data/corridorLayers.ts",
+          "src/data/real/index.ts",
+          "src/data/real/lane-closures.json",
+          "src/data/real/real.test.ts",
+          "src/data/real/truck-network.json",
+          "src/state/features.ts"
+        ],
+        "modified": [
+          ".env.example",
+          "README.md",
+          "docs/changelog.json",
+          "scripts/import_map_data.py",
+          "src/App.test.tsx",
+          "src/components/assumptions/AssumptionsPanel.test.tsx",
+          "src/components/assumptions/AssumptionsPanel.tsx",
+          "src/components/responses/ResponsePanel.test.tsx",
+          "src/components/responses/ResponsePanel.tsx",
+          "src/components/responses/responses.css",
+          "src/data/README.md",
+          "src/data/data.test.ts",
+          "src/data/index.ts",
+          "src/data/routes.json",
+          "src/data/sample-responses.json",
+          "src/data/segments.json",
+          "src/map/ArcgisMap.tsx",
+          "src/map/MapPanel.css",
+          "src/map/MapPanel.test.tsx",
+          "src/map/MapPanel.tsx",
+          "src/state/selectors.test.ts",
+          "src/state/selectors.ts",
+          "src/viewModels.ts"
+        ],
+        "deleted": []
+      },
+      "numbers_that_moved": [
+        "Tests: 170 on staging to 195",
+        "Routes with community counts: 0 of 6 to 6 of 6",
+        "near_sensitive_zone is now true for every route and segment, because every one passes at least one disadvantaged tract"
+      ],
+      "decisions": [
+        "Built in its own working copy, .claude/worktrees/gis-g3-g5, on a branch from staging, because the shared checkout was being switched between branches by other sessions",
+        "The corridor analysis runs on the lines in src/data so it does not depend on the feature service, which the importer can no longer read",
+        "Community counts flow through one function shared by both scripts, so rerunning either gives the same files",
+        "The truck check reports a record and its gaps and never a verdict, to stay inside the plan's rule against truck-legality claims"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test pass (195 tests)",
+        "npm run sanity passes (28 checks), before this change log entry was written and again after",
+        "Viewed in the browser at 1500 x 950 on a local dev server: counts, corridor, schools, hatched tracts and the truck network row, with no console errors"
+      ],
+      "not_verified": [
+        "Issues #21, #22 and #23 were assigned to arturoidelgado1998 and closed on GitHub at the owner's request, before pull request #37 merged; their on-hold labels were left as they were",
+        "scripts/import_map_data.py with the corridor step could not be run end to end, because the script already fails against the extended feature service before it reaches that step",
+        "The corridor band itself was not inspected closely; it is about a pixel wide until zoomed far in",
+        "Narrow and phone layouts were not checked with the new map panel section"
+      ],
+      "known_gaps": [
+        "Segment lines are schematic, so the 150 m counts describe a drawn line, not the road",
+        "No slide screenshots in docs/screenshots",
+        "G5 hazard polygon not built",
+        "The same reference-data files also exist, uncommitted, in the main checkout on phase-1-dashboard from earlier work; this branch now holds them too"
+      ],
+      "outside_the_repo": [
+        "GitHub: issues #21, #22 and #23 assigned to arturoidelgado1998 and closed; pull request #37 opened into staging with Auto-fix on",
+        "The feature service was read, not edited"
+      ]
+    },
     {
       "id": "2026-11-14-merge-nicole-d6-d8",
       "date": "2026-11-14",

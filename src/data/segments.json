@@ -25,8 +25,8 @@
       "miles": 5,
       "minutes_min": 10,
       "minutes_max": 12,
-      "near_sensitive_zone": false,
-      "sensitive_zone_note": ""
+      "near_sensitive_zone": true,
+      "sensitive_zone_note": "0 schools and 7 disadvantaged tracts within 150 m (real locations, illustrative route)"
     },
     {
       "id": "NB-03",
@@ -63,8 +63,8 @@
       "miles": 25,
       "minutes_min": 30,
       "minutes_max": 38,
-      "near_sensitive_zone": false,
-      "sensitive_zone_note": ""
+      "near_sensitive_zone": true,
+      "sensitive_zone_note": "5 schools and 39 disadvantaged tracts within 150 m (real locations, illustrative route)"
     },
     {
       "id": "WH-A-APPR",
@@ -89,8 +89,8 @@
       "miles": 15,
       "minutes_min": 20,
       "minutes_max": 24,
-      "near_sensitive_zone": false,
-      "sensitive_zone_note": ""
+      "near_sensitive_zone": true,
+      "sensitive_zone_note": "2 schools and 10 disadvantaged tracts within 150 m (real locations, illustrative route)"
     },
     {
       "id": "EB-405",
@@ -128,7 +128,7 @@
       "minutes_min": 45,
       "minutes_max": 52,
       "near_sensitive_zone": true,
-      "sensitive_zone_note": "Passes SYNTHETIC school zone (Z-01)"
+      "sensitive_zone_note": "7 schools and 17 disadvantaged tracts within 150 m (real locations, illustrative route)"
     },
     {
       "id": "WH-B-APPR",
@@ -153,8 +153,8 @@
       "miles": 10,
       "minutes_min": 15,
       "minutes_max": 18,
-      "near_sensitive_zone": false,
-      "sensitive_zone_note": ""
+      "near_sensitive_zone": true,
+      "sensitive_zone_note": "0 schools and 8 disadvantaged tracts within 150 m (real locations, illustrative route)"
     },
     {
       "id": "HARBOR-110",
@@ -192,7 +192,7 @@
       "minutes_min": 35,
       "minutes_max": 45,
       "near_sensitive_zone": true,
-      "sensitive_zone_note": "Passes SYNTHETIC residential area (Z-02)"
+      "sensitive_zone_note": "12 schools and 53 disadvantaged tracts within 150 m (real locations, illustrative route)"
     },
     {
       "id": "XTOWN-B",
@@ -221,8 +221,8 @@
       "miles": 21,
       "minutes_min": 30,
       "minutes_max": 38,
-      "near_sensitive_zone": false,
-      "sensitive_zone_note": ""
+      "near_sensitive_zone": true,
+      "sensitive_zone_note": "6 schools and 27 disadvantaged tracts within 150 m (real locations, illustrative route)"
     },
     {
       "id": "WEST-405",
@@ -247,8 +247,8 @@
       "miles": 11,
       "minutes_min": 18,
       "minutes_max": 23,
-      "near_sensitive_zone": false,
-      "sensitive_zone_note": ""
+      "near_sensitive_zone": true,
+      "sensitive_zone_note": "0 schools and 10 disadvantaged tracts within 150 m (real locations, illustrative route)"
     },
     {
       "id": "C-LOCAL",
@@ -277,8 +277,8 @@
       "miles": 12,
       "minutes_min": 32,
       "minutes_max": 38,
-      "near_sensitive_zone": false,
-      "sensitive_zone_note": ""
+      "near_sensitive_zone": true,
+      "sensitive_zone_note": "0 schools and 9 disadvantaged tracts within 150 m (real locations, illustrative route)"
     }
   ]
 }

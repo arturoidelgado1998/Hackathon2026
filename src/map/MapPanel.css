@@ -264,3 +264,57 @@
   stroke: var(--pp-border-strong);
   stroke-width: 1.5;
 }
+
+/* Community layers (G3, G4). Each symbol has its own shape or pattern. */
+.pp-map__legend-mark {
+  flex: none;
+  fill: none;
+  stroke-width: 1.5;
+}
+
+.pp-map__legend-mark--school path {
+  fill: var(--pp-surface, #fff);
+  stroke: #00695c;
+  stroke-width: 2;
+}
+
+.pp-map__legend-mark--tract rect {
+  stroke: #6e4496;
+}
+
+.pp-map__legend-mark--tract path {
+  stroke: #6e4496;
+  stroke-width: 1;
+}
+
+.pp-map__legend-mark--corridor rect {
+  fill: color-mix(in srgb, var(--pp-text) 12%, transparent);
+  stroke: var(--pp-text);
+  stroke-width: 1;
+  stroke-dasharray: 1.5 2;
+}
+
+.pp-map__community {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pp-space-1);
+  padding: var(--pp-space-2) var(--pp-space-3);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius, 6px);
+}
+
+.pp-map__community p {
+  margin: 0;
+}
+
+.pp-map__community-note,
+.pp-map__sources {
+  color: var(--pp-text-muted);
+  font-size: var(--pp-text-xs);
+}
+
+.pp-map__sources {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

@@ -230,7 +230,7 @@
               "30 to 42 min late"
             ],
             "driver_duty_min": 132,
-            "passes_sensitive_zone": false,
+            "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "Driver duty up to 132 min including up to 60 min waiting",
               "Warehouse WH-A: 30 to 42 min late"
@@ -260,7 +260,7 @@
             "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "+15 mi and +23.5 kg CO2 versus the original route",
-              "Passes SYNTHETIC school zone (Z-01)"
+              "9 schools and 31 disadvantaged tracts within 150 m (real locations, illustrative route)"
             ]
           },
           {
@@ -322,7 +322,7 @@
               "Meets window"
             ],
             "driver_duty_min": 117,
-            "passes_sensitive_zone": false,
+            "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "Driver duty up to 117 min including up to 45 min waiting",
               "Warehouse WH-A: meets window"
@@ -352,7 +352,7 @@
             "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "+15 mi and +23.5 kg CO2 versus the original route",
-              "Passes SYNTHETIC school zone (Z-01)"
+              "9 schools and 31 disadvantaged tracts within 150 m (real locations, illustrative route)"
             ]
           },
           {
@@ -414,7 +414,7 @@
               "26 to 38 min late"
             ],
             "driver_duty_min": 112,
-            "passes_sensitive_zone": false,
+            "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "Driver duty up to 112 min including up to 40 min waiting",
               "Warehouse WH-A: 26 to 38 min late"
@@ -444,7 +444,7 @@
             "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "+15 mi and +23.5 kg CO2 versus the original route",
-              "Passes SYNTHETIC school zone (Z-01)"
+              "9 schools and 31 disadvantaged tracts within 150 m (real locations, illustrative route)"
             ]
           },
           {
@@ -506,7 +506,7 @@
               "35 to 46 min late"
             ],
             "driver_duty_min": 116,
-            "passes_sensitive_zone": false,
+            "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "Driver duty up to 116 min including up to 50 min waiting",
               "Warehouse WH-B: 35 to 46 min late"
@@ -536,7 +536,7 @@
             "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "+5 mi and +7.9 kg CO2 versus the original route",
-              "Passes SYNTHETIC residential area (Z-02)"
+              "18 schools and 79 disadvantaged tracts within 150 m (real locations, illustrative route)"
             ]
           },
           {
@@ -598,7 +598,7 @@
               "Meets window"
             ],
             "driver_duty_min": 86,
-            "passes_sensitive_zone": false,
+            "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "Driver duty up to 86 min including up to 20 min waiting",
               "Warehouse WH-B: meets window"
@@ -628,7 +628,7 @@
             "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "+5 mi and +7.9 kg CO2 versus the original route",
-              "Passes SYNTHETIC residential area (Z-02)"
+              "18 schools and 79 disadvantaged tracts within 150 m (real locations, illustrative route)"
             ]
           },
           {
@@ -702,7 +702,7 @@
               "May be up to 6 min late"
             ],
             "driver_duty_min": 126,
-            "passes_sensitive_zone": false,
+            "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "Driver duty up to 126 min including up to 60 min waiting",
               "Warehouse WH-B: may be up to 6 min late"
@@ -732,7 +732,7 @@
             "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "+5 mi and +7.9 kg CO2 versus the original route",
-              "Passes SYNTHETIC residential area (Z-02)"
+              "18 schools and 79 disadvantaged tracts within 150 m (real locations, illustrative route)"
             ]
           },
           {
