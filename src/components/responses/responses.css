@@ -1,0 +1,159 @@
+/* Response comparison panel (D5). Plain CSS, prefixed "responses-". */
+
+.responses-panel {
+  min-width: 0;
+}
+
+.responses-heading {
+  margin: 0 0 0.25rem;
+  font-size: 1.15rem;
+}
+
+.responses-note {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.responses-empty {
+  margin: 0;
+  padding: 1rem;
+  border: 1px dashed #b5b5b5;
+  border-radius: 6px;
+  color: #444;
+}
+
+.responses-banner {
+  margin: 0 0 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border: 2px solid #8a5a00;
+  border-radius: 6px;
+  background: #fff6e0;
+  color: #4a3000;
+  font-weight: 600;
+}
+
+/* Three equal columns; fits side by side at 1366 px. Stacks when narrow. */
+.responses-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+@media (max-width: 900px) {
+  .responses-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Every card has the same treatment: none is highlighted. */
+.responses-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+  padding: 0.8rem;
+  border: 1px solid #c8c8c8;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.9rem;
+}
+
+.responses-card-title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.responses-pending {
+  margin: 0;
+  padding: 0.4rem 0.6rem;
+  border: 1px dashed #6b6b6b;
+  border-radius: 4px;
+  background: #f4f4f4;
+  font-weight: 600;
+}
+
+.responses-metrics {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.2rem 0.6rem;
+  margin: 0;
+}
+
+.responses-metrics dt {
+  color: #555;
+}
+
+.responses-metrics dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.responses-delta {
+  color: #444;
+  white-space: nowrap;
+}
+
+.responses-risk {
+  font-weight: 600;
+}
+
+.responses-strip {
+  padding: 0.5rem 0.6rem;
+  border-top: 1px solid #ddd;
+  background: #fafafa;
+  border-radius: 4px;
+}
+
+.responses-strip-title {
+  margin: 0 0 0.3rem;
+  font-size: 0.85rem;
+  text-transform: none;
+}
+
+.responses-strip-lines {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.15rem 0.5rem;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.responses-strip-lines dt {
+  font-weight: 600;
+}
+
+.responses-strip-lines dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.responses-warning {
+  font-weight: 600;
+}
+
+.responses-warning-icon {
+  font-style: normal;
+}
+
+.responses-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: auto;
+}
+
+.responses-why {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.responses-why:focus-visible {
+  outline: 2px solid #1a56db;
+  outline-offset: 2px;
+}
