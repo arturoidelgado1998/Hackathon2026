@@ -21,6 +21,17 @@ received or read a notice.
    new instruction goes out only when **Send update to driver** is pressed.
 5. **Reset** clears every notice.
 
+## The driver's reply
+
+Under a notice the driver has two buttons: **Received** and **I can't do this safely**. There
+is no free text. The dispatcher sees the reply in the Driver notice panel.
+
+- A reply never moves a card or changes a decision or a total. The dispatcher decides what to do.
+- A reply counts only for the notice it answers. A reply to version 1 is never shown against
+  version 2, and a notice that is being revised cannot be answered.
+- The "Sent to driver" line on the triage card is not built yet: it waits for the engine (#14)
+  and the states work (#10), which change the same card files.
+
 ## On one laptop
 
 ```bash
@@ -88,6 +99,8 @@ Test this once before the presentation.
 | `PUT /api/driver-notices/:shipmentId` | The dashboard sends or revises a notice |
 | `GET /api/driver-notices/:shipmentId` | The latest notice |
 | `GET /api/driver-notices/:shipmentId/stream` | Updates as Server-Sent Events |
+| `PUT /api/driver-notices/:shipmentId/reply` | The driver answers the current notice |
+| `GET /api/driver-notices/stream` | Every shipment's replies, for the dashboard |
 | `DELETE /api/driver-notices` | Reset |
 
 ## Limits
@@ -98,6 +111,7 @@ Test this once before the presentation.
   the demo.
 - **Memory only.** Restarting the server forgets every notice. A phone then shows "No notice"
   until the dispatcher sends again; the laptop's own browser still remembers.
-- **A static host has no relay.** The deployed build falls back to the same-browser path.
+- **A static host has no relay.** The deployed build falls back to the same-browser path. The
+  page asks such a host one question and nothing more.
 - **A public tunnel is out of scope.** It would put the dev server on a public address, which
   needs the team's agreement.

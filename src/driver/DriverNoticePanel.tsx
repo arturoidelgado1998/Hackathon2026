@@ -1,7 +1,13 @@
 import { AlertIcon, CheckIcon } from '../components/icons.tsx'
 import { NoticeBody } from './NoticeBody.tsx'
 import type { RelayStatus } from './relayChannel.ts'
-import { formatSentTime, type DriverNotice, type DriverNoticeBody } from './types.ts'
+import {
+  REPLY_LABELS,
+  formatSentTime,
+  type DriverNotice,
+  type DriverNoticeBody,
+  type DriverReply,
+} from './types.ts'
 import './driver.css'
 
 export interface DriverNoticePanelProps {
@@ -15,6 +21,29 @@ export interface DriverNoticePanelProps {
   onSend?: () => void
   /** Whether a notice also reaches other devices (issue #35). */
   phone?: RelayStatus
+  /** The driver's answer to the notice that stands now (issue #36). */
+  reply?: DriverReply | null
+}
+
+/** What the driver said. It informs the dispatcher and changes nothing by itself. */
+function DriverReplyLine({ reply }: { reply: DriverReply }) {
+  const time = <span className="pp-num">{formatSentTime(reply.replied_at)}</span>
+  if (reply.kind === 'received') {
+    return (
+      <p className="driver-panel__reply" data-testid="driver-reply">
+        <CheckIcon size={14} /> Driver replied <q>{REPLY_LABELS.received}</q> at {time}
+      </p>
+    )
+  }
+  return (
+    <p className="driver-panel__reply driver-panel__reply--concern" data-testid="driver-reply">
+      <AlertIcon size={14} />
+      <span>
+        <strong>Driver flagged a concern</strong> at {time}:{' '}
+        <q>{REPLY_LABELS.cannot_do_safely}</q>. The decision is unchanged; you decide what to do.
+      </span>
+    </p>
+  )
 }
 
 function Status({ sent, isCurrent }: Pick<DriverNoticePanelProps, 'sent' | 'isCurrent'>) {
@@ -77,6 +106,7 @@ export function DriverNoticePanel({
   isCurrent,
   onSend,
   phone,
+  reply,
 }: DriverNoticePanelProps) {
   const canSend = draft !== null && onSend !== undefined && !isCurrent
   return (
@@ -107,6 +137,7 @@ export function DriverNoticePanel({
           </button>
         </div>
       </div>
+      {reply && <DriverReplyLine reply={reply} />}
       {draft ? (
         <details className="driver-panel__preview">
           <summary>

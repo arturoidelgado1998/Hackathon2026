@@ -4,7 +4,7 @@
 import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import type { DriverNotice } from '../src/driver/types.ts'
+import type { DriverNotice, DriverReply } from '../src/driver/types.ts'
 import {
   createDriverNoticeRelay,
   MAX_BODY_BYTES,
@@ -49,10 +49,27 @@ function put(shipmentId: string, body: unknown, contentType = 'application/json'
 const latest = async (shipmentId: string) =>
   ((await (await fetch(url(`/${shipmentId}`))).json()) as { notice: DriverNotice | null }).notice
 
+const replyTo = (to: DriverNotice, kind: DriverReply['kind'] = 'received'): DriverReply => ({
+  shipment_id: to.shipment_id,
+  notice_version: to.version,
+  notice_sent_at: to.sent_at,
+  kind,
+  replied_at: '2026-11-14T10:33:00Z',
+})
+
+function putReply(shipmentId: string, body: unknown) {
+  return fetch(url(`/${shipmentId}/reply`), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+}
+
 /** Opens a stream and returns a function that waits for the next event. */
-async function openStream(shipmentId: string) {
+async function openStream(shipmentId: string | null) {
   const abort = new AbortController()
-  const response = await fetch(url(`/${shipmentId}/stream`), { signal: abort.signal })
+  const path = shipmentId === null ? '/stream' : `/${shipmentId}/stream`
+  const response = await fetch(url(path), { signal: abort.signal })
   const reader = response.body!.pipeThrough(new TextDecoderStream()).getReader()
   let buffer = ''
   async function next(): Promise<{ event: string; data: unknown }> {
@@ -166,6 +183,63 @@ describe('driver notice relay', () => {
     expect(await latest('S-01')).toBeNull()
     first.close()
     other.close()
+  })
+
+  it('passes a driver reply to the dashboard stream', async () => {
+    await put('S-01', notice)
+    const dashboard = await openStream(null)
+    expect(await dashboard.next()).toEqual({ event: 'snapshot', data: { replies: [] } })
+
+    const reply = replyTo(notice, 'cannot_do_safely')
+    expect((await putReply('S-01', reply)).status).toBe(204)
+    expect(await dashboard.next()).toEqual({ event: 'reply', data: reply })
+    dashboard.close()
+
+    // A dashboard that connects later still learns about it.
+    const later = await openStream(null)
+    expect(await later.next()).toEqual({ event: 'snapshot', data: { replies: [reply] } })
+    later.close()
+  })
+
+  it('refuses a reply to a notice that is not the current one', async () => {
+    expect((await putReply('S-01', replyTo(notice))).status).toBe(409)
+
+    await put('S-01', notice)
+    const second = { ...notice, version: 2, sent_at: '2026-11-14T10:42:00Z' }
+    await put('S-01', second)
+    expect((await putReply('S-01', replyTo(notice))).status).toBe(409)
+    expect((await putReply('S-01', replyTo(second))).status).toBe(204)
+
+    await put('S-01', { ...second, state: 'under_revision' })
+    expect((await putReply('S-01', replyTo(second))).status).toBe(409)
+  })
+
+  it('drops the reply when the notice changes and on Reset', async () => {
+    const snapshot = async () => {
+      const stream = await openStream(null)
+      const first = await stream.next()
+      stream.close()
+      return (first.data as { replies: DriverReply[] }).replies
+    }
+    await put('S-01', notice)
+    await putReply('S-01', replyTo(notice))
+    expect(await snapshot()).toHaveLength(1)
+
+    await put('S-01', { ...notice, version: 2 })
+    expect(await snapshot()).toEqual([])
+
+    await putReply('S-01', replyTo({ ...notice, version: 2 }))
+    await fetch(url(), { method: 'DELETE' })
+    expect(await snapshot()).toEqual([])
+  })
+
+  it('rejects malformed replies and replies filed under another shipment', async () => {
+    await put('S-01', notice)
+    expect((await putReply('S-01', { kind: 'received' })).status).toBe(400)
+    expect((await putReply('S-01', { ...replyTo(notice), kind: 'call me, it is Sam' })).status).toBe(400)
+    expect((await putReply('S-02', replyTo(notice))).status).toBe(400)
+    expect((await putReply('S-99', { ...replyTo(notice), shipment_id: 'S-99' })).status).toBe(404)
+    expect((await fetch(url('/S-01/reply'))).status).toBe(405)
   })
 
   it('reports no phone address for a local-only server', async () => {

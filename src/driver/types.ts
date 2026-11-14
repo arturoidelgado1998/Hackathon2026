@@ -71,6 +71,58 @@ export function isDriverNotice(value: unknown): value is DriverNotice {
   )
 }
 
+/**
+ * The driver's answer to one notice (issue #36). Two fixed choices and no
+ * free text, so a reply can never carry a name or other personal detail.
+ */
+export type DriverReplyKind = 'received' | 'cannot_do_safely'
+
+export const REPLY_LABELS: Record<DriverReplyKind, string> = {
+  received: 'Received',
+  cannot_do_safely: "I can't do this safely",
+}
+
+export interface DriverReply {
+  shipment_id: string
+  /** The notice this answers: its version and sent time together. */
+  notice_version: number
+  notice_sent_at: string
+  kind: DriverReplyKind
+  /** ISO 8601 time the driver tapped the button. */
+  replied_at: string
+}
+
+export function isDriverReply(value: unknown): value is DriverReply {
+  if (typeof value !== 'object' || value === null) return false
+  const v = value as Record<string, unknown>
+  return (
+    typeof v.shipment_id === 'string' &&
+    Number.isInteger(v.notice_version) &&
+    typeof v.notice_sent_at === 'string' &&
+    (v.kind === 'received' || v.kind === 'cannot_do_safely') &&
+    typeof v.replied_at === 'string'
+  )
+}
+
+/**
+ * True when the reply answers this exact notice and the notice still
+ * stands. A reply to an earlier version, or to a notice that is being
+ * revised, is never shown as an answer to the current one.
+ */
+export function replyAnswers(
+  reply: DriverReply | null | undefined,
+  notice: DriverNotice | null | undefined,
+): reply is DriverReply {
+  return (
+    !!reply &&
+    !!notice &&
+    notice.state === 'active' &&
+    reply.shipment_id === notice.shipment_id &&
+    reply.notice_version === notice.version &&
+    reply.notice_sent_at === notice.sent_at
+  )
+}
+
 /** "14:42" in the reader's own time zone. Formatting only. */
 export function formatSentTime(iso: string): string {
   const date = new Date(iso)

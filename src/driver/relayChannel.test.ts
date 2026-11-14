@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createBrowserChannel, type NoticeChannel } from './channel.ts'
-import { createRelayedChannel, RELAY_PATH, type RelayedNoticeChannel } from './relayChannel.ts'
-import type { DriverNotice } from './types.ts'
+import {
+  createRelayedChannel,
+  RELAY_NAME,
+  RELAY_PATH,
+  type RelayedNoticeChannel,
+} from './relayChannel.ts'
+import type { DriverNotice, DriverReply } from './types.ts'
 
 const notice: DriverNotice = {
   shipment_id: 'S-01',
@@ -47,7 +52,7 @@ class FakeStream {
 
 type Call = { url: string; method: string; body: string | null }
 
-function setup(options: { relayUp?: boolean; lanUrls?: string[] } = {}) {
+function setup(options: { relayUp?: boolean; lanUrls?: string[]; relayName?: string } = {}) {
   let up = options.relayUp ?? true
   const calls: Call[] = []
   const fetchFake = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -57,7 +62,10 @@ function setup(options: { relayUp?: boolean; lanUrls?: string[] } = {}) {
       body: typeof init?.body === 'string' ? init.body : null,
     })
     if (!up) throw new TypeError('Failed to fetch')
-    return new Response(JSON.stringify({ lan_urls: options.lanUrls ?? [] }), { status: 200 })
+    return new Response(
+      JSON.stringify({ relay: options.relayName ?? RELAY_NAME, lan_urls: options.lanUrls ?? [] }),
+      { status: 200 },
+    )
   }) as unknown as typeof fetch
   const local: NoticeChannel = createBrowserChannel()
   const channel: RelayedNoticeChannel = createRelayedChannel(local, {
@@ -93,6 +101,7 @@ describe('relayed notice channel: dashboard side', () => {
     await settle()
     channel.publish(notice)
     expect(local.latest('S-01')).toEqual(notice)
+    await settle()
     expect(calls.at(-1)).toEqual({
       url: `${RELAY_PATH}/S-01`,
       method: 'PUT',
@@ -105,7 +114,21 @@ describe('relayed notice channel: dashboard side', () => {
     channel.publish(notice)
     channel.clear()
     expect(local.all()).toEqual([])
+    await settle()
     expect(calls.at(-1)).toMatchObject({ url: RELAY_PATH, method: 'DELETE' })
+  })
+
+  it('treats a static host that answers with its own page as no relay', async () => {
+    const { channel, calls } = setup({ relayName: 'something else' })
+    channel.subscribe('S-01', () => {})
+    channel.subscribeReplies(() => {})
+    channel.publish(notice)
+    await settle()
+    await settle()
+    expect(channel.relay.getStatus().state).toBe('off')
+    // One question, and nothing after it: no stream, no PUT.
+    expect(calls).toEqual([{ url: RELAY_PATH, method: 'GET', body: null }])
+    expect(FakeStream.opened).toEqual([])
   })
 
   it('keeps the same-browser path working with no relay, and says so', async () => {
@@ -145,22 +168,82 @@ describe('relayed notice channel: dashboard side', () => {
   })
 })
 
+describe('relayed notice channel: replies', () => {
+  const reply: DriverReply = {
+    shipment_id: 'S-01',
+    notice_version: 1,
+    notice_sent_at: notice.sent_at,
+    kind: 'cannot_do_safely',
+    replied_at: '2026-11-14T10:33:00Z',
+  }
+
+  it('sends the driver\'s reply to this browser and to the relay', async () => {
+    const { channel, local, calls } = setup()
+    channel.reply(reply)
+    expect(local.latestReply('S-01')).toEqual(reply)
+    await settle()
+    expect(calls.at(-1)).toEqual({
+      url: `${RELAY_PATH}/S-01/reply`,
+      method: 'PUT',
+      body: JSON.stringify(reply),
+    })
+  })
+
+  it('gives the dashboard replies from one stream for every shipment', async () => {
+    const { channel } = setup()
+    const seen: DriverReply[] = []
+    const unsubscribe = channel.subscribeReplies((r) => seen.push(r))
+    await settle()
+    const stream = FakeStream.opened.at(-1)!
+    expect(stream.url).toBe(`${RELAY_PATH}/stream`)
+
+    stream.emit('snapshot', { replies: [reply] })
+    stream.emit('reply', { ...reply, shipment_id: 'S-02', kind: 'received' })
+    stream.emit('reply', { kind: 'received', note: 'not a reply' })
+    expect(seen.map((r) => [r.shipment_id, r.kind])).toEqual([
+      ['S-01', 'cannot_do_safely'],
+      ['S-02', 'received'],
+    ])
+
+    unsubscribe()
+    expect(stream.closed).toBe(true)
+  })
+
+  it('sends a reply again when the relay comes back', async () => {
+    const { channel, calls, setUp } = setup()
+    await settle()
+    setUp(false)
+    channel.reply(reply)
+    await settle()
+    expect(channel.relay.getStatus().state).toBe('lost')
+
+    setUp(true)
+    channel.publish(notice)
+    await settle()
+    await settle()
+    const replyPuts = calls.filter((call) => call.url.endsWith('/reply'))
+    expect(replyPuts).toHaveLength(2)
+  })
+})
+
 describe('relayed notice channel: driver page side', () => {
-  function follow(shipmentId = 'S-01') {
+  async function follow(shipmentId = 'S-01') {
     const context = setup()
     const seen: (DriverNotice | null)[] = []
     const unsubscribe = context.channel.subscribe(shipmentId, (n) => seen.push(n))
+    // The stream opens once the relay has said it is there.
+    await settle()
     const stream = FakeStream.opened.at(-1)!
     return { ...context, seen, unsubscribe, stream }
   }
 
-  it('follows the stream for its own shipment', () => {
-    const { stream } = follow()
+  it('follows the stream for its own shipment', async () => {
+    const { stream } = await follow()
     expect(stream.url).toBe(`${RELAY_PATH}/S-01/stream`)
   })
 
-  it('shows the notice the relay holds on connect, then each update and Reset', () => {
-    const { seen, stream } = follow()
+  it('shows the notice the relay holds on connect, then each update and Reset', async () => {
+    const { seen, stream } = await follow()
     stream.emit('snapshot', { notice })
     const update = { ...notice, version: 2, state: 'under_revision' }
     stream.emit('notice', update)
@@ -168,30 +251,30 @@ describe('relayed notice channel: driver page side', () => {
     expect(seen).toEqual([notice, update, null])
   })
 
-  it('treats an empty relay as Reset only when this browser holds nothing either', () => {
-    const phone = follow()
+  it('treats an empty relay as Reset only when this browser holds nothing either', async () => {
+    const phone = await follow()
     phone.stream.emit('snapshot', { notice: null })
     expect(phone.seen).toEqual([null])
 
     // On the laptop the notice is still in this browser: a restarted relay
     // that has forgotten it must not wipe the page.
-    const laptop = follow()
+    const laptop = await follow()
     laptop.local.publish(notice)
     laptop.seen.length = 0
     laptop.stream.emit('snapshot', { notice: null })
     expect(laptop.seen).toEqual([])
   })
 
-  it('ignores anything that is not a notice for this shipment', () => {
-    const { seen, stream } = follow()
+  it('ignores anything that is not a notice for this shipment', async () => {
+    const { seen, stream } = await follow()
     stream.emit('notice', { instruction: '<img src=x onerror=alert(1)>' })
     stream.emit('notice', { ...notice, shipment_id: 'S-02' })
     stream.emit('snapshot', { notice: { ...notice, version: 0 } })
     expect(seen).toEqual([null])
   })
 
-  it('ignores a relay notice older than the one this browser holds', () => {
-    const { seen, stream, local } = follow()
+  it('ignores a relay notice older than the one this browser holds', async () => {
+    const { seen, stream, local } = await follow()
     local.publish({ ...notice, version: 3 })
     seen.length = 0
     stream.emit('snapshot', { notice: { ...notice, version: 2 } })
@@ -200,8 +283,7 @@ describe('relayed notice channel: driver page side', () => {
   })
 
   it('says when the connection is lost and when it is back', async () => {
-    const { channel, stream } = follow()
-    await settle()
+    const { channel, stream } = await follow()
     stream.onopen?.(new Event('open'))
     expect(channel.relay.getStatus().state).toBe('live')
     stream.onerror?.(new Event('error'))
@@ -210,8 +292,8 @@ describe('relayed notice channel: driver page side', () => {
     expect(channel.relay.getStatus()).toMatchObject({ state: 'live', lostAt: null })
   })
 
-  it('closes the stream when the last listener leaves', () => {
-    const { channel, unsubscribe, stream } = follow()
+  it('closes the stream when the last listener leaves', async () => {
+    const { channel, unsubscribe, stream } = await follow()
     const second = channel.subscribe('S-01', () => {})
     expect(FakeStream.opened).toHaveLength(1)
     unsubscribe()

@@ -299,3 +299,63 @@
   color: var(--pp-danger);
   font-size: var(--pp-text-md);
 }
+
+/* --- Driver reply (issue #36) --- */
+
+.driver-panel__reply {
+  display: flex;
+  gap: var(--pp-space-2);
+  align-items: flex-start;
+  margin-top: var(--pp-space-2);
+  padding: var(--pp-space-2) var(--pp-space-3);
+  border-radius: var(--pp-radius-sm);
+  background: var(--pp-ok-soft);
+  color: var(--pp-ok);
+  font-size: var(--pp-text-sm);
+}
+
+.driver-panel__reply .pp-icon {
+  flex: none;
+  margin-top: 0.2em;
+}
+
+.driver-panel__reply--concern {
+  background: var(--pp-warning-soft);
+  color: var(--pp-warning);
+}
+
+.driver-page__reply {
+  margin-top: var(--pp-space-3);
+  padding: var(--pp-space-4);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  background: var(--pp-surface);
+}
+
+.driver-page__reply-title {
+  font-size: var(--pp-text-md);
+  font-weight: 600;
+}
+
+.driver-page__reply-buttons {
+  display: grid;
+  gap: var(--pp-space-2);
+  margin-top: var(--pp-space-3);
+}
+
+.driver-page__reply-buttons .pp-button {
+  justify-content: center;
+  min-height: 3rem;
+  font-size: var(--pp-text-lg);
+}
+
+.driver-page__reply-status {
+  margin-top: var(--pp-space-3);
+  font-size: var(--pp-text-md);
+}
+
+.driver-page__reply-note {
+  margin-top: var(--pp-space-1);
+  font-size: var(--pp-text-sm);
+  color: var(--pp-text-muted);
+}

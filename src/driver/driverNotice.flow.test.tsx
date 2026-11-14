@@ -170,7 +170,84 @@ describe('driver page', () => {
     click('Use reroute')
     fireEvent.click(send())
     expect(driver.queryAllByRole('textbox')).toEqual([])
-    expect(driver.queryAllByRole('button')).toEqual([])
+    // Two fixed answers, and nothing else to press.
+    expect(driver.getAllByRole('button').map((button) => button.textContent)).toEqual([
+      'Received',
+      "I can't do this safely",
+    ])
+  })
+})
+
+describe('driver reply', () => {
+  const region = (dashboard: ReturnType<typeof setup>['dashboard'], name: string) =>
+    dashboard.getByRole('region', { name })
+
+  function sentReroute() {
+    const context = setup()
+    fireEvent.click(cardFor('S-01'))
+    context.click('Use reroute')
+    fireEvent.click(context.send())
+    const reply = (name: string) => fireEvent.click(context.driver.getByRole('button', { name }))
+    return { ...context, reply }
+  }
+
+  it('shows "Received" to the dispatcher', () => {
+    const { dashboard, driver, reply } = sentReroute()
+    expect(dashboard.queryByTestId('driver-reply')).toBeNull()
+    expect(driver.getByRole('status')).toHaveTextContent('No reply sent yet.')
+
+    reply('Received')
+    expect(dashboard.getByTestId('driver-reply')).toHaveTextContent(
+      /Driver replied Received at \d\d:\d\d/,
+    )
+    expect(driver.getByRole('status')).toHaveTextContent(/You replied Received at \d\d:\d\d\./)
+    expect(driver.getByRole('button', { name: 'Received' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('shows a concern without moving the card or changing the decision or the totals', () => {
+    const { dashboard, reply } = sentReroute()
+    const totals = region(dashboard, 'Indicators').textContent
+    const card = cardFor('S-01').textContent
+
+    reply("I can't do this safely")
+    expect(dashboard.getByTestId('driver-reply')).toHaveTextContent(
+      'Driver flagged a concern',
+    )
+    expect(dashboard.getByTestId('driver-reply')).toHaveTextContent('The decision is unchanged')
+    expect(region(dashboard, 'Indicators').textContent).toBe(totals)
+    expect(cardFor('S-01').textContent).toBe(card)
+    expect(within(region(dashboard, 'Decision recorded')).getByText('S-01')).toBeInTheDocument()
+    expect(dashboard.getByTestId('driver-notice-status')).toHaveTextContent(/version 1/)
+  })
+
+  it('lets the driver change the answer; the latest one stands', () => {
+    const { dashboard, reply } = sentReroute()
+    reply('Received')
+    reply("I can't do this safely")
+    expect(dashboard.getByTestId('driver-reply')).toHaveTextContent('Driver flagged a concern')
+  })
+
+  it('offers no reply while a notice is being revised, and drops the old reply', () => {
+    const { dashboard, driver, click, send, reply } = sentReroute()
+    reply('Received')
+    click('Request slot')
+    expect(dashboard.queryByTestId('driver-reply')).toBeNull()
+    expect(driver.queryByRole('region', { name: 'Reply to dispatch' })).toBeNull()
+
+    // The update is a new notice: the earlier "Received" does not carry over.
+    fireEvent.click(send())
+    expect(dashboard.queryByTestId('driver-reply')).toBeNull()
+    expect(driver.getByRole('status')).toHaveTextContent('No reply sent yet.')
+  })
+
+  it('Reset clears the reply with the notice', () => {
+    const { dashboard, click, send, reply } = sentReroute()
+    reply('Received')
+    click('Reset')
+    fireEvent.click(cardFor('S-01'))
+    click('Use reroute')
+    fireEvent.click(send())
+    expect(dashboard.queryByTestId('driver-reply')).toBeNull()
   })
 })
 

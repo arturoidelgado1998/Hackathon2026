@@ -3,10 +3,12 @@
 // server/driverNotices.ts; a driver page also follows the relay's stream.
 // The same-browser path keeps working when the relay is not there.
 
-import type { NoticeChannel, NoticeListener } from './channel.ts'
-import { isDriverNotice, type DriverNotice } from './types.ts'
+import type { NoticeChannel, NoticeListener, ReplyListener } from './channel.ts'
+import { isDriverNotice, isDriverReply, type DriverNotice, type DriverReply } from './types.ts'
 
 export const RELAY_PATH = '/api/driver-notices'
+/** What the relay calls itself in its answer to `GET /api/driver-notices`. */
+export const RELAY_NAME = 'portplan-driver-notices'
 
 /**
  * `checking`: not known yet. `off`: no relay answered (a static host, or
@@ -81,6 +83,8 @@ export function createRelayedChannel(
   const statusSubscribers = new Set<() => void>()
   /** True once this page has sent a notice, so it knows to resend after an outage. */
   let hasPublished = false
+  /** Replies the relay did not take, to send again when it answers. */
+  const unsentReplies = new Map<string, DriverReply>()
 
   function setStatus(next: RelayStatus): void {
     status = next
@@ -94,6 +98,11 @@ export function createRelayedChannel(
     }
     // Whatever was sent during the outage reached this browser only.
     if (wasLost && hasPublished) local.all().forEach(put)
+    if (unsentReplies.size > 0) {
+      const waiting = [...unsentReplies.values()]
+      unsentReplies.clear()
+      waiting.forEach(putReply)
+    }
   }
 
   function markFailed(): void {
@@ -125,15 +134,76 @@ export function createRelayedChannel(
     })
   }
 
-  // Is there a relay at all, and where can a phone reach it?
-  void request('').then(async (response) => {
-    if (!response) return
-    const info = (await response.json().catch(() => null)) as { lan_urls?: unknown } | null
-    const lanUrls = Array.isArray(info?.lan_urls)
+  function putReply(reply: DriverReply): void {
+    void doFetch(`${RELAY_PATH}/${encodeURIComponent(reply.shipment_id)}/reply`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(reply),
+    }).then(
+      (response) => {
+        // 409: the notice changed first. That reply is simply out of date.
+        if (response.ok || response.status === 409) markLive()
+        else markFailed()
+      },
+      () => {
+        unsentReplies.set(reply.shipment_id, reply)
+        markFailed()
+      },
+    )
+  }
+
+  // The dashboard hears replies for every shipment over one stream.
+  const replyListeners = new Set<ReplyListener>()
+  let replySource: StreamLike | null = null
+  let wantsReplies = false
+
+  function followReplies(): void {
+    if (wantsReplies || !openStream) return
+    wantsReplies = true
+    const open = openStream
+    afterPageLoad(() => withRelay(() => {
+      if (!wantsReplies) return
+      const source = open(`${RELAY_PATH}/stream`)
+      const deliver = (value: unknown) => {
+        if (isDriverReply(value)) replyListeners.forEach((listener) => listener(value))
+      }
+      source.onopen = () => markLive()
+      source.onerror = () => markFailed()
+      source.addEventListener('reply', (event) => deliver(parse(event.data)))
+      source.addEventListener('snapshot', (event) => {
+        const held = (parse(event.data) as { replies?: unknown } | null)?.replies
+        if (Array.isArray(held)) held.forEach(deliver)
+      })
+      replySource = source
+    }))
+  }
+
+  // Is there a relay at all, and where can a phone reach it? A static host
+  // answers this address with its own page, so the reply must name the relay.
+  // Nothing else is asked of the server until this says yes.
+  const relayReady: Promise<boolean> = request('').then(async (response) => {
+    if (!response) return false
+    const info = (await response.json().catch(() => null)) as {
+      relay?: unknown
+      lan_urls?: unknown
+    } | null
+    if (info?.relay !== RELAY_NAME) {
+      markFailed()
+      return false
+    }
+    const lanUrls = Array.isArray(info.lan_urls)
       ? info.lan_urls.filter((url): url is string => typeof url === 'string')
       : []
     markLive(lanUrls)
+    return true
   })
+
+  /** Runs `action` only where a relay exists. */
+  function withRelay(action: () => void): void {
+    void relayReady.then((ready) => {
+      if (ready) action()
+    })
+  }
 
   interface Stream {
     /** Null until the page has loaded, and after the last listener leaves. */
@@ -155,10 +225,12 @@ export function createRelayedChannel(
     if (!openStream) return null
     const stream: Stream = { source: null, closed: false, listeners: new Set() }
     streams.set(shipmentId, stream)
-    afterPageLoad(() => {
-      if (stream.closed) return
-      stream.source = connect(shipmentId, stream, openStream)
-    })
+    afterPageLoad(() =>
+      withRelay(() => {
+        if (stream.closed) return
+        stream.source = connect(shipmentId, stream, openStream)
+      }),
+    )
     return stream
   }
 
@@ -197,12 +269,14 @@ export function createRelayedChannel(
     publish(notice) {
       hasPublished = true
       local.publish(notice)
-      put(notice)
+      withRelay(() => put(notice))
     },
     clear() {
       local.clear()
-      void request('', { method: 'DELETE' }).then((response) => {
-        if (response) markLive()
+      withRelay(() => {
+        void request('', { method: 'DELETE' }).then((response) => {
+          if (response) markLive()
+        })
       })
     },
     latest: (shipmentId) => local.latest(shipmentId),
@@ -219,6 +293,25 @@ export function createRelayedChannel(
           stream.closed = true
           stream.source?.close()
           streams.delete(shipmentId)
+        }
+      }
+    },
+    reply(reply) {
+      local.reply(reply)
+      withRelay(() => putReply(reply))
+    },
+    latestReply: (shipmentId) => local.latestReply(shipmentId),
+    subscribeReplies(listener) {
+      const offLocal = local.subscribeReplies(listener)
+      replyListeners.add(listener)
+      followReplies()
+      return () => {
+        offLocal()
+        replyListeners.delete(listener)
+        if (replyListeners.size === 0) {
+          wantsReplies = false
+          replySource?.close()
+          replySource = null
         }
       }
     },

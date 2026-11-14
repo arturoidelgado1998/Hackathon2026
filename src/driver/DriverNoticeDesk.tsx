@@ -54,6 +54,7 @@ export function DriverNoticeDesk({
       isCurrent={sent?.notice.state === 'active' && sent.decisionKey === key}
       onSend={draft && key ? () => desk.send(draft, key) : undefined}
       phone={phone}
+      reply={sent?.reply ?? null}
     />
   )
 }

@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createBrowserChannel, STORAGE_PREFIX, type NoticeChannel } from './channel.ts'
 import { createNoticeDesk, decisionKey } from './desk.ts'
-import { isDriverNotice, type DriverNotice, type DriverNoticeBody } from './types.ts'
+import {
+  isDriverNotice,
+  type DriverNotice,
+  type DriverNoticeBody,
+  type DriverReply,
+} from './types.ts'
 
 const body: DriverNoticeBody = {
   shipment_id: 'S-01',
@@ -82,7 +87,7 @@ describe('notice desk', () => {
       replaces_sent_at: '2026-11-14T10:31:00Z',
     })
     expect(isDriverNotice(second)).toBe(true)
-    expect(desk.getSnapshot()['S-01']).toEqual({ notice: second, decisionKey: 'k2' })
+    expect(desk.getSnapshot()['S-01']).toEqual({ notice: second, decisionKey: 'k2', reply: null })
   })
 
   it('leaves a notice alone while its decision stands', () => {
@@ -149,6 +154,67 @@ describe('notice desk', () => {
     unsubscribe()
     desk.send(body, 'k1')
     expect(changes).toBe(3)
+  })
+})
+
+describe('driver replies at the desk', () => {
+  const replyTo = (notice: DriverNotice, kind: DriverReply['kind'] = 'received'): DriverReply => ({
+    shipment_id: notice.shipment_id,
+    notice_version: notice.version,
+    notice_sent_at: notice.sent_at,
+    kind,
+    replied_at: '2026-11-14T10:33:00Z',
+  })
+
+  it('records a reply to the notice that stands', () => {
+    const desk = createNoticeDesk(channel, clock())
+    const sent = desk.send(body, 'k1')
+    channel.reply(replyTo(sent, 'cannot_do_safely'))
+    expect(desk.getSnapshot()['S-01'].reply).toMatchObject({ kind: 'cannot_do_safely' })
+    // The notice and the decision it was sent for are untouched.
+    expect(desk.getSnapshot()['S-01']).toMatchObject({ notice: sent, decisionKey: 'k1' })
+  })
+
+  it('never shows a reply to version 1 against version 2', () => {
+    const desk = createNoticeDesk(channel, clock())
+    const first = desk.send(body, 'k1')
+    channel.reply(replyTo(first))
+    const second = desk.send(body, 'k2')
+    expect(desk.getSnapshot()['S-01'].reply).toBeNull()
+
+    // A late reply to the first notice arrives after the second went out.
+    channel.reply(replyTo(first, 'cannot_do_safely'))
+    expect(desk.getSnapshot()['S-01'].reply).toBeNull()
+
+    channel.reply(replyTo(second))
+    expect(desk.getSnapshot()['S-01'].reply).toMatchObject({ kind: 'received', notice_version: 2 })
+  })
+
+  it('drops the reply when the notice goes under revision, and ignores replies to it', () => {
+    const desk = createNoticeDesk(channel, clock())
+    const sent = desk.send(body, 'k1')
+    channel.reply(replyTo(sent))
+    desk.reconcile({})
+    expect(desk.getSnapshot()['S-01'].reply).toBeNull()
+    channel.reply(replyTo(sent))
+    expect(desk.getSnapshot()['S-01'].reply).toBeNull()
+  })
+
+  it('ignores a reply for a shipment with no notice', () => {
+    const desk = createNoticeDesk(channel, clock())
+    channel.reply(replyTo({ ...body, state: 'active', version: 1, sent_at: 'x', replaces_sent_at: null }))
+    expect(desk.getSnapshot()).toEqual({})
+  })
+
+  it('clears replies on Reset, and keeps the reply across a dashboard reload', () => {
+    const desk = createNoticeDesk(channel, clock())
+    const sent = desk.send(body, 'k1')
+    channel.reply(replyTo(sent))
+    expect(createNoticeDesk(createBrowserChannel(), clock()).getSnapshot()['S-01'].reply).toMatchObject({
+      kind: 'received',
+    })
+    desk.clear()
+    expect(channel.latestReply('S-01')).toBeNull()
   })
 })
 

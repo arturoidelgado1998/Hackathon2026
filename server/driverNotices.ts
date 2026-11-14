@@ -12,7 +12,13 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { networkInterfaces } from 'node:os'
-import { isDriverNotice, type DriverNotice } from '../src/driver/types.ts'
+import {
+  isDriverNotice,
+  isDriverReply,
+  replyAnswers,
+  type DriverNotice,
+  type DriverReply,
+} from '../src/driver/types.ts'
 
 export const RELAY_PATH = '/api/driver-notices'
 export const MAX_BODY_BYTES = 8 * 1024
@@ -79,9 +85,14 @@ function lanUrls(listening: AddressInfo | string | null): string[] {
 export function createDriverNoticeRelay(options: RelayOptions): RelayHandler {
   const notices = new Map<string, DriverNotice>()
   const streams = new Map<string, Set<ServerResponse>>()
+  /** The driver's answer to the notice that stands now, per shipment (issue #36). */
+  const replies = new Map<string, DriverReply>()
+  /** Dashboards, which hear replies for every shipment. */
+  const replyStreams = new Set<ServerResponse>()
 
   const heartbeat = setInterval(() => {
     streams.forEach((set) => set.forEach((res) => res.write(': keep-alive\n\n')))
+    replyStreams.forEach((res) => res.write(': keep-alive\n\n'))
   }, options.heartbeatMs ?? 15_000)
   heartbeat.unref()
 
@@ -102,27 +113,71 @@ export function createDriverNoticeRelay(options: RelayOptions): RelayHandler {
     req.on('close', () => set.delete(res))
   }
 
+  function openReplyStream(req: IncomingMessage, res: ServerResponse): void {
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-store',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no',
+    })
+    res.write('retry: 2000\n\n')
+    sendEvent(res, 'snapshot', { replies: [...replies.values()] })
+    replyStreams.add(res)
+    req.on('close', () => replyStreams.delete(res))
+  }
+
+  /** Reads a JSON body. Answers the request itself and resolves undefined on failure. */
+  async function readJson(req: IncomingMessage, res: ServerResponse): Promise<unknown> {
+    if (!(req.headers['content-type'] ?? '').startsWith('application/json')) {
+      sendJson(res, 415, { error: 'Send the body as application/json.' })
+      return undefined
+    }
+    const raw = await readBody(req)
+    if (raw === null) {
+      sendJson(res, 413, { error: 'Body is larger than 8 KB.' })
+      return undefined
+    }
+    try {
+      return JSON.parse(raw) as unknown
+    } catch {
+      sendJson(res, 400, { error: 'Body is not valid JSON.' })
+      return undefined
+    }
+  }
+
+  async function putReply(
+    shipmentId: string,
+    req: IncomingMessage,
+    res: ServerResponse,
+  ): Promise<void> {
+    const body = await readJson(req, res)
+    if (body === undefined) return
+    if (!isDriverReply(body)) return sendJson(res, 400, { error: 'Body is not a driver reply.' })
+    if (body.shipment_id !== shipmentId) {
+      return sendJson(res, 400, { error: 'Reply is for a different shipment.' })
+    }
+    // A reply to an earlier version, or to a notice being revised, is refused.
+    if (!replyAnswers(body, notices.get(shipmentId))) {
+      return sendJson(res, 409, { error: 'That notice is no longer the current one.' })
+    }
+    replies.set(shipmentId, body)
+    replyStreams.forEach((stream) => sendEvent(stream, 'reply', body))
+    sendEmpty(res, 204)
+  }
+
   async function putNotice(
     shipmentId: string,
     req: IncomingMessage,
     res: ServerResponse,
   ): Promise<void> {
-    if (!(req.headers['content-type'] ?? '').startsWith('application/json')) {
-      return sendJson(res, 415, { error: 'Send the notice as application/json.' })
-    }
-    const raw = await readBody(req)
-    if (raw === null) return sendJson(res, 413, { error: 'Notice is larger than 8 KB.' })
-    let body: unknown
-    try {
-      body = JSON.parse(raw)
-    } catch {
-      return sendJson(res, 400, { error: 'Body is not valid JSON.' })
-    }
+    const body = await readJson(req, res)
+    if (body === undefined) return
     if (!isDriverNotice(body)) return sendJson(res, 400, { error: 'Body is not a driver notice.' })
     if (body.shipment_id !== shipmentId) {
       return sendJson(res, 400, { error: 'Notice is for a different shipment.' })
     }
     notices.set(shipmentId, body)
+    if (!replyAnswers(replies.get(shipmentId), body)) replies.delete(shipmentId)
     streams.get(shipmentId)?.forEach((stream) => sendEvent(stream, 'notice', body))
     sendEmpty(res, 204)
   }
@@ -158,14 +213,21 @@ export function createDriverNoticeRelay(options: RelayOptions): RelayHandler {
       }
       if (method === 'DELETE') {
         notices.clear()
+        replies.clear()
         streams.forEach((set) => set.forEach((stream) => sendEvent(stream, 'clear', {})))
         return sendEmpty(res, 204)
       }
       return sendJson(res, 405, { error: 'Method not allowed.' })
     }
 
+    // Every shipment's replies, for the dashboard. No shipment is named "stream".
+    if (parts.length === 1 && parts[0] === 'stream') {
+      if (method !== 'GET') return sendJson(res, 405, { error: 'Method not allowed.' })
+      return openReplyStream(req, res)
+    }
+
     const [shipmentId, tail, ...rest] = parts
-    if (rest.length > 0 || (tail !== undefined && tail !== 'stream')) {
+    if (rest.length > 0 || (tail !== undefined && tail !== 'stream' && tail !== 'reply')) {
       return sendJson(res, 404, { error: 'Not found.' })
     }
     if (!options.isKnownShipment(shipmentId)) {
@@ -175,6 +237,13 @@ export function createDriverNoticeRelay(options: RelayOptions): RelayHandler {
     if (tail === 'stream') {
       if (method !== 'GET') return sendJson(res, 405, { error: 'Method not allowed.' })
       return openStream(shipmentId, req, res)
+    }
+    if (tail === 'reply') {
+      if (method !== 'PUT') return sendJson(res, 405, { error: 'Method not allowed.' })
+      putReply(shipmentId, req, res).catch(() => {
+        if (!res.headersSent) sendJson(res, 400, { error: 'Could not read the reply.' })
+      })
+      return
     }
     if (method === 'GET') return sendJson(res, 200, { notice: notices.get(shipmentId) ?? null })
     if (method === 'PUT') {
@@ -190,6 +259,8 @@ export function createDriverNoticeRelay(options: RelayOptions): RelayHandler {
     clearInterval(heartbeat)
     streams.forEach((set) => set.forEach((stream) => stream.end()))
     streams.clear()
+    replyStreams.forEach((stream) => stream.end())
+    replyStreams.clear()
   }
   return handler
 }

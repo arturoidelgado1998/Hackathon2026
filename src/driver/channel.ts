@@ -4,10 +4,13 @@
 // after Send still shows the latest notice. A phone on another device is
 // reached by relayChannel.ts (issue #35), which wraps this channel.
 
-import { isDriverNotice, type DriverNotice } from './types.ts'
+import { isDriverNotice, isDriverReply, type DriverNotice, type DriverReply } from './types.ts'
 
 /** Called with the latest notice for a shipment, or null when it is cleared. */
 export type NoticeListener = (notice: DriverNotice | null) => void
+
+/** Called with each reply a driver sends, for any shipment. */
+export type ReplyListener = (reply: DriverReply) => void
 
 export interface NoticeChannel {
   /** Send or replace the notice for its shipment. */
@@ -17,12 +20,31 @@ export interface NoticeChannel {
   latest(shipmentId: string): DriverNotice | null
   all(): DriverNotice[]
   subscribe(shipmentId: string, listener: NoticeListener): () => void
+  /** The driver answers a notice (issue #36). */
+  reply(reply: DriverReply): void
+  latestReply(shipmentId: string): DriverReply | null
+  /** Replies for every shipment: the dashboard listens to all of them. */
+  subscribeReplies(listener: ReplyListener): () => void
 }
 
 export const STORAGE_PREFIX = 'portplan.driver-notice.'
+export const REPLY_PREFIX = 'portplan.driver-reply.'
 const BROADCAST_NAME = 'portplan-driver-notices'
 
-type Message = { type: 'notice'; notice: DriverNotice } | { type: 'clear' }
+type Message =
+  | { type: 'notice'; notice: DriverNotice }
+  | { type: 'reply'; reply: DriverReply }
+  | { type: 'clear' }
+
+function parseReply(raw: string | null): DriverReply | null {
+  if (raw === null) return null
+  try {
+    const value: unknown = JSON.parse(raw)
+    return isDriverReply(value) ? value : null
+  } catch {
+    return null
+  }
+}
 
 function parseNotice(raw: string | null): DriverNotice | null {
   if (raw === null) return null
@@ -37,6 +59,8 @@ function parseNotice(raw: string | null): DriverNotice | null {
 /** Same-browser channel. Storage errors (private mode, quota) are ignored. */
 export function createBrowserChannel(storage: Storage = window.localStorage): NoticeChannel {
   const listeners = new Map<string, Set<NoticeListener>>()
+  const replyListeners = new Set<ReplyListener>()
+  const notifyReply = (reply: DriverReply) => replyListeners.forEach((listener) => listener(reply))
   const broadcast =
     typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(BROADCAST_NAME)
 
@@ -48,10 +72,10 @@ export function createBrowserChannel(storage: Storage = window.localStorage): No
     listeners.forEach((set) => set.forEach((listener) => listener(null)))
   }
 
-  function storedKeys(): string[] {
+  function storedKeys(prefix: string = STORAGE_PREFIX): string[] {
     try {
       return Array.from({ length: storage.length }, (_, i) => storage.key(i)).filter(
-        (key): key is string => key !== null && key.startsWith(STORAGE_PREFIX),
+        (key): key is string => key !== null && key.startsWith(prefix),
       )
     } catch {
       return []
@@ -72,6 +96,8 @@ export function createBrowserChannel(storage: Storage = window.localStorage): No
       if (message?.type === 'clear') notifyAllCleared()
       else if (message?.type === 'notice' && isDriverNotice(message.notice)) {
         notify(message.notice.shipment_id, message.notice)
+      } else if (message?.type === 'reply' && isDriverReply(message.reply)) {
+        notifyReply(message.reply)
       }
     }
   }
@@ -84,6 +110,9 @@ export function createBrowserChannel(storage: Storage = window.localStorage): No
       if (event.key === null) notifyAllCleared()
       else if (event.key.startsWith(STORAGE_PREFIX)) {
         notify(event.key.slice(STORAGE_PREFIX.length), parseNotice(event.newValue))
+      } else if (event.key.startsWith(REPLY_PREFIX)) {
+        const reply = parseReply(event.newValue)
+        if (reply) notifyReply(reply)
       }
     })
   }
@@ -99,7 +128,7 @@ export function createBrowserChannel(storage: Storage = window.localStorage): No
       broadcast?.postMessage({ type: 'notice', notice } satisfies Message)
     },
     clear() {
-      for (const key of storedKeys()) {
+      for (const key of [...storedKeys(), ...storedKeys(REPLY_PREFIX)]) {
         try {
           storage.removeItem(key)
         } catch {
@@ -121,6 +150,28 @@ export function createBrowserChannel(storage: Storage = window.localStorage): No
       set.add(listener)
       return () => {
         set.delete(listener)
+      }
+    },
+    reply(reply) {
+      try {
+        storage.setItem(REPLY_PREFIX + reply.shipment_id, JSON.stringify(reply))
+      } catch {
+        // Live delivery below still works without storage.
+      }
+      notifyReply(reply)
+      broadcast?.postMessage({ type: 'reply', reply } satisfies Message)
+    },
+    latestReply(shipmentId) {
+      try {
+        return parseReply(storage.getItem(REPLY_PREFIX + shipmentId))
+      } catch {
+        return null
+      }
+    },
+    subscribeReplies(listener) {
+      replyListeners.add(listener)
+      return () => {
+        replyListeners.delete(listener)
       }
     },
   }

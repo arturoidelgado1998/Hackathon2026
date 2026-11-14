@@ -6,12 +6,14 @@ import type { Decision } from '../types.ts'
 import type { Scenario } from '../viewModels.ts'
 import type { NoticeChannel } from './channel.ts'
 import { getNoticeChannel } from './sharedChannel.ts'
-import type { DriverNotice, DriverNoticeBody } from './types.ts'
+import { replyAnswers, type DriverNotice, type DriverNoticeBody, type DriverReply } from './types.ts'
 
 export interface SentRecord {
   notice: DriverNotice
   /** The decision the notice was sent for; null after a dashboard reload. */
   decisionKey: string | null
+  /** The driver's answer to exactly this notice; null if none or outdated. */
+  reply: DriverReply | null
 }
 
 export type DeskSnapshot = Readonly<Record<string, SentRecord>>
@@ -52,9 +54,26 @@ export function createNoticeDesk(
   // Notices left by an earlier dashboard session have no known decision, so
   // the first reconcile marks them as under revision.
   let snapshot: DeskSnapshot = Object.fromEntries(
-    channel.all().map((notice) => [notice.shipment_id, { notice, decisionKey: null }]),
+    channel.all().map((notice) => {
+      const reply = channel.latestReply(notice.shipment_id)
+      const record: SentRecord = {
+        notice,
+        decisionKey: null,
+        reply: replyAnswers(reply, notice) ? reply : null,
+      }
+      return [notice.shipment_id, record]
+    }),
   )
   const subscribers = new Set<() => void>()
+
+  // A reply counts only for the notice it answers. It never changes a
+  // decision, a column or a total: the dispatcher decides what to do.
+  channel.subscribeReplies((reply) => {
+    const record = snapshot[reply.shipment_id]
+    if (!record || !replyAnswers(reply, record.notice)) return
+    if (record.reply?.kind === reply.kind && record.reply.replied_at === reply.replied_at) return
+    set({ ...snapshot, [reply.shipment_id]: { ...record, reply } })
+  })
 
   function set(next: DeskSnapshot): void {
     snapshot = next
@@ -79,7 +98,7 @@ export function createNoticeDesk(
         replaces_sent_at: previous?.sent_at ?? null,
       }
       channel.publish(notice)
-      set({ ...snapshot, [body.shipment_id]: { notice, decisionKey: key } })
+      set({ ...snapshot, [body.shipment_id]: { notice, decisionKey: key, reply: null } })
       return notice
     },
     reconcile(currentKeys) {
@@ -92,7 +111,7 @@ export function createNoticeDesk(
       for (const record of stale) {
         const notice: DriverNotice = { ...record.notice, state: 'under_revision' }
         channel.publish(notice)
-        next[notice.shipment_id] = { ...record, notice }
+        next[notice.shipment_id] = { ...record, notice, reply: null }
       }
       set(next)
     },

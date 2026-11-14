@@ -5,7 +5,14 @@ import type { NoticeChannel } from './channel.ts'
 import { NoticeBody } from './NoticeBody.tsx'
 import type { RelayStatus, RelayStatusSource } from './relayChannel.ts'
 import { getNoticeChannel, useRelayStatus } from './sharedChannel.ts'
-import { formatSentTime, type DriverNotice } from './types.ts'
+import {
+  REPLY_LABELS,
+  formatSentTime,
+  replyAnswers,
+  type DriverNotice,
+  type DriverReply,
+  type DriverReplyKind,
+} from './types.ts'
 import './driver.css'
 
 export const SIMULATED_NOTICE_TEXT = 'SIMULATED notice: demo only, no real message was sent.'
@@ -67,10 +74,73 @@ function NoticeStatus({ notice }: { notice: DriverNotice }) {
   )
 }
 
+const REPLY_KINDS: DriverReplyKind[] = ['received', 'cannot_do_safely']
+
+/**
+ * Two fixed answers and no free text (issue #36). A reply tells dispatch
+ * something; it never changes the plan by itself.
+ */
+function ReplyToDispatch({
+  reply,
+  onReply,
+}: {
+  reply: DriverReply | null
+  onReply: (kind: DriverReplyKind) => void
+}) {
+  return (
+    <section className="driver-page__reply" aria-label="Reply to dispatch">
+      <h2 className="driver-page__reply-title">Reply to dispatch</h2>
+      <div className="driver-page__reply-buttons">
+        {REPLY_KINDS.map((kind) => (
+          <button
+            key={kind}
+            type="button"
+            className="pp-button"
+            aria-pressed={reply?.kind === kind}
+            onClick={() => onReply(kind)}
+          >
+            {kind === 'received' ? <CheckIcon size={16} /> : <AlertIcon size={16} />}
+            {REPLY_LABELS[kind]}
+          </button>
+        ))}
+      </div>
+      <p className="driver-page__reply-status" role="status">
+        {reply ? (
+          <>
+            You replied <q>{REPLY_LABELS[reply.kind]}</q> at{' '}
+            <span className="pp-num">{formatSentTime(reply.replied_at)}</span>.
+          </>
+        ) : (
+          'No reply sent yet.'
+        )}
+      </p>
+      <p className="driver-page__reply-note">
+        A reply does not change the plan. Dispatch decides what happens next.
+      </p>
+    </section>
+  )
+}
+
 /** Mounted once per shipment id, so the first read happens in the initializer. */
 function ShipmentNotice({ shipmentId, channel }: { shipmentId: string; channel: NoticeChannel }) {
   const [notice, setNotice] = useState(() => channel.latest(shipmentId))
+  const [lastReply, setLastReply] = useState(() => channel.latestReply(shipmentId))
   useEffect(() => channel.subscribe(shipmentId, setNotice), [channel, shipmentId])
+  // Only a reply to the notice on screen counts; an older one is not shown.
+  const reply = replyAnswers(lastReply, notice) ? lastReply : null
+
+  function sendReply(kind: DriverReplyKind) {
+    if (!notice || notice.state !== 'active') return
+    const next: DriverReply = {
+      shipment_id: shipmentId,
+      notice_version: notice.version,
+      notice_sent_at: notice.sent_at,
+      kind,
+      replied_at: new Date().toISOString(),
+    }
+    channel.reply(next)
+    setLastReply(next)
+  }
 
   return (
     <div aria-live="polite">
@@ -97,6 +167,7 @@ function ShipmentNotice({ shipmentId, channel }: { shipmentId: string; channel: 
             )}
             <NoticeBody body={notice} />
           </section>
+          {notice.state === 'active' && <ReplyToDispatch reply={reply} onReply={sendReply} />}
         </>
       )}
     </div>
