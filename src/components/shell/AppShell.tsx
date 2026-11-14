@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react'
+import { useId, useRef, useState, type ReactNode } from 'react'
 import type { Scenario } from '../../viewModels.ts'
+import { QuestionIcon } from '../icons.tsx'
 import './AppShell.css'
 
 export interface AppShellProps {
@@ -44,6 +45,10 @@ export function AppShell({
   responses,
   assumptions,
 }: AppShellProps) {
+  const [assumptionsExpanded, setAssumptionsExpanded] = useState(false)
+  const assumptionsId = useId()
+  const assumptionsToggle = useRef<HTMLButtonElement>(null)
+
   return (
     <div className="pp-shell">
       <header className="pp-shell__header">
@@ -68,7 +73,14 @@ export function AppShell({
                 ))}
               </div>
             </div>
-            <button type="button" className="pp-button" onClick={onReset}>
+            <button
+              type="button"
+              className="pp-button"
+              onClick={() => {
+                setAssumptionsExpanded(false)
+                onReset()
+              }}
+            >
               Reset
             </button>
             <button
@@ -92,16 +104,32 @@ export function AppShell({
             {indicators}
           </section>
         </div>
+        {scenario === 'normal' && (
+          <p className="pp-shell__guidance">
+            <strong>Explore the sample disruption:</strong> switch to <strong>Disrupted</strong>,
+            {' '}then select a shipment under <strong>Needs review</strong> to compare responses.
+          </p>
+        )}
       </header>
 
       <main className="pp-shell__main">
-        <section className="pp-shell__region pp-shell__board" aria-label="Triage board">
+        <section
+          className="pp-shell__region pp-shell__board"
+          id="shipment-queue"
+          tabIndex={-1}
+          aria-label="Triage board"
+        >
           {board}
         </section>
         <section
           className="pp-shell__region pp-shell__responses"
+          id="response-options"
+          tabIndex={-1}
           aria-label="Response options"
         >
+          <a className="pp-shell__back-link" href="#shipment-queue">
+            Back to shipments
+          </a>
           {responses}
         </section>
         <section className="pp-shell__region pp-shell__map" aria-label="Map panel">
@@ -111,8 +139,46 @@ export function AppShell({
           <section
             className="pp-shell__region pp-shell__assumptions"
             aria-label="Assumptions and sources"
+            onKeyDown={(event) => {
+              if (event.key === 'Escape' && assumptionsExpanded) {
+                setAssumptionsExpanded(false)
+                assumptionsToggle.current?.focus()
+              }
+            }}
           >
-            {assumptions}
+            <button
+              ref={assumptionsToggle}
+              type="button"
+              className="pp-shell__assumptions-toggle"
+              aria-label={`${assumptionsExpanded ? 'Collapse' : 'Expand'} assumptions & sources`}
+              aria-expanded={assumptionsExpanded}
+              aria-controls={assumptionsId}
+              onClick={() => setAssumptionsExpanded((expanded) => !expanded)}
+            >
+              <span className="pp-shell__assumptions-title">
+                <QuestionIcon size={20} />
+                <span>
+                  <strong>Assumptions & sources</strong>
+                  <span className="pp-shell__assumptions-hint">
+                    Model inputs, value types and prototype limitations
+                  </span>
+                </span>
+              </span>
+              <span className="pp-shell__assumptions-action">
+                {assumptionsExpanded ? 'Collapse panel' : 'Expand panel'}
+                <span className="pp-shell__drawer-chevron" aria-hidden="true" />
+              </span>
+            </button>
+            <div
+              id={assumptionsId}
+              className="pp-shell__assumptions-content"
+              hidden={!assumptionsExpanded}
+              tabIndex={0}
+              role="region"
+              aria-label="Assumptions details"
+            >
+              {assumptions}
+            </div>
           </section>
         )}
       </main>

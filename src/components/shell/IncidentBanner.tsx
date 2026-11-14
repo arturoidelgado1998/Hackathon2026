@@ -42,7 +42,10 @@ export function IncidentBanner({ incident, segmentName }: IncidentBannerProps) {
           Closure on {incident.segment_id}
           {segmentName ? `, ${segmentName}` : ''}
         </strong>{' '}
-        <span className="pp-num">
+        <span
+          className="pp-num"
+          title="Simulated closure report; reopening is an estimate, not a guarantee"
+        >
           from {incident.start_time}. {reopenText}
         </span>
       </span>

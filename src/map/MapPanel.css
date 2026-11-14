@@ -250,6 +250,11 @@
   stroke-dasharray: 5 4;
 }
 
+.pp-map__legend-line--chosen line {
+  stroke: var(--pp-accent);
+  stroke-width: 4.5;
+}
+
 .pp-map__legend-line--closed line {
   stroke: var(--pp-danger);
   stroke-width: 4.5;
