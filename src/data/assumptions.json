@@ -7,7 +7,7 @@
   "labor_rate_per_hr": 40,
   "diesel_kgCO2_per_gal": 10.21,
   "sources": {
-    "pickup_handling_min": "PLACEHOLDER: team assumption, chosen so the reference shipment SHP-001 departs 10:00",
+    "pickup_handling_min": "PLACEHOLDER: team assumption, chosen so the reference shipment S-01 departs 10:00",
     "mpg": "PLACEHOLDER: team assumption for a loaded Class 8 drayage truck",
     "nonlabor_cost_per_mile": "PLACEHOLDER: team assumption (fuel, maintenance, tires, tolls)",
     "labor_rate_per_hr": "PLACEHOLDER: team assumption for loaded driver labor cost",

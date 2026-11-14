@@ -36,7 +36,7 @@ describe('App', () => {
     const needsReview = region('Needs review')
     expect(within(needsReview).getByText(REFERENCE_SHIPMENT_ID)).toBeInTheDocument()
     // An unaffected shipment stays in Monitoring.
-    expect(within(region('Monitoring')).getByText('SHP-002')).toBeInTheDocument()
+    expect(within(region('Monitoring')).getByText('S-06')).toBeInTheDocument()
   })
 
   it('shows the reference shipment trade-off when it is selected', () => {
@@ -50,10 +50,10 @@ describe('App', () => {
     for (const title of ['Wait', 'Reroute', 'Request later slot']) {
       expect(within(responses).getByRole('columnheader', { name: title })).toBeInTheDocument()
     }
-    // Reference values from the team plan, section 4.4.
-    expect(responses).toHaveTextContent('30 min late')
-    expect(responses).toHaveTextContent('$161')
-    expect(responses).toHaveTextContent('$158')
+    // Reference shipment values from the team's feature service (max-arrival case).
+    expect(responses).toHaveTextContent('30 to 42 min late')
+    expect(responses).toHaveTextContent('$169')
+    expect(responses).toHaveTextContent('$167')
     expect(responses).toHaveTextContent('+15 mi')
     expect(responses).toHaveTextContent('+23.5 kg')
     expect(responses).toHaveTextContent('Passes a flagged zone (placeholder)')
@@ -70,7 +70,7 @@ describe('App', () => {
   it('shows no options for an unaffected shipment', () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: 'Disrupted' }))
-    fireEvent.click(cardFor('SHP-002'))
+    fireEvent.click(cardFor('S-06'))
     expect(region('Response options')).toHaveTextContent(
       'No response needed: this shipment is not affected by an incident.',
     )
@@ -79,7 +79,7 @@ describe('App', () => {
   it('shows the no-feasible banner for a shipment nothing fixes', () => {
     render(<App />)
     fireEvent.click(screen.getByRole('button', { name: 'Disrupted' }))
-    fireEvent.click(cardFor('SHP-008'))
+    fireEvent.click(cardFor('S-03'))
     expect(region('Response options')).toHaveTextContent(
       'No currently feasible response: review with warehouse or customer.',
     )

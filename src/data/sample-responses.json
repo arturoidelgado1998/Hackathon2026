@@ -1,266 +1,266 @@
 {
   "label": "SIMULATED",
-  "note": "Hand-calculated expected outputs (see README.md). Replaced by engine output in E3/E4.",
-  "reference_shipment_id": "SHP-001",
+  "note": "Pre-calculated by scripts/import_map_data.py from the team's feature service. Replaced by engine output in E3/E4.",
+  "reference_shipment_id": "S-01",
   "incident": {
     "segment_id": "NB-03",
     "type": "closure",
     "start_time": "10:00",
     "reported_reopen_time": "11:10",
     "assumed_reopen_time": null,
-    "evidence_text": "SIMULATED report: NB-03 northbound freight corridor closed from 10:00 after a cargo spill; crews report reopening at 11:10.",
+    "evidence_text": "SIMULATED report: NB-03 (I-710 northbound to SR-60 east (shared corridor)) closed from 10:00; crews report reopening at 11:10.",
     "confirmed_by_user": true
   },
   "baselines": {
-    "SHP-001": {
+    "S-01": {
       "miles": 45,
-      "cost": 121,
+      "cost": 130,
       "co2_kg": 70.7,
-      "driver_duty_min": 60
+      "driver_duty_min": 74
     },
-    "SHP-002": {
+    "S-02": {
       "miles": 45,
-      "cost": 121,
+      "cost": 130,
       "co2_kg": 70.7,
-      "driver_duty_min": 60
+      "driver_duty_min": 74
     },
-    "SHP-003": {
+    "S-03": {
       "miles": 45,
-      "cost": 121,
+      "cost": 130,
       "co2_kg": 70.7,
-      "driver_duty_min": 60
+      "driver_duty_min": 74
     },
-    "SHP-004": {
-      "miles": 45,
-      "cost": 121,
-      "co2_kg": 70.7,
-      "driver_duty_min": 60
-    },
-    "SHP-005": {
-      "miles": 45,
-      "cost": 121,
-      "co2_kg": 70.7,
-      "driver_duty_min": 60
-    },
-    "SHP-006": {
-      "miles": 38,
-      "cost": 112,
-      "co2_kg": 59.7,
-      "driver_duty_min": 65
-    },
-    "SHP-007": {
-      "miles": 38,
-      "cost": 112,
-      "co2_kg": 59.7,
-      "driver_duty_min": 65
-    },
-    "SHP-008": {
-      "miles": 38,
-      "cost": 112,
-      "co2_kg": 59.7,
-      "driver_duty_min": 65
-    },
-    "SHP-009": {
-      "miles": 37,
+    "S-04": {
+      "miles": 40,
       "cost": 117,
-      "co2_kg": 58.1,
-      "driver_duty_min": 75
+      "co2_kg": 62.8,
+      "driver_duty_min": 68
     },
-    "SHP-010": {
-      "miles": 37,
+    "S-05": {
+      "miles": 40,
       "cost": 117,
-      "co2_kg": 58.1,
-      "driver_duty_min": 75
+      "co2_kg": 62.8,
+      "driver_duty_min": 68
+    },
+    "S-06": {
+      "miles": 45,
+      "cost": 130,
+      "co2_kg": 70.7,
+      "driver_duty_min": 74
+    },
+    "S-07": {
+      "miles": 40,
+      "cost": 117,
+      "co2_kg": 62.8,
+      "driver_duty_min": 68
+    },
+    "S-08": {
+      "miles": 16,
+      "cost": 52,
+      "co2_kg": 25.1,
+      "driver_duty_min": 35
+    },
+    "S-09": {
+      "miles": 16,
+      "cost": 52,
+      "co2_kg": 25.1,
+      "driver_duty_min": 35
+    },
+    "S-10": {
+      "miles": 16,
+      "cost": 52,
+      "co2_kg": 25.1,
+      "driver_duty_min": 35
     }
   },
   "scenarios": {
     "normal": {
-      "SHP-001": {
+      "S-01": {
         "summary": {
           "arrival_min": "11:00",
-          "arrival_max": "11:00",
+          "arrival_max": "11:14",
           "lateness_min": 0,
           "lateness_max": 0,
           "risk": "ON_TRACK",
-          "reason": "Departs 10:00, arrives 11:00, deadline 11:30: on track.",
+          "reason": "Departs 10:00, arrives 11:00 to 11:14, deadline 11:30: on track.",
           "affected": false
         },
         "options": []
       },
-      "SHP-002": {
-        "summary": {
-          "arrival_min": "10:00",
-          "arrival_max": "10:00",
-          "lateness_min": 0,
-          "lateness_max": 0,
-          "risk": "ON_TRACK",
-          "reason": "Departs 09:00, arrives 10:00, deadline 10:30: on track.",
-          "affected": false
-        },
-        "options": []
-      },
-      "SHP-003": {
-        "summary": {
-          "arrival_min": "11:30",
-          "arrival_max": "11:30",
-          "lateness_min": 0,
-          "lateness_max": 0,
-          "risk": "ON_TRACK",
-          "reason": "Departs 10:30, arrives 11:30, deadline 12:30: on track.",
-          "affected": false
-        },
-        "options": []
-      },
-      "SHP-004": {
+      "S-02": {
         "summary": {
           "arrival_min": "11:15",
-          "arrival_max": "11:15",
+          "arrival_max": "11:29",
           "lateness_min": 0,
           "lateness_max": 0,
           "risk": "ON_TRACK",
-          "reason": "Departs 10:15, arrives 11:15, deadline 11:15: on track.",
+          "reason": "Departs 10:15, arrives 11:15 to 11:29, deadline 14:00: on track.",
           "affected": false
         },
         "options": []
       },
-      "SHP-005": {
+      "S-03": {
         "summary": {
-          "arrival_min": "12:30",
-          "arrival_max": "12:30",
+          "arrival_min": "11:20",
+          "arrival_max": "11:34",
           "lateness_min": 0,
           "lateness_max": 0,
           "risk": "ON_TRACK",
-          "reason": "Departs 11:30, arrives 12:30, deadline 13:00: on track.",
+          "reason": "Departs 10:20, arrives 11:20 to 11:34, deadline 11:34: on track.",
           "affected": false
         },
         "options": []
       },
-      "SHP-006": {
-        "summary": {
-          "arrival_min": "10:55",
-          "arrival_max": "11:05",
-          "lateness_min": 0,
-          "lateness_max": 0,
-          "risk": "ON_TRACK",
-          "reason": "Departs 10:00, arrives 10:55 to 11:05, deadline 12:15: on track.",
-          "affected": false
-        },
-        "options": []
-      },
-      "SHP-007": {
-        "summary": {
-          "arrival_min": "11:40",
-          "arrival_max": "11:50",
-          "lateness_min": 0,
-          "lateness_max": 0,
-          "risk": "ON_TRACK",
-          "reason": "Departs 10:45, arrives 11:40 to 11:50, deadline 12:00: on track.",
-          "affected": false
-        },
-        "options": []
-      },
-      "SHP-008": {
+      "S-04": {
         "summary": {
           "arrival_min": "11:05",
-          "arrival_max": "11:15",
+          "arrival_max": "11:18",
           "lateness_min": 0,
           "lateness_max": 0,
           "risk": "ON_TRACK",
-          "reason": "Departs 10:10, arrives 11:05 to 11:15, deadline 11:15: on track.",
+          "reason": "Departs 10:10, arrives 11:05 to 11:18, deadline 11:20: on track.",
           "affected": false
         },
         "options": []
       },
-      "SHP-009": {
+      "S-05": {
         "summary": {
-          "arrival_min": "09:55",
-          "arrival_max": "10:15",
+          "arrival_min": "11:35",
+          "arrival_max": "11:48",
           "lateness_min": 0,
-          "lateness_max": 15,
-          "risk": "TIGHT",
-          "reason": "Departs 09:00, arrives 09:55 to 10:15, deadline 10:00: tight.",
+          "lateness_max": 0,
+          "risk": "ON_TRACK",
+          "reason": "Departs 10:40, arrives 11:35 to 11:48, deadline 14:30: on track.",
           "affected": false
         },
         "options": []
       },
-      "SHP-010": {
+      "S-06": {
         "summary": {
-          "arrival_min": "11:25",
-          "arrival_max": "11:45",
+          "arrival_min": "12:30",
+          "arrival_max": "12:44",
           "lateness_min": 0,
           "lateness_max": 0,
           "risk": "ON_TRACK",
-          "reason": "Departs 10:30, arrives 11:25 to 11:45, deadline 12:00: on track.",
+          "reason": "Departs 11:30, arrives 12:30 to 12:44, deadline 13:30: on track.",
+          "affected": false
+        },
+        "options": []
+      },
+      "S-07": {
+        "summary": {
+          "arrival_min": "10:55",
+          "arrival_max": "11:08",
+          "lateness_min": 0,
+          "lateness_max": 0,
+          "risk": "ON_TRACK",
+          "reason": "Departs 10:00, arrives 10:55 to 11:08, deadline 12:00: on track.",
+          "affected": false
+        },
+        "options": []
+      },
+      "S-08": {
+        "summary": {
+          "arrival_min": "09:28",
+          "arrival_max": "09:35",
+          "lateness_min": 0,
+          "lateness_max": 0,
+          "risk": "ON_TRACK",
+          "reason": "Departs 09:00, arrives 09:28 to 09:35, deadline 10:30: on track.",
+          "affected": false
+        },
+        "options": []
+      },
+      "S-09": {
+        "summary": {
+          "arrival_min": "11:13",
+          "arrival_max": "11:20",
+          "lateness_min": 0,
+          "lateness_max": 0,
+          "risk": "ON_TRACK",
+          "reason": "Departs 10:45, arrives 11:13 to 11:20, deadline 12:00: on track.",
+          "affected": false
+        },
+        "options": []
+      },
+      "S-10": {
+        "summary": {
+          "arrival_min": "12:58",
+          "arrival_max": "13:05",
+          "lateness_min": 0,
+          "lateness_max": 0,
+          "risk": "ON_TRACK",
+          "reason": "Departs 12:30, arrives 12:58 to 13:05, deadline 14:00: on track.",
           "affected": false
         },
         "options": []
       }
     },
     "disrupted": {
-      "SHP-001": {
+      "S-01": {
         "summary": {
           "arrival_min": "12:00",
-          "arrival_max": "12:00",
+          "arrival_max": "12:12",
           "lateness_min": 30,
-          "lateness_max": 30,
+          "lateness_max": 42,
           "risk": "LATE",
-          "reason": "Waits 60 min at NB-03 until 11:10, arrives 12:00, deadline 11:30: late.",
+          "reason": "Waits 58 to 60 min at NB-03 until 11:10, arrives 12:00 to 12:12, deadline 11:30: late.",
           "affected": true
         },
         "options": [
           {
             "kind": "wait",
             "arrival_min": "12:00",
-            "arrival_max": "12:00",
+            "arrival_max": "12:12",
             "lateness_min": 30,
-            "lateness_max": 30,
+            "lateness_max": 42,
             "risk": "LATE",
             "miles": 45,
-            "cost": 161,
+            "cost": 169,
             "co2_kg": 70.7,
             "requires_confirmation": false,
             "status": "Estimate: assumes NB-03 reopens at the reported 11:10",
             "explanation_inputs": [
               "Departs 10:00",
-              "Reaches NB-03 at 10:10",
+              "Reaches NB-03 at 10:10 to 10:12",
               "NB-03 closed from 10:00, reported reopening 11:10",
-              "Waits until 11:10 (60 min)",
-              "Arrives 12:00",
+              "Waits until 11:10 (58 to 60 min)",
+              "Arrives 12:00 to 12:12",
               "Deadline 11:30",
-              "30 min late"
+              "30 to 42 min late"
             ],
-            "driver_duty_min": 120,
+            "driver_duty_min": 132,
             "passes_sensitive_zone": false,
             "stakeholder_notes": [
-              "Driver duty 120 min including 60 min waiting",
-              "Warehouse WH-A: 30 min late"
+              "Driver duty up to 132 min including up to 60 min waiting",
+              "Warehouse WH-A: 30 to 42 min late"
             ]
           },
           {
             "kind": "reroute",
             "arrival_min": "11:15",
-            "arrival_max": "11:15",
+            "arrival_max": "11:28",
             "lateness_min": 0,
             "lateness_max": 0,
             "risk": "ON_TRACK",
             "miles": 60,
-            "cost": 158,
+            "cost": 167,
             "co2_kg": 94.2,
             "requires_confirmation": false,
             "status": "Estimate: alternative route R-A-ALT avoids NB-03",
             "explanation_inputs": [
               "Departs 10:00",
-              "Takes R-A-ALT (PORT-01, EW-07, WH-A-APPR), avoids NB-03",
-              "60 mi, 75 min",
-              "Arrives 11:15",
+              "Takes R-A-ALT (PORT-01, EB-405, WH-A-APPR), avoids NB-03",
+              "60 mi, 75 to 88 min",
+              "Arrives 11:15 to 11:28",
               "Deadline 11:30",
               "Meets window"
             ],
-            "driver_duty_min": 75,
+            "driver_duty_min": 88,
             "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "+15 mi and +23.5 kg CO2 versus the original route",
-              "Passes near a sensitive zone (PLACEHOLDER, replaced by corridor analysis (G3))"
+              "Passes SYNTHETIC school zone (Z-01)"
             ]
           },
           {
@@ -289,82 +289,70 @@
           }
         ]
       },
-      "SHP-002": {
-        "summary": {
-          "arrival_min": "10:00",
-          "arrival_max": "10:00",
-          "lateness_min": 0,
-          "lateness_max": 0,
-          "risk": "ON_TRACK",
-          "reason": "Reaches NB-03 at 09:10, and clears it before the closure; not affected. Arrives 10:00: on track.",
-          "affected": false
-        },
-        "options": []
-      },
-      "SHP-003": {
+      "S-02": {
         "summary": {
           "arrival_min": "12:00",
-          "arrival_max": "12:00",
+          "arrival_max": "12:12",
           "lateness_min": 0,
           "lateness_max": 0,
           "risk": "ON_TRACK",
-          "reason": "Waits 30 min at NB-03 until 11:10, arrives 12:00, deadline 12:30: on track.",
+          "reason": "Waits 43 to 45 min at NB-03 until 11:10, arrives 12:00 to 12:12, deadline 14:00: on track.",
           "affected": true
         },
         "options": [
           {
             "kind": "wait",
             "arrival_min": "12:00",
-            "arrival_max": "12:00",
+            "arrival_max": "12:12",
             "lateness_min": 0,
             "lateness_max": 0,
             "risk": "ON_TRACK",
             "miles": 45,
-            "cost": 141,
+            "cost": 159,
             "co2_kg": 70.7,
             "requires_confirmation": false,
             "status": "Estimate: assumes NB-03 reopens at the reported 11:10",
             "explanation_inputs": [
-              "Departs 10:30",
-              "Reaches NB-03 at 10:40",
+              "Departs 10:15",
+              "Reaches NB-03 at 10:25 to 10:27",
               "NB-03 closed from 10:00, reported reopening 11:10",
-              "Waits until 11:10 (30 min)",
-              "Arrives 12:00",
-              "Deadline 12:30",
+              "Waits until 11:10 (43 to 45 min)",
+              "Arrives 12:00 to 12:12",
+              "Deadline 14:00",
               "Meets window"
             ],
-            "driver_duty_min": 90,
+            "driver_duty_min": 117,
             "passes_sensitive_zone": false,
             "stakeholder_notes": [
-              "Driver duty 90 min including 30 min waiting",
+              "Driver duty up to 117 min including up to 45 min waiting",
               "Warehouse WH-A: meets window"
             ]
           },
           {
             "kind": "reroute",
-            "arrival_min": "11:45",
-            "arrival_max": "11:45",
+            "arrival_min": "11:30",
+            "arrival_max": "11:43",
             "lateness_min": 0,
             "lateness_max": 0,
             "risk": "ON_TRACK",
             "miles": 60,
-            "cost": 158,
+            "cost": 167,
             "co2_kg": 94.2,
             "requires_confirmation": false,
             "status": "Estimate: alternative route R-A-ALT avoids NB-03",
             "explanation_inputs": [
-              "Departs 10:30",
-              "Takes R-A-ALT (PORT-01, EW-07, WH-A-APPR), avoids NB-03",
-              "60 mi, 75 min",
-              "Arrives 11:45",
-              "Deadline 12:30",
+              "Departs 10:15",
+              "Takes R-A-ALT (PORT-01, EB-405, WH-A-APPR), avoids NB-03",
+              "60 mi, 75 to 88 min",
+              "Arrives 11:30 to 11:43",
+              "Deadline 14:00",
               "Meets window"
             ],
-            "driver_duty_min": 75,
+            "driver_duty_min": 88,
             "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "+15 mi and +23.5 kg CO2 versus the original route",
-              "Passes near a sensitive zone (PLACEHOLDER, replaced by corridor analysis (G3))"
+              "Passes SYNTHETIC school zone (Z-01)"
             ]
           },
           {
@@ -382,8 +370,8 @@
             "explanation_inputs": [
               "Ask WH-A for a later appointment",
               "Not confirmed by the warehouse",
-              "Original deadline 12:30 still applies",
-              "Risk stays ON_TRACK until confirmed"
+              "Original deadline 14:00 still applies",
+              "Risk stays ON TRACK until confirmed"
             ],
             "driver_duty_min": null,
             "passes_sensitive_zone": false,
@@ -393,70 +381,70 @@
           }
         ]
       },
-      "SHP-004": {
+      "S-03": {
         "summary": {
           "arrival_min": "12:00",
-          "arrival_max": "12:00",
-          "lateness_min": 45,
-          "lateness_max": 45,
+          "arrival_max": "12:12",
+          "lateness_min": 26,
+          "lateness_max": 38,
           "risk": "LATE",
-          "reason": "Waits 45 min at NB-03 until 11:10, arrives 12:00, deadline 11:15: late.",
+          "reason": "Waits 38 to 40 min at NB-03 until 11:10, arrives 12:00 to 12:12, deadline 11:34: late.",
           "affected": true
         },
         "options": [
           {
             "kind": "wait",
             "arrival_min": "12:00",
-            "arrival_max": "12:00",
-            "lateness_min": 45,
-            "lateness_max": 45,
+            "arrival_max": "12:12",
+            "lateness_min": 26,
+            "lateness_max": 38,
             "risk": "LATE",
             "miles": 45,
-            "cost": 151,
+            "cost": 156,
             "co2_kg": 70.7,
             "requires_confirmation": false,
             "status": "Estimate: assumes NB-03 reopens at the reported 11:10",
             "explanation_inputs": [
-              "Departs 10:15",
-              "Reaches NB-03 at 10:25",
+              "Departs 10:20",
+              "Reaches NB-03 at 10:30 to 10:32",
               "NB-03 closed from 10:00, reported reopening 11:10",
-              "Waits until 11:10 (45 min)",
-              "Arrives 12:00",
-              "Deadline 11:15",
-              "45 min late"
+              "Waits until 11:10 (38 to 40 min)",
+              "Arrives 12:00 to 12:12",
+              "Deadline 11:34",
+              "26 to 38 min late"
             ],
-            "driver_duty_min": 105,
+            "driver_duty_min": 112,
             "passes_sensitive_zone": false,
             "stakeholder_notes": [
-              "Driver duty 105 min including 45 min waiting",
-              "Warehouse WH-A: 45 min late"
+              "Driver duty up to 112 min including up to 40 min waiting",
+              "Warehouse WH-A: 26 to 38 min late"
             ]
           },
           {
             "kind": "reroute",
-            "arrival_min": "11:30",
-            "arrival_max": "11:30",
-            "lateness_min": 15,
-            "lateness_max": 15,
+            "arrival_min": "11:35",
+            "arrival_max": "11:48",
+            "lateness_min": 1,
+            "lateness_max": 14,
             "risk": "LATE",
             "miles": 60,
-            "cost": 158,
+            "cost": 167,
             "co2_kg": 94.2,
             "requires_confirmation": false,
             "status": "Estimate: alternative route R-A-ALT avoids NB-03",
             "explanation_inputs": [
-              "Departs 10:15",
-              "Takes R-A-ALT (PORT-01, EW-07, WH-A-APPR), avoids NB-03",
-              "60 mi, 75 min",
-              "Arrives 11:30",
-              "Deadline 11:15",
-              "15 min late"
+              "Departs 10:20",
+              "Takes R-A-ALT (PORT-01, EB-405, WH-A-APPR), avoids NB-03",
+              "60 mi, 75 to 88 min",
+              "Arrives 11:35 to 11:48",
+              "Deadline 11:34",
+              "1 to 14 min late"
             ],
-            "driver_duty_min": 75,
+            "driver_duty_min": 88,
             "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "+15 mi and +23.5 kg CO2 versus the original route",
-              "Passes near a sensitive zone (PLACEHOLDER, replaced by corridor analysis (G3))"
+              "Passes SYNTHETIC school zone (Z-01)"
             ]
           },
           {
@@ -474,7 +462,7 @@
             "explanation_inputs": [
               "Ask WH-A for a later appointment",
               "Not confirmed by the warehouse",
-              "Original deadline 11:15 still applies",
+              "Original deadline 11:34 still applies",
               "Risk stays LATE until confirmed"
             ],
             "driver_duty_min": null,
@@ -485,77 +473,163 @@
           }
         ]
       },
-      "SHP-005": {
-        "summary": {
-          "arrival_min": "12:30",
-          "arrival_max": "12:30",
-          "lateness_min": 0,
-          "lateness_max": 0,
-          "risk": "ON_TRACK",
-          "reason": "Reaches NB-03 at 11:40, after the reported reopening; not affected. Arrives 12:30: on track.",
-          "affected": false
-        },
-        "options": []
-      },
-      "SHP-006": {
+      "S-04": {
         "summary": {
           "arrival_min": "11:55",
-          "arrival_max": "12:05",
-          "lateness_min": 0,
-          "lateness_max": 0,
-          "risk": "ON_TRACK",
-          "reason": "Waits 60 min at NB-03 until 11:10, arrives 11:55 to 12:05, deadline 12:15: on track.",
+          "arrival_max": "12:06",
+          "lateness_min": 35,
+          "lateness_max": 46,
+          "risk": "LATE",
+          "reason": "Waits 48 to 50 min at NB-03 until 11:10, arrives 11:55 to 12:06, deadline 11:20: late.",
           "affected": true
         },
         "options": [
           {
             "kind": "wait",
             "arrival_min": "11:55",
-            "arrival_max": "12:05",
-            "lateness_min": 0,
-            "lateness_max": 0,
-            "risk": "ON_TRACK",
-            "miles": 38,
-            "cost": 152,
-            "co2_kg": 59.7,
+            "arrival_max": "12:06",
+            "lateness_min": 35,
+            "lateness_max": 46,
+            "risk": "LATE",
+            "miles": 40,
+            "cost": 149,
+            "co2_kg": 62.8,
             "requires_confirmation": false,
             "status": "Estimate: assumes NB-03 reopens at the reported 11:10",
             "explanation_inputs": [
-              "Departs 10:00",
-              "Reaches NB-03 at 10:10",
+              "Departs 10:10",
+              "Reaches NB-03 at 10:20 to 10:22",
               "NB-03 closed from 10:00, reported reopening 11:10",
-              "Waits until 11:10 (60 min)",
-              "Arrives 11:55 to 12:05",
-              "Deadline 12:15",
-              "Meets window"
+              "Waits until 11:10 (48 to 50 min)",
+              "Arrives 11:55 to 12:06",
+              "Deadline 11:20",
+              "35 to 46 min late"
             ],
-            "driver_duty_min": 125,
+            "driver_duty_min": 116,
             "passes_sensitive_zone": false,
             "stakeholder_notes": [
-              "Driver duty 125 min including 60 min waiting",
+              "Driver duty up to 116 min including up to 50 min waiting",
+              "Warehouse WH-B: 35 to 46 min late"
+            ]
+          },
+          {
+            "kind": "reroute",
+            "arrival_min": "11:15",
+            "arrival_max": "11:33",
+            "lateness_min": 0,
+            "lateness_max": 13,
+            "risk": "TIGHT",
+            "miles": 45,
+            "cost": 136,
+            "co2_kg": 70.7,
+            "requires_confirmation": false,
+            "status": "Estimate: alternative route R-B-ALT avoids NB-03",
+            "explanation_inputs": [
+              "Departs 10:10",
+              "Takes R-B-ALT (HARBOR-110, XTOWN-B), avoids NB-03",
+              "45 mi, 65 to 83 min",
+              "Arrives 11:15 to 11:33",
+              "Deadline 11:20",
+              "May be up to 13 min late"
+            ],
+            "driver_duty_min": 83,
+            "passes_sensitive_zone": true,
+            "stakeholder_notes": [
+              "+5 mi and +7.9 kg CO2 versus the original route",
+              "Passes SYNTHETIC residential area (Z-02)"
+            ]
+          },
+          {
+            "kind": "request_slot",
+            "arrival_min": null,
+            "arrival_max": null,
+            "lateness_min": null,
+            "lateness_max": null,
+            "risk": "LATE",
+            "miles": null,
+            "cost": null,
+            "co2_kg": null,
+            "requires_confirmation": true,
+            "status": "Pending confirmation; original deadline still applies",
+            "explanation_inputs": [
+              "Ask WH-B for a later appointment",
+              "Not confirmed by the warehouse",
+              "Original deadline 11:20 still applies",
+              "Risk stays LATE until confirmed"
+            ],
+            "driver_duty_min": null,
+            "passes_sensitive_zone": false,
+            "stakeholder_notes": [
+              "Warehouse WH-B must confirm a new slot"
+            ]
+          }
+        ]
+      },
+      "S-05": {
+        "summary": {
+          "arrival_min": "11:55",
+          "arrival_max": "12:06",
+          "lateness_min": 0,
+          "lateness_max": 0,
+          "risk": "ON_TRACK",
+          "reason": "Waits 18 to 20 min at NB-03 until 11:10, arrives 11:55 to 12:06, deadline 14:30: on track.",
+          "affected": true
+        },
+        "options": [
+          {
+            "kind": "wait",
+            "arrival_min": "11:55",
+            "arrival_max": "12:06",
+            "lateness_min": 0,
+            "lateness_max": 0,
+            "risk": "ON_TRACK",
+            "miles": 40,
+            "cost": 129,
+            "co2_kg": 62.8,
+            "requires_confirmation": false,
+            "status": "Estimate: assumes NB-03 reopens at the reported 11:10",
+            "explanation_inputs": [
+              "Departs 10:40",
+              "Reaches NB-03 at 10:50 to 10:52",
+              "NB-03 closed from 10:00, reported reopening 11:10",
+              "Waits until 11:10 (18 to 20 min)",
+              "Arrives 11:55 to 12:06",
+              "Deadline 14:30",
+              "Meets window"
+            ],
+            "driver_duty_min": 86,
+            "passes_sensitive_zone": false,
+            "stakeholder_notes": [
+              "Driver duty up to 86 min including up to 20 min waiting",
               "Warehouse WH-B: meets window"
             ]
           },
           {
             "kind": "reroute",
-            "arrival_min": null,
-            "arrival_max": null,
-            "lateness_min": null,
-            "lateness_max": null,
-            "risk": "UNKNOWN",
-            "miles": null,
-            "cost": null,
-            "co2_kg": null,
+            "arrival_min": "11:45",
+            "arrival_max": "12:03",
+            "lateness_min": 0,
+            "lateness_max": 0,
+            "risk": "ON_TRACK",
+            "miles": 45,
+            "cost": 136,
+            "co2_kg": 70.7,
             "requires_confirmation": false,
-            "status": "Unavailable: alternative route R-B-ALT also uses closed segment NB-03",
+            "status": "Estimate: alternative route R-B-ALT avoids NB-03",
             "explanation_inputs": [
-              "Alternative route R-B-ALT: PORT-01, LNK-06, NB-03, WH-B-APPR",
-              "Uses NB-03, which is closed",
-              "No other alternative route in the sample data"
+              "Departs 10:40",
+              "Takes R-B-ALT (HARBOR-110, XTOWN-B), avoids NB-03",
+              "45 mi, 65 to 83 min",
+              "Arrives 11:45 to 12:03",
+              "Deadline 14:30",
+              "Meets window"
             ],
-            "driver_duty_min": null,
-            "passes_sensitive_zone": false,
-            "stakeholder_notes": []
+            "driver_duty_min": 83,
+            "passes_sensitive_zone": true,
+            "stakeholder_notes": [
+              "+5 mi and +7.9 kg CO2 versus the original route",
+              "Passes SYNTHETIC residential area (Z-02)"
+            ]
           },
           {
             "kind": "request_slot",
@@ -572,8 +646,8 @@
             "explanation_inputs": [
               "Ask WH-B for a later appointment",
               "Not confirmed by the warehouse",
-              "Original deadline 12:15 still applies",
-              "Risk stays ON_TRACK until confirmed"
+              "Original deadline 14:30 still applies",
+              "Risk stays ON TRACK until confirmed"
             ],
             "driver_duty_min": null,
             "passes_sensitive_zone": false,
@@ -583,65 +657,83 @@
           }
         ]
       },
-      "SHP-007": {
+      "S-06": {
+        "summary": {
+          "arrival_min": "12:30",
+          "arrival_max": "12:44",
+          "lateness_min": 0,
+          "lateness_max": 0,
+          "risk": "ON_TRACK",
+          "reason": "Reaches NB-03 at 11:40 to 11:42, after the reported reopening; not affected. Arrives 12:30 to 12:44: on track.",
+          "affected": false
+        },
+        "options": []
+      },
+      "S-07": {
         "summary": {
           "arrival_min": "11:55",
-          "arrival_max": "12:05",
+          "arrival_max": "12:06",
           "lateness_min": 0,
-          "lateness_max": 5,
+          "lateness_max": 6,
           "risk": "TIGHT",
-          "reason": "Waits 15 min at NB-03 until 11:10, arrives 11:55 to 12:05, deadline 12:00: tight.",
+          "reason": "Waits 58 to 60 min at NB-03 until 11:10, arrives 11:55 to 12:06, deadline 12:00: tight.",
           "affected": true
         },
         "options": [
           {
             "kind": "wait",
             "arrival_min": "11:55",
-            "arrival_max": "12:05",
+            "arrival_max": "12:06",
             "lateness_min": 0,
-            "lateness_max": 5,
+            "lateness_max": 6,
             "risk": "TIGHT",
-            "miles": 38,
-            "cost": 122,
-            "co2_kg": 59.7,
+            "miles": 40,
+            "cost": 156,
+            "co2_kg": 62.8,
             "requires_confirmation": false,
             "status": "Estimate: assumes NB-03 reopens at the reported 11:10",
             "explanation_inputs": [
-              "Departs 10:45",
-              "Reaches NB-03 at 10:55",
+              "Departs 10:00",
+              "Reaches NB-03 at 10:10 to 10:12",
               "NB-03 closed from 10:00, reported reopening 11:10",
-              "Waits until 11:10 (15 min)",
-              "Arrives 11:55 to 12:05",
+              "Waits until 11:10 (58 to 60 min)",
+              "Arrives 11:55 to 12:06",
               "Deadline 12:00",
-              "0 to 5 min late"
+              "May be up to 6 min late"
             ],
-            "driver_duty_min": 80,
+            "driver_duty_min": 126,
             "passes_sensitive_zone": false,
             "stakeholder_notes": [
-              "Driver duty 80 min including 15 min waiting",
-              "Warehouse WH-B: 0 to 5 min late"
+              "Driver duty up to 126 min including up to 60 min waiting",
+              "Warehouse WH-B: may be up to 6 min late"
             ]
           },
           {
             "kind": "reroute",
-            "arrival_min": null,
-            "arrival_max": null,
-            "lateness_min": null,
-            "lateness_max": null,
-            "risk": "UNKNOWN",
-            "miles": null,
-            "cost": null,
-            "co2_kg": null,
+            "arrival_min": "11:05",
+            "arrival_max": "11:23",
+            "lateness_min": 0,
+            "lateness_max": 0,
+            "risk": "ON_TRACK",
+            "miles": 45,
+            "cost": 136,
+            "co2_kg": 70.7,
             "requires_confirmation": false,
-            "status": "Unavailable: alternative route R-B-ALT also uses closed segment NB-03",
+            "status": "Estimate: alternative route R-B-ALT avoids NB-03",
             "explanation_inputs": [
-              "Alternative route R-B-ALT: PORT-01, LNK-06, NB-03, WH-B-APPR",
-              "Uses NB-03, which is closed",
-              "No other alternative route in the sample data"
+              "Departs 10:00",
+              "Takes R-B-ALT (HARBOR-110, XTOWN-B), avoids NB-03",
+              "45 mi, 65 to 83 min",
+              "Arrives 11:05 to 11:23",
+              "Deadline 12:00",
+              "Meets window"
             ],
-            "driver_duty_min": null,
-            "passes_sensitive_zone": false,
-            "stakeholder_notes": []
+            "driver_duty_min": 83,
+            "passes_sensitive_zone": true,
+            "stakeholder_notes": [
+              "+5 mi and +7.9 kg CO2 versus the original route",
+              "Passes SYNTHETIC residential area (Z-02)"
+            ]
           },
           {
             "kind": "request_slot",
@@ -669,112 +761,38 @@
           }
         ]
       },
-      "SHP-008": {
+      "S-08": {
         "summary": {
-          "arrival_min": "11:55",
-          "arrival_max": "12:05",
-          "lateness_min": 40,
-          "lateness_max": 50,
-          "risk": "LATE",
-          "reason": "Waits 50 min at NB-03 until 11:10, arrives 11:55 to 12:05, deadline 11:15: late.",
-          "affected": true
-        },
-        "options": [
-          {
-            "kind": "wait",
-            "arrival_min": "11:55",
-            "arrival_max": "12:05",
-            "lateness_min": 40,
-            "lateness_max": 50,
-            "risk": "LATE",
-            "miles": 38,
-            "cost": 145,
-            "co2_kg": 59.7,
-            "requires_confirmation": false,
-            "status": "Estimate: assumes NB-03 reopens at the reported 11:10",
-            "explanation_inputs": [
-              "Departs 10:10",
-              "Reaches NB-03 at 10:20",
-              "NB-03 closed from 10:00, reported reopening 11:10",
-              "Waits until 11:10 (50 min)",
-              "Arrives 11:55 to 12:05",
-              "Deadline 11:15",
-              "40 to 50 min late"
-            ],
-            "driver_duty_min": 115,
-            "passes_sensitive_zone": false,
-            "stakeholder_notes": [
-              "Driver duty 115 min including 50 min waiting",
-              "Warehouse WH-B: 40 to 50 min late"
-            ]
-          },
-          {
-            "kind": "reroute",
-            "arrival_min": null,
-            "arrival_max": null,
-            "lateness_min": null,
-            "lateness_max": null,
-            "risk": "UNKNOWN",
-            "miles": null,
-            "cost": null,
-            "co2_kg": null,
-            "requires_confirmation": false,
-            "status": "Unavailable: alternative route R-B-ALT also uses closed segment NB-03",
-            "explanation_inputs": [
-              "Alternative route R-B-ALT: PORT-01, LNK-06, NB-03, WH-B-APPR",
-              "Uses NB-03, which is closed",
-              "No other alternative route in the sample data"
-            ],
-            "driver_duty_min": null,
-            "passes_sensitive_zone": false,
-            "stakeholder_notes": []
-          },
-          {
-            "kind": "request_slot",
-            "arrival_min": null,
-            "arrival_max": null,
-            "lateness_min": null,
-            "lateness_max": null,
-            "risk": "LATE",
-            "miles": null,
-            "cost": null,
-            "co2_kg": null,
-            "requires_confirmation": true,
-            "status": "Pending confirmation; original deadline still applies",
-            "explanation_inputs": [
-              "Ask WH-B for a later appointment",
-              "Not confirmed by the warehouse",
-              "Original deadline 11:15 still applies",
-              "Risk stays LATE until confirmed"
-            ],
-            "driver_duty_min": null,
-            "passes_sensitive_zone": false,
-            "stakeholder_notes": [
-              "Warehouse WH-B must confirm a new slot"
-            ]
-          }
-        ]
-      },
-      "SHP-009": {
-        "summary": {
-          "arrival_min": "09:55",
-          "arrival_max": "10:15",
+          "arrival_min": "09:28",
+          "arrival_max": "09:35",
           "lateness_min": 0,
-          "lateness_max": 15,
-          "risk": "TIGHT",
-          "reason": "Route R-C-ORIG avoids NB-03; not affected. Arrives 09:55 to 10:15: tight.",
+          "lateness_max": 0,
+          "risk": "ON_TRACK",
+          "reason": "Route does not use NB-03; not affected. Arrives 09:28 to 09:35: on track.",
           "affected": false
         },
         "options": []
       },
-      "SHP-010": {
+      "S-09": {
         "summary": {
-          "arrival_min": "11:25",
-          "arrival_max": "11:45",
+          "arrival_min": "11:13",
+          "arrival_max": "11:20",
           "lateness_min": 0,
           "lateness_max": 0,
           "risk": "ON_TRACK",
-          "reason": "Route R-C-ORIG avoids NB-03; not affected. Arrives 11:25 to 11:45: on track.",
+          "reason": "Route does not use NB-03; not affected. Arrives 11:13 to 11:20: on track.",
+          "affected": false
+        },
+        "options": []
+      },
+      "S-10": {
+        "summary": {
+          "arrival_min": "12:58",
+          "arrival_max": "13:05",
+          "lateness_min": 0,
+          "lateness_max": 0,
+          "risk": "ON_TRACK",
+          "reason": "Route does not use NB-03; not affected. Arrives 12:58 to 13:05: on track.",
           "affected": false
         },
         "options": []

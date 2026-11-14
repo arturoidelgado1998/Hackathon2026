@@ -1,5 +1,6 @@
 {
   "label": "SIMULATED",
+  "source": "https://services.arcgis.com/QPnoxtBFXm6yYtyc/arcgis/rest/services/PortPlan_%E2%80%94_Disruption_Triage_WFL1/FeatureServer",
   "items": [
     {
       "id": "PORT-LB",
@@ -10,24 +11,24 @@
     },
     {
       "id": "WH-A",
-      "name": "Mesa Ridge Distribution (fictional)",
+      "name": "Summit Ridge Distribution (fictional)",
       "type": "warehouse",
-      "lat": 34.05,
-      "lon": -117.59
+      "lat": 34.04,
+      "lon": -117.85
     },
     {
       "id": "WH-B",
-      "name": "Cedar Flats Logistics (fictional)",
+      "name": "Valley Crossing Logistics (fictional)",
       "type": "warehouse",
-      "lat": 33.99,
-      "lon": -117.69
+      "lat": 34.075,
+      "lon": -118.02
     },
     {
       "id": "WH-C",
-      "name": "Juniper Point Fulfillment (fictional)",
+      "name": "Bayline Fulfillment (fictional)",
       "type": "warehouse",
-      "lat": 33.875,
-      "lon": -117.566
+      "lat": 33.84,
+      "lon": -118.26
     }
   ]
 }
