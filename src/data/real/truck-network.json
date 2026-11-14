@@ -1,0 +1,219 @@
+{
+  "label": "REAL",
+  "source_name": "Caltrans Truck Network (state highways)",
+  "source": "https://caltrans-gis.dot.ca.gov/arcgis/rest/services/CHhighway/Truck_Network/FeatureServer/0",
+  "retrieved": "2026-11-14T20:56Z",
+  "note": "The truck designation Caltrans records for the state highways each SIMULATED segment follows. Reference only. The segments and routes are illustrative, so this is not a check that a truck may use them, and a missing record does not mean trucks are barred.",
+  "matching": "A recorded stretch is listed for a segment when it is on a highway the segment follows and lies within 2.5 km of at least 5% of the segment's drawn line. Segment lines are schematic, so shares are approximate.",
+  "designations": {
+    "NN": "National Network (STAA trucks)",
+    "TA": "Terminal Access (STAA trucks)",
+    "CL": "California Legal trucks only",
+    "A": "California Legal, advisory route"
+  },
+  "items": [
+    {
+      "segment_id": "PORT-01",
+      "highways": [
+        "I-710 North"
+      ],
+      "stretches": [
+        {
+          "highway": "I-710",
+          "designation": "NN",
+          "designation_meaning": "National Network (STAA trucks)",
+          "special_restriction": false,
+          "restriction_note": "",
+          "kpra_advisory_ft": null,
+          "share_of_segment": 1.0,
+          "recorded_stretches": [
+            "Begin route near Ocean Blvd. to Rte 1",
+            "Rte 1 to Jct 10"
+          ]
+        }
+      ],
+      "no_record_for": [],
+      "share_with_record": 1.0,
+      "note": "I-710: National Network (STAA trucks)."
+    },
+    {
+      "segment_id": "NB-03",
+      "highways": [
+        "I-710 North",
+        "SR-60 East"
+      ],
+      "stretches": [
+        {
+          "highway": "I-710",
+          "designation": "NN",
+          "designation_meaning": "National Network (STAA trucks)",
+          "special_restriction": false,
+          "restriction_note": "",
+          "kpra_advisory_ft": null,
+          "share_of_segment": 0.78,
+          "recorded_stretches": [
+            "Rte 1 to Jct 10"
+          ]
+        }
+      ],
+      "no_record_for": [
+        "SR-60"
+      ],
+      "share_with_record": 0.78,
+      "note": "I-710: National Network (STAA trucks). No record in this layer for SR-60."
+    },
+    {
+      "segment_id": "WH-A-APPR",
+      "highways": [
+        "SR-60 East"
+      ],
+      "stretches": [],
+      "no_record_for": [
+        "SR-60"
+      ],
+      "share_with_record": 0.0,
+      "note": "No record in this layer for SR-60."
+    },
+    {
+      "segment_id": "EB-405",
+      "highways": [
+        "I-405 South",
+        "I-605 North"
+      ],
+      "stretches": [
+        {
+          "highway": "I-605",
+          "designation": "NN",
+          "designation_meaning": "National Network (STAA trucks)",
+          "special_restriction": false,
+          "restriction_note": "",
+          "kpra_advisory_ft": null,
+          "share_of_segment": 0.75,
+          "recorded_stretches": [
+            "Los Angeles / Orange County Line to Orange / Los Angeles County Line",
+            "Orange / Los Angeles County Line to End left lanes at nose 210, 0.24 miles north of Jct 210",
+            "Orange / Los Angeles County Line to Los Angeles / Orange County Line",
+            "SB off-ramp to Rte 22 to Orange / Los Angeles County Line"
+          ]
+        },
+        {
+          "highway": "I-405",
+          "designation": "NN",
+          "designation_meaning": "National Network (STAA trucks)",
+          "special_restriction": false,
+          "restriction_note": "",
+          "kpra_advisory_ft": null,
+          "share_of_segment": 0.36,
+          "recorded_stretches": [
+            "Atherton St. in Long Beach to Rte 5",
+            "Jct 5 to Orange / Los Angeles County Line",
+            "Orange / Los Angeles County Line to Atherton St. in Long Beach"
+          ]
+        }
+      ],
+      "no_record_for": [],
+      "share_with_record": 1.0,
+      "note": "I-605: National Network (STAA trucks). I-405: National Network (STAA trucks)."
+    },
+    {
+      "segment_id": "WH-B-APPR",
+      "highways": [
+        "I-605 North"
+      ],
+      "stretches": [
+        {
+          "highway": "I-605",
+          "designation": "NN",
+          "designation_meaning": "National Network (STAA trucks)",
+          "special_restriction": false,
+          "restriction_note": "",
+          "kpra_advisory_ft": null,
+          "share_of_segment": 1.0,
+          "recorded_stretches": [
+            "Orange / Los Angeles County Line to End left lanes at nose 210, 0.24 miles north of Jct 210"
+          ]
+        }
+      ],
+      "no_record_for": [],
+      "share_with_record": 1.0,
+      "note": "I-605: National Network (STAA trucks)."
+    },
+    {
+      "segment_id": "HARBOR-110",
+      "highways": [
+        "I-110 North"
+      ],
+      "stretches": [
+        {
+          "highway": "I-110",
+          "designation": "NN",
+          "designation_meaning": "National Network (STAA trucks)",
+          "special_restriction": false,
+          "restriction_note": "",
+          "kpra_advisory_ft": null,
+          "share_of_segment": 0.88,
+          "recorded_stretches": [
+            "Jct Rte 47 to Jct Rte 101"
+          ]
+        }
+      ],
+      "no_record_for": [],
+      "share_with_record": 0.88,
+      "note": "I-110: National Network (STAA trucks)."
+    },
+    {
+      "segment_id": "XTOWN-B",
+      "highways": [
+        "I-10 East"
+      ],
+      "stretches": [
+        {
+          "highway": "I-10",
+          "designation": "NN",
+          "designation_meaning": "National Network (STAA trucks)",
+          "special_restriction": false,
+          "restriction_note": "",
+          "kpra_advisory_ft": null,
+          "share_of_segment": 1.0,
+          "recorded_stretches": [
+            "Jct Rte 1 to Los Angeles / San Bernardino County Line"
+          ]
+        }
+      ],
+      "no_record_for": [],
+      "share_with_record": 1.0,
+      "note": "I-10: National Network (STAA trucks)."
+    },
+    {
+      "segment_id": "WEST-405",
+      "highways": [
+        "I-405 North"
+      ],
+      "stretches": [
+        {
+          "highway": "I-405",
+          "designation": "NN",
+          "designation_meaning": "National Network (STAA trucks)",
+          "special_restriction": false,
+          "restriction_note": "",
+          "kpra_advisory_ft": null,
+          "share_of_segment": 1.0,
+          "recorded_stretches": [
+            "Atherton St. in Long Beach to Rte 5"
+          ]
+        }
+      ],
+      "no_record_for": [],
+      "share_with_record": 1.0,
+      "note": "I-405: National Network (STAA trucks)."
+    },
+    {
+      "segment_id": "C-LOCAL",
+      "highways": [],
+      "stretches": [],
+      "no_record_for": [],
+      "share_with_record": 0.0,
+      "note": "Surface streets: not covered by the state highway layer."
+    }
+  ]
+}

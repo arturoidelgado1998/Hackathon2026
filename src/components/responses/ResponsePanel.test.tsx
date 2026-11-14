@@ -232,6 +232,46 @@ describe('ResponsePanel', () => {
     expect(within(waitCommunity).queryByRole('img', { name: 'Warning' })).not.toBeInTheDocument()
   })
 
+  it('leaves the truck network row out when the check is switched off', () => {
+    render(<ResponsePanel view={makeView()} />)
+    expect(screen.queryByRole('rowheader', { name: 'Truck network (Caltrans record)' })).not.toBeInTheDocument()
+  })
+
+  it('shows the Caltrans truck record per route as a record, with gaps as text warnings', () => {
+    render(
+      <ResponsePanel
+        view={makeView({
+          truckNetwork: {
+            wait: {
+              recorded: [{ designation: 'National Network (STAA trucks)', highways: ['I-710'] }],
+              restrictions: [],
+              noRecord: ['SR-60'],
+              notCovered: [],
+            },
+            reroute: {
+              recorded: [],
+              restrictions: ['I-110: No trucks over 6,000 pounds.'],
+              noRecord: [],
+              notCovered: ['Alameda St / local streets'],
+            },
+          },
+        })}
+      />,
+    )
+    const [waitTrucks, rerouteTrucks, slotTrucks] = row('Truck network (Caltrans record)')
+    expect(waitTrucks).toHaveTextContent('I-710: National Network (STAA trucks)')
+    expect(waitTrucks).toHaveTextContent('No Caltrans record for SR-60')
+    expect(rerouteTrucks).toHaveTextContent('Recorded restriction on I-110: No trucks over 6,000 pounds.')
+    expect(rerouteTrucks).toHaveTextContent('Not on the state truck network, not checked: Alameda St / local streets')
+    expect(within(rerouteTrucks).getAllByRole('img', { name: 'Warning' })).toHaveLength(2)
+    expect(slotTrucks).not.toHaveTextContent('National Network')
+    // A record, never a verdict on whether a truck may use the route.
+    expect(waitTrucks).toHaveAttribute('title', expect.stringMatching(/not a check that a truck may use the route/))
+    for (const cell of [waitTrucks, rerouteTrucks]) {
+      expect(cell.textContent).not.toMatch(/legal|allowed|suitable|safe/i)
+    }
+  })
+
   it('requires confirmation before a slot has actually been requested', () => {
     render(<ResponsePanel view={makeView()} />)
     const [, , slotStatus] = row('Status')

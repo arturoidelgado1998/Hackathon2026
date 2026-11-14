@@ -71,6 +71,22 @@ export interface CommunityInfo {
   max_diesel_pm_pctl: number | null
 }
 
+/**
+ * What Caltrans records about trucks on the highways a route follows (G5).
+ * A record, not a verdict: the routes are illustrative and nothing here says
+ * a truck may or may not use them.
+ */
+export interface TruckNetworkInfo {
+  /** One entry per designation, e.g. National Network: I-710, I-405. */
+  recorded: { designation: string; highways: string[] }[]
+  /** Restrictions Caltrans notes on those highways, as written in the record. */
+  restrictions: string[]
+  /** Highways on the route that the Caltrans layer has no rows for. */
+  noRecord: string[]
+  /** Segments off the state highway network, which the layer does not cover. */
+  notCovered: string[]
+}
+
 /** Everything the response panel displays for the selected shipment. */
 export interface ResponsePanelView {
   shipment: Shipment
@@ -82,4 +98,6 @@ export interface ResponsePanelView {
   baseline: Baseline
   /** Community facts per option kind; missing kinds have no route. */
   community: Partial<Record<ResponseOptionKind, CommunityInfo>>
+  /** Truck network record per option kind; absent when the check is switched off. */
+  truckNetwork?: Partial<Record<ResponseOptionKind, TruckNetworkInfo>>
 }

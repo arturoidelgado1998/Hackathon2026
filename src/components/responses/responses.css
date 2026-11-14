@@ -247,3 +247,13 @@
     overscroll-behavior-x: contain;
   }
 }
+
+/* Truck network record (G5): one line per designation or gap. */
+.responses-trucks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pp-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
