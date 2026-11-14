@@ -66,7 +66,9 @@ describe('App', () => {
     expect(responses).toHaveTextContent('$167')
     expect(responses).toHaveTextContent('+15 mi')
     expect(responses).toHaveTextContent('+23.5 kg')
-    expect(responses).toHaveTextContent('Passes a flagged zone (placeholder)')
+    expect(responses).toHaveTextContent(
+      '9 schools and 31 disadvantaged tracts within 150 m (real locations, illustrative route)',
+    )
     expect(responses).toHaveTextContent('Requires confirmation; original deadline still applies')
 
     expect(region('Current situation')).toHaveTextContent('Closure on NB-03')

@@ -1,5 +1,5 @@
 import { useId } from 'react'
-import { assumptions, assumptionPlaceholders } from '../../data'
+import { assumptions, assumptionPlaceholders, corridor } from '../../data'
 import { limitations } from '../../data/limitations'
 import type { Assumptions } from '../../types'
 import './assumptions.css'
@@ -32,6 +32,7 @@ export function AssumptionsPanel() {
       </p>
       <nav className="assumptions-nav" aria-label="Assumptions sections">
         <a href={`#${id}-inputs`}>Inputs &amp; sources</a>
+        <a href={`#${id}-community`}>Community proximity</a>
         <a href={`#${id}-legend`}>Value types</a>
         <a href={`#${id}-limitations`}>Limitations</a>
       </nav>
@@ -69,6 +70,43 @@ export function AssumptionsPanel() {
           </tbody>
         </table>
       </div>
+      <section aria-labelledby={`${id}-community`}>
+        <h3 id={`${id}-community`} tabIndex={-1}>
+          Community proximity ({corridor.buffer_m} m)
+        </h3>
+        <p className="assumptions-note">{corridor.method}</p>
+        <p className="assumptions-note">
+          <strong>What it means:</strong> {corridor.meaning}
+        </p>
+        <p className="assumptions-note">
+          <strong>Why {corridor.buffer_m} m:</strong> {corridor.basis}
+        </p>
+        <div className="assumptions-table-scroll">
+          <table className="assumptions-table">
+            <caption className="pp-visually-hidden">Real layers used for community proximity</caption>
+            <thead>
+              <tr>
+                <th scope="col">Real layer</th>
+                <th scope="col">Publisher</th>
+                <th scope="col">Edition</th>
+                <th scope="col">Downloaded</th>
+              </tr>
+            </thead>
+            <tbody>
+              {corridor.sources.map((source) => (
+                <tr key={source.id}>
+                  <th scope="row">{source.name}</th>
+                  <td data-label="Publisher">{source.publisher}</td>
+                  <td data-label="Edition">{source.edition}</td>
+                  <td data-label="Downloaded" className="pp-num">
+                    {source.retrieved}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
       <section aria-labelledby={`${id}-legend`}>
         <h3 id={`${id}-legend`}>Value types</h3>
         <dl className="assumptions-legend">

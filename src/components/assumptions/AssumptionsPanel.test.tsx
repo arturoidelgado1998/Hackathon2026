@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { assumptions, assumptionPlaceholders } from '../../data'
+import { assumptions, assumptionPlaceholders, corridor } from '../../data'
 import { limitations } from '../../data/limitations'
 import { AssumptionsPanel } from './index'
 
@@ -48,6 +48,20 @@ describe('AssumptionsPanel', () => {
     expect(
       within(table).getByText('EPA GHG Emission Factors Hub, 2025 edition (PLACEHOLDER until verified)'),
     ).toBeInTheDocument()
+  })
+
+  it('describes the 150 m community measure as proximity, with its basis and real sources', () => {
+    render(<AssumptionsPanel />)
+    const section = screen.getByRole('region', { name: 'Community proximity (150 m)' })
+    expect(section).toHaveTextContent('not measured exposure or health impact')
+    expect(section).toHaveTextContent('Kozawa, Fruin and Winer (2009)')
+    const table = within(section).getByRole('table', { name: 'Real layers used for community proximity' })
+    for (const source of corridor.sources) {
+      const row = within(table).getByRole('rowheader', { name: source.name }).closest('tr')!
+      expect(row).toHaveTextContent(source.publisher)
+      expect(row).toHaveTextContent(source.edition)
+      expect(row).toHaveTextContent(source.retrieved)
+    }
   })
 
   it('explains all four value types without treating unknown values as zero', () => {
