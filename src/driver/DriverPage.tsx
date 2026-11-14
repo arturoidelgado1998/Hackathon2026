@@ -1,8 +1,10 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { AlertIcon, CheckIcon } from '../components/icons.tsx'
 import { getShipment, shipments } from '../data/index.ts'
-import { getNoticeChannel, type NoticeChannel } from './channel.ts'
+import type { NoticeChannel } from './channel.ts'
 import { NoticeBody } from './NoticeBody.tsx'
+import type { RelayStatus, RelayStatusSource } from './relayChannel.ts'
+import { getNoticeChannel, useRelayStatus } from './sharedChannel.ts'
 import { formatSentTime, type DriverNotice } from './types.ts'
 import './driver.css'
 
@@ -101,14 +103,42 @@ function ShipmentNotice({ shipmentId, channel }: { shipmentId: string; channel: 
   )
 }
 
+/** Says in words when the link to dispatch is down, so a stale notice is not trusted. */
+function Connection({ status }: { status: RelayStatus }) {
+  if (status.state === 'lost') {
+    return (
+      <p className="driver-page__connection driver-page__connection--lost" role="alert">
+        <AlertIcon size={18} />
+        <span>
+          <strong>Connection lost</strong>
+          {status.lostAt && (
+            <>
+              {' '}
+              at <span className="pp-num">{formatSentTime(status.lostAt)}</span>
+            </>
+          )}
+          : this notice may be out of date. Reconnecting.
+        </span>
+      </p>
+    )
+  }
+  if (status.state === 'live') {
+    return <p className="driver-page__connection">Connected to dispatch. Updates appear here.</p>
+  }
+  return null
+}
+
 export interface DriverPageProps {
   /** Defaults to the page's shared channel. Tests pass their own. */
   channel?: NoticeChannel
+  /** Defaults to the shared channel's relay. Tests pass their own. */
+  relay?: RelayStatusSource | null
 }
 
 /** What one driver sees for one shipment: `/driver.html#S-01`. Read-only. */
-export function DriverPage({ channel = getNoticeChannel() }: DriverPageProps) {
+export function DriverPage({ channel = getNoticeChannel(), relay }: DriverPageProps) {
   const shipmentId = useSyncExternalStore(subscribeToHash, readHash)
+  const connection = useRelayStatus(relay)
   const known = shipmentId !== '' && getShipment(shipmentId) !== undefined
 
   return (
@@ -120,6 +150,7 @@ export function DriverPage({ channel = getNoticeChannel() }: DriverPageProps) {
         </h1>
       </header>
       <p className="driver-page__simulated">{SIMULATED_NOTICE_TEXT}</p>
+      <Connection status={connection} />
       <main className="driver-page__main">
         {known ? (
           <ShipmentNotice key={shipmentId} shipmentId={shipmentId} channel={channel} />

@@ -1,8 +1,8 @@
 // How a sent notice gets from the dashboard to the driver page.
 // This first channel works between windows of ONE browser on one machine:
 // BroadcastChannel for live updates, localStorage so a driver page opened
-// after Send still shows the latest notice. A phone on another device needs
-// the relay channel from issue #35 (N2), which implements the same interface.
+// after Send still shows the latest notice. A phone on another device is
+// reached by relayChannel.ts (issue #35), which wraps this channel.
 
 import { isDriverNotice, type DriverNotice } from './types.ts'
 
@@ -124,12 +124,4 @@ export function createBrowserChannel(storage: Storage = window.localStorage): No
       }
     },
   }
-}
-
-let shared: NoticeChannel | null = null
-
-/** The one channel a page uses. Created on first use. */
-export function getNoticeChannel(): NoticeChannel {
-  shared ??= createBrowserChannel()
-  return shared
 }

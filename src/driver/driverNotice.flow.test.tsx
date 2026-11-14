@@ -173,3 +173,36 @@ describe('driver page', () => {
     expect(driver.queryAllByRole('button')).toEqual([])
   })
 })
+
+describe('driver page connection status', () => {
+  const relayIn = (state: 'live' | 'lost' | 'off') => {
+    // One object, as the real relay keeps: React needs a stable snapshot.
+    const status = {
+      state,
+      lostAt: state === 'lost' ? '2026-11-14T10:44:00Z' : null,
+      lanUrls: [],
+    }
+    return { getStatus: () => status, subscribe: () => () => {} }
+  }
+
+  it('says in words when the connection to dispatch is lost', () => {
+    window.location.hash = '#S-01'
+    const lost = relayIn('lost')
+    const { getByRole } = render(<DriverPage relay={lost} />)
+    expect(getByRole('alert')).toHaveTextContent(
+      /Connection lost at \d\d:\d\d: this notice may be out of date\./,
+    )
+  })
+
+  it('says when it is connected, and nothing when there is no relay', () => {
+    window.location.hash = '#S-01'
+    const live = relayIn('live')
+    const connected = render(<DriverPage relay={live} />)
+    expect(connected.getByText(/Connected to dispatch/)).toBeInTheDocument()
+    connected.unmount()
+
+    const off = relayIn('off')
+    const local = render(<DriverPage relay={off} />)
+    expect(local.queryByText(/Connected to dispatch|Connection lost/)).toBeNull()
+  })
+})

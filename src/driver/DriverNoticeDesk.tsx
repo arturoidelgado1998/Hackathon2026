@@ -4,6 +4,7 @@ import type { ResponsePanelView, Scenario } from '../viewModels.ts'
 import { decisionKey, decisionKeys, getDriverDesk, type NoticeDesk } from './desk.ts'
 import { buildDraft } from './draft.ts'
 import { DriverNoticePanel } from './DriverNoticePanel.tsx'
+import { useRelayStatus } from './sharedChannel.ts'
 
 export interface DriverNoticeDeskProps {
   /** The response panel's view of the selected shipment, or null. */
@@ -31,6 +32,7 @@ export function DriverNoticeDesk({
   desk = getDriverDesk(),
 }: DriverNoticeDeskProps) {
   const sentByShipment = useSyncExternalStore(desk.subscribe, desk.getSnapshot)
+  const phone = useRelayStatus()
 
   useEffect(() => {
     desk.reconcile(decisionKeys(decisions, scenario))
@@ -51,6 +53,7 @@ export function DriverNoticeDesk({
       sent={sent?.notice}
       isCurrent={sent?.notice.state === 'active' && sent.decisionKey === key}
       onSend={draft && key ? () => desk.send(draft, key) : undefined}
+      phone={phone}
     />
   )
 }

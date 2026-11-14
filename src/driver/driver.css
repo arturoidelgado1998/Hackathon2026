@@ -265,3 +265,37 @@
   font-size: var(--pp-text-sm);
   color: var(--pp-text-muted);
 }
+
+/* --- Phone delivery (issue #35) --- */
+
+.driver-panel__note .pp-icon {
+  vertical-align: -0.15em;
+}
+
+.driver-panel__url {
+  overflow-wrap: anywhere;
+  font-size: var(--pp-text-sm);
+  color: var(--pp-text);
+  user-select: all;
+}
+
+.driver-page__connection {
+  display: flex;
+  gap: var(--pp-space-2);
+  align-items: flex-start;
+  font-size: var(--pp-text-sm);
+  color: var(--pp-text-muted);
+}
+
+.driver-page__connection .pp-icon {
+  flex: none;
+  margin-top: 0.1em;
+}
+
+.driver-page__connection--lost {
+  padding: var(--pp-space-3);
+  border-radius: var(--pp-radius);
+  background: var(--pp-danger-soft);
+  color: var(--pp-danger);
+  font-size: var(--pp-text-md);
+}

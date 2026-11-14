@@ -1,5 +1,6 @@
 import { AlertIcon, CheckIcon } from '../components/icons.tsx'
 import { NoticeBody } from './NoticeBody.tsx'
+import type { RelayStatus } from './relayChannel.ts'
 import { formatSentTime, type DriverNotice, type DriverNoticeBody } from './types.ts'
 import './driver.css'
 
@@ -12,6 +13,8 @@ export interface DriverNoticePanelProps {
   /** True when `sent` matches the decision that stands now. */
   isCurrent: boolean
   onSend?: () => void
+  /** Whether a notice also reaches other devices (issue #35). */
+  phone?: RelayStatus
 }
 
 function Status({ sent, isCurrent }: Pick<DriverNoticePanelProps, 'sent' | 'isCurrent'>) {
@@ -31,6 +34,38 @@ function Status({ sent, isCurrent }: Pick<DriverNoticePanelProps, 'sent' | 'isCu
   )
 }
 
+function PhoneDelivery({ phone, shipmentId }: { phone: RelayStatus; shipmentId: string }) {
+  if (phone.state === 'checking') return null
+  if (phone.state !== 'live') {
+    return (
+      <p className="driver-panel__note" data-testid="phone-delivery">
+        <AlertIcon size={12} /> Phone delivery unavailable: same browser only.
+      </p>
+    )
+  }
+  if (phone.lanUrls.length === 0) {
+    return (
+      <p className="driver-panel__note" data-testid="phone-delivery">
+        Phone delivery: this computer only. Start the server with <code>--host</code> to reach a
+        phone on the same network.
+      </p>
+    )
+  }
+  return (
+    <p className="driver-panel__note" data-testid="phone-delivery">
+      Phone delivery is on. On a phone on the same network, open{' '}
+      {phone.lanUrls.map((url, index) => (
+        <span key={url}>
+          {index > 0 && ' or '}
+          <code className="driver-panel__url">
+            {url}/driver.html#{encodeURIComponent(shipmentId)}
+          </code>
+        </span>
+      ))}
+    </p>
+  )
+}
+
 /**
  * The dispatcher's control for one shipment's driver notice. Sending is its
  * own step: choosing or previewing a response never notifies the driver.
@@ -41,6 +76,7 @@ export function DriverNoticePanel({
   sent,
   isCurrent,
   onSend,
+  phone,
 }: DriverNoticePanelProps) {
   const canSend = draft !== null && onSend !== undefined && !isCurrent
   return (
@@ -83,6 +119,7 @@ export function DriverNoticePanel({
           No response is chosen for this shipment, so there is nothing new to send.
         </p>
       )}
+      {phone && <PhoneDelivery phone={phone} shipmentId={shipmentId} />}
       <p className="driver-panel__note">
         SIMULATED: no real message is sent. Nothing goes to the driver on Preview or when a
         response is chosen, only on Send.

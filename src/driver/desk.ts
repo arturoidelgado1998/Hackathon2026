@@ -4,7 +4,8 @@
 
 import type { Decision } from '../types.ts'
 import type { Scenario } from '../viewModels.ts'
-import { getNoticeChannel, type NoticeChannel } from './channel.ts'
+import type { NoticeChannel } from './channel.ts'
+import { getNoticeChannel } from './sharedChannel.ts'
 import type { DriverNotice, DriverNoticeBody } from './types.ts'
 
 export interface SentRecord {
