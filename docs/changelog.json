@@ -973,7 +973,7 @@
       "title": "150 m corridor analysis with real school and SB 535 layers",
       "phase": "Phase 5: GIS / ArcGIS",
       "status": "in_review",
-      "github_state": "open",
+      "github_state": "closed",
       "assignee": "arturoidelgado1998",
       "built_by": "Coordinator",
       "branch": "gis/g3-g5-corridor",
@@ -1043,7 +1043,7 @@
       "title": "Map overlays: schools, disadvantaged tracts and corridor",
       "phase": "Phase 5: GIS / ArcGIS",
       "status": "in_review",
-      "github_state": "open",
+      "github_state": "closed",
       "assignee": "arturoidelgado1998",
       "built_by": "Coordinator",
       "branch": "gis/g3-g5-corridor",
@@ -1096,7 +1096,7 @@
       "title": "Stretch: hazard polygon and truck-route check",
       "phase": "Phase 5: GIS / ArcGIS",
       "status": "in_progress",
-      "github_state": "open",
+      "github_state": "closed",
       "assignee": "arturoidelgado1998",
       "built_by": "Coordinator",
       "branch": "gis/g3-g5-corridor",
@@ -1148,6 +1148,7 @@
       ],
       "revisions": [],
       "follow_ups": [
+        "2026-11-14: closed on GitHub at the owner's request with the hazard polygon not built; reopen it or open a new issue when A2 (#16) exists",
         "The Caltrans layer has no rows for SR-60 and does not cover surface streets (C-LOCAL)",
         "Which highway each segment follows is a table in scripts/import_reference_data.py, read from the segment names; the team should confirm it",
         "Build the hazard polygon after A2 (#16): flag crossed segments as 'possibly affected, needs review' and never close one without the dispatcher"
@@ -1601,7 +1602,7 @@
         "Viewed in the browser at 1500 x 950 on a local dev server: counts, corridor, schools, hatched tracts and the truck network row, with no console errors"
       ],
       "not_verified": [
-        "Issue statuses and labels on GitHub were not changed",
+        "Issues #21, #22 and #23 were assigned to arturoidelgado1998 and closed on GitHub at the owner's request, before pull request #37 merged; their on-hold labels were left as they were",
         "scripts/import_map_data.py with the corridor step could not be run end to end, because the script already fails against the extended feature service before it reaches that step",
         "The corridor band itself was not inspected closely; it is about a pixel wide until zoomed far in",
         "Narrow and phone layouts were not checked with the new map panel section"
@@ -1613,7 +1614,8 @@
         "The same reference-data files also exist, uncommitted, in the main checkout on phase-1-dashboard from earlier work; this branch now holds them too"
       ],
       "outside_the_repo": [
-        "Nothing was changed outside the repo. The feature service was read, not edited"
+        "GitHub: issues #21, #22 and #23 assigned to arturoidelgado1998 and closed; pull request #37 opened into staging with Auto-fix on",
+        "The feature service was read, not edited"
       ]
     },
     {
