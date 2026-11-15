@@ -154,7 +154,6 @@ export function SimulationPage() {
           </p>
         </div>
         <div className="sim-page__header-side">
-          <span className="sim-page__badge">SIMULATED</span>
           <a className="pp-button" href="index.html">
             Back to dashboard
           </a>
@@ -417,7 +416,7 @@ export function SimulationPage() {
             </div>
             <p className="sim-page__hint">
               Select a shipment to highlight its route on the map. Arrivals are estimates from
-              simulated data, not measured outcomes.
+              the inputs, not measured outcomes.
             </p>
           </section>
         )}

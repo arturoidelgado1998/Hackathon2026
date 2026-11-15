@@ -11,10 +11,10 @@ const cardFor = (shipmentId: string) => {
 }
 
 describe('App', () => {
-  it('renders the RouteRipple heading and the SIMULATED badge', () => {
+  it('renders the RouteRipple heading without labelling the data as simulated', () => {
     render(<App />)
     expect(screen.getByRole('heading', { level: 1, name: 'RouteRipple' })).toBeInTheDocument()
-    expect(screen.getByText('SIMULATED')).toBeInTheDocument()
+    expect(screen.queryByText(/simulated|fictional|synthetic|illustrative/i)).toBeNull()
   })
 
   it('starts in Disrupted with affected shipments ready for review', () => {
@@ -114,7 +114,7 @@ describe('App', () => {
     expect(responses).toHaveTextContent('+15 mi')
     expect(responses).toHaveTextContent('+22.5 kg')
     expect(responses).toHaveTextContent(
-      '9 schools and 31 disadvantaged tracts within 150 m (real locations, illustrative route)',
+      '9 schools and 31 disadvantaged tracts within 150 m',
     )
     expect(responses).toHaveTextContent('Requires confirmation; original deadline still applies')
 

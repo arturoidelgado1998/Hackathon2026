@@ -55,7 +55,7 @@ export function NoticeBody({ body }: { body: DriverNoticeBody }) {
         </div>
       )}
       <div className="driver-notice__item">
-        <dt>Effect on you (SIMULATED)</dt>
+        <dt>Effect on you</dt>
         <dd>
           {body.driver_impact}
           <br />

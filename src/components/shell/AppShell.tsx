@@ -165,7 +165,7 @@ export function AppShell({
                 <span>
                   <strong>Assumptions & sources</strong>
                   <span className="pp-shell__assumptions-hint">
-                    Model inputs, value types and prototype limitations
+                    Model inputs, value types and limitations
                   </span>
                 </span>
               </span>

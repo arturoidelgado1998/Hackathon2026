@@ -66,9 +66,9 @@ function communityCell(option: ResponseOption, community?: CommunityInfo): React
   if (isPending(option)) return PENDING_STRIP_TEXT
   if (!community || community.schools_150m === null) {
     return option.passes_sensitive_zone ? (
-      <Warning>Passes a flagged zone (placeholder)</Warning>
+      <Warning>Passes a flagged zone</Warning>
     ) : (
-      'No flagged zone on this route (placeholder)'
+      'No flagged zone on this route'
     )
   }
   const schools = community.schools_150m
@@ -109,7 +109,7 @@ function truckCell(option: ResponseOption, trucks?: TruckNetworkInfo): ReactNode
 
 const TRUCK_ROW_LABEL = 'Truck network (Caltrans record)'
 const TRUCK_ROW_ESTIMATE =
-  'The designation Caltrans records for the state highways this illustrative route follows. ' +
+  'The designation Caltrans records for the state highways this route follows. ' +
   'A record, not a check that a truck may use the route.'
 
 /** A value with its change against the normal scenario underneath. */
@@ -131,7 +131,7 @@ interface Row {
 const DELIVERY_ROWS: Row[] = [
   {
     label: 'Est. arrival',
-    estimate: 'Estimated arrival from a simulated scenario.',
+    estimate: 'Estimated arrival range.',
     cell: (o) => (
       <span className="pp-num" title="scenario bounds, not a statistical interval">
         {formatArrival(o)}
@@ -167,7 +167,7 @@ const IMPACT_ROWS: Row[] = [
   {
     label: 'Community',
     estimate:
-      'Estimated proximity along an illustrative route; not measured exposure or health impact.',
+      'Estimated proximity along the route; not measured exposure or health impact.',
     cell: (o, _baseline, community) => communityCell(o, community),
   },
   {
@@ -281,7 +281,7 @@ function ShipmentResponses({
       <p className="responses-context">
         <span>
           Appointment{' '}
-          <strong className="pp-num" title="Simulated appointment window.">
+          <strong className="pp-num" title="Appointment window.">
             {shipment.appt_start}–{shipment.appt_end}
           </strong>
         </span>
@@ -290,7 +290,7 @@ function ShipmentResponses({
             <RiskBadge risk={summary.risk} />
             <span
               className="responses-reason"
-              title="Estimated timing from a simulated scenario."
+              title="Estimated timing."
             >
               <span title="scenario bounds, not a statistical interval">{summary.reason}</span>
             </span>
@@ -419,7 +419,7 @@ function ShipmentResponses({
               <td
                 key={o.kind}
                 data-kind={o.kind}
-                title="Estimated status from a simulated scenario; reopening times are not guaranteed."
+                title="Estimated status; reopening times are not guaranteed."
               >
                 {isPending(o) ? (
                   <span className="responses-pending">
@@ -437,7 +437,7 @@ function ShipmentResponses({
         <tbody>
           <tr className="responses-group">
             <th colSpan={columns} scope="colgroup">
-              Stakeholder impact (SIMULATED)
+              Stakeholder impact
             </th>
           </tr>
           {IMPACT_ROWS.map((row) => (
@@ -527,11 +527,11 @@ function ShipmentResponses({
               Close
             </button>
           </div>
-          <p className="responses-note">Estimated inputs and steps from this simulated scenario.</p>
+          <p className="responses-note">The inputs and steps behind this estimate.</p>
           {option.explanation_inputs.length > 0 ? (
             <ol>
               {option.explanation_inputs.map((input, index) => (
-                <li key={index} title="Estimated explanation input from a simulated scenario.">
+                <li key={index} title="Estimated input to this result.">
                   {input}
                 </li>
               ))}

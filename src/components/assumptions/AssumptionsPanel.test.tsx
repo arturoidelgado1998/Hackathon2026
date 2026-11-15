@@ -40,13 +40,13 @@ describe('AssumptionsPanel', () => {
       expect(sourceCell).toHaveTextContent(assumptions.sources[key])
       expect(valueCell).toHaveAttribute('title', expect.stringMatching(/estimated/i))
       if (assumptionPlaceholders[key]) {
-        expect(within(row).getByText('Placeholder')).toBeInTheDocument()
+        expect(within(row).getByText('Team assumption')).toBeInTheDocument()
       } else {
-        expect(within(row).queryByText('Placeholder')).not.toBeInTheDocument()
+        expect(within(row).queryByText('Team assumption')).not.toBeInTheDocument()
       }
     }
     // Cost and CO2 inputs cite a published source; only pickup handling is still a team assumption.
-    expect(within(table).getAllByText('Placeholder')).toHaveLength(1)
+    expect(within(table).getAllByText('Team assumption')).toHaveLength(1)
     expect(within(table).getByText(/EPA GHG Emission Factors Hub, 2025 edition/)).toBeInTheDocument()
     expect(within(table).getByText(/Feasibility Assessment for Drayage Trucks/)).toBeInTheDocument()
     expect(within(table).getByText(/Operational Costs of Trucking/)).toBeInTheDocument()
@@ -67,13 +67,12 @@ describe('AssumptionsPanel', () => {
     }
   })
 
-  it('explains all four value types without treating unknown values as zero', () => {
+  it('explains the value types without treating unknown values as zero', () => {
     render(<AssumptionsPanel />)
     const legend = screen.getByRole('region', { name: 'Value types' })
     expect(within(legend).getAllByRole('term').map((term) => term.textContent)).toEqual([
       'Confirmed',
       'Estimated',
-      'Simulated',
       'Unknown',
     ])
     expect(legend).toHaveTextContent('Not available or not yet confirmed; not zero.')
@@ -86,7 +85,7 @@ describe('AssumptionsPanel', () => {
     expect(items).toHaveLength(12)
     expect(items.map((item) => item.textContent)).toEqual([...limitations])
     expect(items[0]).toHaveTextContent(
-      'Routes and travel times are illustrative; route suitability for trucks is not verified.',
+      'Routes and travel times are approximate; route suitability for trucks is not verified.',
     )
     expect(items[10]).toHaveTextContent(
       'Waiting is assumed to be engine-off, and driver pay, legal hours-of-service and fatigue are not modeled.',

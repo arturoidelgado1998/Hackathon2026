@@ -76,7 +76,7 @@ describe('driver notice, dashboard to driver page', () => {
     const preview = dashboard.getByRole('region', { name: 'Driver notice' }).querySelector('dl')!
     const previewText = preview.textContent
     expect(previewText).toContain(TRUCK_CAUTION)
-    expect(previewText).toContain('SIMULATED')
+    expect(previewText).not.toContain('SIMULATED')
     expect(previewText).toContain('(estimate)')
 
     fireEvent.click(send())

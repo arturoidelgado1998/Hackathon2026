@@ -81,9 +81,31 @@ export type RouteRecord = Route & {
   total_minutes_max: number
 }
 
-export const facilities: Facility[] = facilitiesJson.items as Facility[]
-export const segments: RoadSegment[] = segmentsJson.items as unknown as RoadSegment[]
-export const routes: RouteRecord[] = routesJson.items as RouteRecord[]
+/**
+ * The generated files carry labels such as "(fictional)" and "ILLUSTRATIVE".
+ * They stay in the files, which are not edited by hand, and are dropped here
+ * so the app shows plain names and notes.
+ */
+function plain(text: string): string {
+  return text
+    .replace(/\s*\((?:fictional|synthetic|real locations, illustrative route)\)/gi, '')
+    .replace(/^ILLUSTRATIVE - not verified for trucks$/i, 'Not verified for trucks')
+    .replace(/\bSYNTHETIC\s+/g, '')
+}
+
+export const facilities: Facility[] = (facilitiesJson.items as Facility[]).map((facility) => ({
+  ...facility,
+  name: plain(facility.name),
+}))
+export const segments: RoadSegment[] = (segmentsJson.items as unknown as RoadSegment[]).map((segment) => ({
+  ...segment,
+  sensitive_zone_note: plain(segment.sensitive_zone_note),
+}))
+export const routes: RouteRecord[] = (routesJson.items as RouteRecord[]).map((route) => ({
+  ...route,
+  sensitive_zone_note: plain(route.sensitive_zone_note),
+  truck_suitability_note: plain(route.truck_suitability_note),
+}))
 export const shipments: Shipment[] = shipmentsJson.items as Shipment[]
 
 export const assumptions: Assumptions = {

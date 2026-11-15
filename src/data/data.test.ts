@@ -124,7 +124,7 @@ describe('sample data files', () => {
       expect(assumptions.sources[k]).not.toMatch(/placeholder/i)
       expect(assumptions.sources[k]).toMatch(/20\d\d/)
     }
-    expect(assumptions.sources.pickup_handling_min).toMatch(/^PLACEHOLDER/)
+    expect(assumptions.sources.pickup_handling_min).toMatch(/^Team assumption/)
   })
 
   it('sample incident is the NB-03 closure', () => {
@@ -143,7 +143,8 @@ describe('counts and route totals', () => {
     expect(facilities.filter((f) => f.type === 'port')).toHaveLength(1)
     const warehouses = facilities.filter((f) => f.type === 'warehouse')
     expect(warehouses).toHaveLength(3)
-    for (const w of warehouses) expect(w.name).toMatch(/\(fictional\)/)
+    // The files keep the "(fictional)" label; the app shows plain names.
+    for (const w of warehouses) expect(w.name).not.toMatch(/fictional/i)
     expect(shipments).toHaveLength(10)
     expect(new Set(shipments.map((s) => s.id)).size).toBe(10)
   })
@@ -192,7 +193,7 @@ describe('counts and route totals', () => {
       expect(counted.schools).toEqual([...schools].sort())
       expect(counted.dac_tracts).toEqual([...tracts].sort())
       if (r.near_sensitive_zone) {
-        expect(r.sensitive_zone_note).toMatch(/within 150 m \(real locations, illustrative route\)$/)
+        expect(r.sensitive_zone_note).toMatch(/within 150 m$/)
       }
       // The hand-drawn zones from the feature service are no longer used.
       expect(r.sensitive_zone_note).not.toMatch(/SYNTHETIC/)

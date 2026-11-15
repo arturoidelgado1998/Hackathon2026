@@ -1210,6 +1210,22 @@
   ],
   "other_changes": [
     {
+      "id": "remove-fake-data-wording",
+      "title": "Remove wording that labels the data as simulated or fictional",
+      "related_issues": [],
+      "branch": "engine/sourced-cost-co2",
+      "pull_request": 46,
+      "commit": null,
+      "why": "Requested by the project owner: the audience knows the data is not real, and the repeated labels made the product look unfinished.",
+      "changes": [
+        "Removed the wording that labels the data as fake from what people see: the SIMULATED badge beside the totals and on the simulation page, the Illustrative badge on the Routes pane, \"(SIMULATED)\" in headings, \"simulated scenario\" in tooltips, \"(placeholder)\" on zone flags, and the Simulated value type.",
+        "Facility names and route notes are shown without \"(fictional)\", \"(real locations, illustrative route)\" and \"ILLUSTRATIVE\". The generated JSON files keep those labels; src/data/index.ts drops them for display.",
+        "Driver notice: the \"SIMULATED: no real message is sent\" lines are gone. The dashboard still says nothing goes to the driver until Send.",
+        "Limitations 1, 8, 9 and 12 are reworded without those words; there are still twelve.",
+        "Estimates are still called estimates, routes are still called not verified for trucks, and the Assumptions panel still lists every input and source."
+      ]
+    },
+    {
       "id": "sourced-cost-co2-inputs",
       "title": "Cost and CO2 inputs from published trucking sources",
       "related_issues": [],
@@ -1659,6 +1675,64 @@
     }
   ],
   "entries": [
+    {
+      "id": "2026-11-15-remove-fake-data-wording",
+      "date": "2026-11-15",
+      "title": "Removed simulated, fictional and similar labels from the app",
+      "summary": "Took the fake-data labels out of the dashboard, driver page and simulation page at the project owner's request. Internal data labels and the generated files are unchanged.",
+      "branch": "engine/sourced-cost-co2",
+      "files": {
+        "added": [],
+        "modified": [
+          "docs/changelog.json",
+          "sanity/app.sanity.test.ts",
+          "src/App.test.tsx",
+          "src/components/assumptions/AssumptionsPanel.test.tsx",
+          "src/components/assumptions/AssumptionsPanel.tsx",
+          "src/components/responses/ResponsePanel.test.tsx",
+          "src/components/responses/ResponsePanel.tsx",
+          "src/components/responses/format.ts",
+          "src/components/shell/AppShell.tsx",
+          "src/components/shell/IncidentBanner.tsx",
+          "src/components/shell/IndicatorsBar.test.tsx",
+          "src/components/shell/IndicatorsBar.tsx",
+          "src/data/assumptions.json",
+          "src/data/data.test.ts",
+          "src/data/demoIncident.ts",
+          "src/data/index.ts",
+          "src/data/limitations.ts",
+          "src/driver/DriverNoticePanel.tsx",
+          "src/driver/DriverPage.tsx",
+          "src/driver/NoticeBody.tsx",
+          "src/driver/driverNotice.flow.test.tsx",
+          "src/map/MapPanel.test.tsx",
+          "src/map/MapPanel.tsx",
+          "src/sim/SimClock.test.tsx",
+          "src/sim/SimClock.tsx",
+          "src/sim/SimulationPage.test.tsx",
+          "src/sim/SimulationPage.tsx",
+          "src/sim/settings.ts",
+          "src/state/simulation.ts"
+        ],
+        "deleted": []
+      },
+      "changes": [
+        "Removed the wording that labels the data as fake from what people see: the SIMULATED badge beside the totals and on the simulation page, the Illustrative badge on the Routes pane, \"(SIMULATED)\" in headings, \"simulated scenario\" in tooltips, \"(placeholder)\" on zone flags, and the Simulated value type.",
+        "Facility names and route notes are shown without \"(fictional)\", \"(real locations, illustrative route)\" and \"ILLUSTRATIVE\". The generated JSON files keep those labels; src/data/index.ts drops them for display.",
+        "Driver notice: the \"SIMULATED: no real message is sent\" lines are gone. The dashboard still says nothing goes to the driver until Send.",
+        "Limitations 1, 8, 9 and 12 are reworded without those words; there are still twelve.",
+        "Estimates are still called estimates, routes are still called not verified for trucks, and the Assumptions panel still lists every input and source."
+      ],
+      "verification": [
+        "All 469 unit and integration tests pass after updating the 21 that required the removed words; typecheck, lint and build pass; all 50 sanity checks pass.",
+        "Browser: the dashboard with a shipment selected and the driver page contain none of simulated, fictional, synthetic, illustrative, placeholder or prototype, in text, tooltips or labels."
+      ],
+      "limitations": [
+        "The challenge brief asks teams to identify simulated features. The app no longer says so on screen, so the presentation should.",
+        "The simulation page keeps its name and address.",
+        "README files, the evaluation exports and the internal data labels still use the word SIMULATED."
+      ]
+    },
     {
       "id": "2026-11-15-sourced-cost-co2-inputs",
       "date": "2026-11-15",

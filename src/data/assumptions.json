@@ -7,7 +7,7 @@
   "labor_rate_per_hr": 36.08,
   "diesel_kgCO2_per_gal": 10.21,
   "sources": {
-    "pickup_handling_min": "PLACEHOLDER: team assumption, chosen so the reference shipment S-01 departs 10:00",
+    "pickup_handling_min": "Team assumption, chosen so the reference shipment S-01 departs 10:00",
     "mpg": "San Pedro Bay Ports (Los Angeles and Long Beach), 2021 Update: Feasibility Assessment for Drayage Trucks, February 2023, p. 71: port truck operators reported an average diesel fuel economy of 6.8 miles per gallon in the 2021 Clean Trucks Program survey. Reported by fleets, not measured on the road.",
     "nonlabor_cost_per_mile": "American Transportation Research Institute (ATRI), An Analysis of the Operational Costs of Trucking: 2026 Update (2025 data), line items as reported by FleetOwner on 22 July 2026: $2.336 per mile in total, less driver wages ($0.818) and benefits ($0.210). What remains is fuel ($0.482), truck and trailer payments ($0.40), repair and maintenance ($0.22), insurance ($0.11), tires ($0.05), tolls ($0.043) and permits ($0.008). A national average for all trucking, not specific to drayage or to California.",
     "labor_rate_per_hr": "U.S. Bureau of Labor Statistics, Occupational Employment and Wage Statistics, May 2025: annual mean wage of $59,710 for heavy and tractor-trailer truck drivers, which is $28.71 an hour over 2,080 hours. Benefits are added at the ratio in ATRI's 2026 Update ($0.210 of benefits for each $0.818 of wages). A national average for employed drivers.",

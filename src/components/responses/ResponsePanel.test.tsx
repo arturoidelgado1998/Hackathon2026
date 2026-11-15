@@ -191,7 +191,7 @@ describe('ResponsePanel', () => {
 
   it('shows who bears each option, with a text warning', () => {
     render(<ResponsePanel view={makeView()} />)
-    expect(screen.getByText('Stakeholder impact (SIMULATED)')).toBeInTheDocument()
+    expect(screen.getByText('Stakeholder impact')).toBeInTheDocument()
 
     const [waitDriver, rerouteDriver, slotDriver] = row('Driver')
     expect(waitDriver).toHaveTextContent('120 min on duty')
@@ -200,8 +200,8 @@ describe('ResponsePanel', () => {
     expect(slotDriver).toHaveTextContent('n/a until a new slot is confirmed')
 
     const [waitCommunity, rerouteCommunity, slotCommunity] = row('Community')
-    expect(waitCommunity).toHaveTextContent('No flagged zone on this route (placeholder)')
-    expect(rerouteCommunity).toHaveTextContent('Passes a flagged zone (placeholder)')
+    expect(waitCommunity).toHaveTextContent('No flagged zone on this route')
+    expect(rerouteCommunity).toHaveTextContent('Passes a flagged zone')
     expect(within(rerouteCommunity).getByRole('img', { name: 'Warning' })).toBeInTheDocument()
     expect(within(waitCommunity).queryByRole('img', { name: 'Warning' })).not.toBeInTheDocument()
     expect(slotCommunity).toHaveTextContent('n/a until a new slot is confirmed')
@@ -225,7 +225,7 @@ describe('ResponsePanel', () => {
     )
     const [waitCommunity, rerouteCommunity] = row('Community')
     expect(rerouteCommunity).toHaveTextContent(
-      '3 schools and 2 disadvantaged tracts within 150 m (real locations, illustrative route)',
+      '3 schools and 2 disadvantaged tracts within 150 m',
     )
     expect(within(rerouteCommunity).getByRole('img', { name: 'Warning' })).toBeInTheDocument()
     expect(waitCommunity).toHaveTextContent('0 schools and 0 disadvantaged tracts within 150 m')
