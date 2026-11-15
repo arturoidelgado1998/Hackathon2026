@@ -1,5 +1,6 @@
 import { Component, Suspense, lazy, useId, useState } from 'react'
 import type { ReactNode } from 'react'
+import type { TruckState } from '../sim/trucks.ts'
 import type { Decision, Facility, Route, RoadSegment } from '../types.ts'
 import { ClosedIcon, QuestionIcon } from '../components/icons.tsx'
 import { corridor } from '../data/index.ts'
@@ -23,6 +24,10 @@ export interface MapPanelProps {
   /** AI match awaiting confirmation. */
   candidateSegmentId: string | null
   onSegmentClick?: (segmentId: string) => void
+  /** Simulated truck positions at the clock time. */
+  trucks?: TruckState[]
+  /** The simulation clock controls, shown under the map. */
+  simClock?: ReactNode
 }
 
 type Highlight = keyof MapPanelProps['highlightedRouteIds']
@@ -34,7 +39,7 @@ const HIGHLIGHTS: { key: Highlight; label: string }[] = [
 ]
 
 /** Catches a failed map load so the rest of the panel keeps working. */
-class MapBoundary extends Component<{ onError: () => void; children: ReactNode }, { failed: boolean }> {
+export class MapBoundary extends Component<{ onError: () => void; children: ReactNode }, { failed: boolean }> {
   state = { failed: false }
   static getDerivedStateFromError() {
     return { failed: true }
@@ -71,6 +76,15 @@ function LegendMark({ kind }: { kind: 'school' | 'tract' | 'corridor' }) {
   )
 }
 
+/** Legend symbols for simulated trucks: a triangle is moving, a square is held. */
+function TruckMark({ kind }: { kind: 'moving' | 'waiting' }) {
+  return (
+    <svg className={`pp-map__legend-truck pp-map__legend-truck--${kind}`} width="16" height="14" aria-hidden="true">
+      {kind === 'moving' ? <path d="M8 1.5 14 12.5H2Z" /> : <rect x="3" y="2" width="10" height="10" />}
+    </svg>
+  )
+}
+
 /** The map, a legend, and the highlighted routes as ordered segment lists. */
 export function MapPanel({
   facilities,
@@ -82,6 +96,8 @@ export function MapPanel({
   incidentSegmentId,
   candidateSegmentId,
   onSegmentClick,
+  trucks,
+  simClock,
 }: MapPanelProps) {
   const idPrefix = useId()
   const [mapFailed, setMapFailed] = useState(false)
@@ -140,6 +156,8 @@ export function MapPanel({
                   incidentSegmentId={incidentSegmentId}
                   candidateSegmentId={candidateSegmentId}
                   corridorRouteId={community?.routeId ?? null}
+                  trucks={trucks}
+                  selectedShipmentId={selectedShipmentId}
                   onSegmentClick={onSegmentClick}
                   onError={() => setMapFailed(true)}
                 />
@@ -162,6 +180,16 @@ export function MapPanel({
             <li>
               <LegendLine kind="network" /> Other segments
             </li>
+            {trucks && (
+              <>
+                <li>
+                  <TruckMark kind="moving" /> Truck moving
+                </li>
+                <li>
+                  <TruckMark kind="waiting" /> Truck held at a closure
+                </li>
+              </>
+            )}
             {community && (
               <>
                 <li>
@@ -178,6 +206,8 @@ export function MapPanel({
           </ul>
         </>
       )}
+
+      {simClock}
 
       {community && (
         <section className="pp-map__community" aria-label="Community near the route">
