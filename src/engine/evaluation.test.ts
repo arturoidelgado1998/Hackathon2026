@@ -12,19 +12,22 @@ const timestamp = '2026-11-14T18:00:00.000Z'
 const decision = (shipment_id: string, option_kind: Decision['option_kind'], status: Decision['status']): Decision =>
   ({ shipment_id, option_kind, status, timestamp })
 
-// Independently calculated from the ArcGIS inputs and stored corridor analysis.
+// Independently calculated from the ArcGIS inputs, the sourced cost and CO2 inputs in
+// assumptions.json and the stored corridor analysis: per shipment, normal is $103 (WH-A),
+// $93 (WH-B) and $42 (WH-C); waiting at the closure is $138, $129, $126, $122, $104 and $128
+// for S-01, S-02, S-03, S-04, S-05 and S-07; a reroute is $132 (WH-A) and $109 (WH-B).
 const EXPECTED: Record<ComparisonScenario, EvaluationTotals> = {
   normal: {
-    late: 0, tightOrUnknown: 0, latenessMax: 0, cost: 1027, addedMiles: 0,
-    co2Kg: 546.5, pending: 0, addedDriverDuty: 0, flaggedRoutes: 10,
+    late: 0, tightOrUnknown: 0, latenessMax: 0, cost: 817, addedMiles: 0,
+    co2Kg: 522.7, pending: 0, addedDriverDuty: 0, flaggedRoutes: 10,
   },
   disrupted_no_action: {
-    late: 3, tightOrUnknown: 1, latenessMax: 132, cost: 1204, addedMiles: 0,
-    co2Kg: 546.5, pending: 0, addedDriverDuty: 263, flaggedRoutes: 10,
+    late: 3, tightOrUnknown: 1, latenessMax: 132, cost: 976, addedMiles: 0,
+    co2Kg: 522.7, pending: 0, addedDriverDuty: 263, flaggedRoutes: 10,
   },
   disrupted_selected_responses: {
-    late: 2, tightOrUnknown: 0, latenessMax: 84, cost: 1182, addedMiles: 20,
-    co2Kg: 577.9, pending: 2, addedDriverDuty: 176, flaggedRoutes: 10,
+    late: 2, tightOrUnknown: 0, latenessMax: 84, cost: 951, addedMiles: 20,
+    co2Kg: 552.7, pending: 2, addedDriverDuty: 176, flaggedRoutes: 10,
   },
 }
 
@@ -46,7 +49,7 @@ describe('committed evaluation', () => {
     expect(pending.totals).toEqual({ ...unchanged.totals, pending: 2 })
     expect(pending.shipments.find((item) => item.shipment_id === 'S-01')).toMatchObject({
       pending: true, plan_kind: 'wait', route_id: 'R-A-ORIG',
-      metrics: { risk: 'LATE', lateness_max: 42, cost: 169, driver_duty_min: 132 },
+      metrics: { risk: 'LATE', lateness_max: 42, cost: 138, driver_duty_min: 132 },
     })
     expect(pending.shipments.map((item) => item.metrics)).toEqual(unchanged.shipments.map((item) => item.metrics))
   })
@@ -63,8 +66,8 @@ describe('committed evaluation', () => {
       decision('S-01', 'reroute', 'selected'),
     ], data, assumptions)).toMatchObject({
       totals: {
-        late: 0, tightOrUnknown: 0, latenessMax: 0, cost: 167, addedMiles: 15,
-        co2Kg: 94.2, pending: 0, addedDriverDuty: 14, flaggedRoutes: 1,
+        late: 0, tightOrUnknown: 0, latenessMax: 0, cost: 132, addedMiles: 15,
+        co2Kg: 90.1, pending: 0, addedDriverDuty: 14, flaggedRoutes: 1,
       },
       shipments: [{ plan_kind: 'reroute', route_id: 'R-A-ALT', pending: false, metrics: { risk: 'ON_TRACK' } }],
     })
@@ -77,7 +80,7 @@ describe('committed evaluation', () => {
     ], data, assumptions)
     expect(result.totals).toEqual({
       late: 0, tightOrUnknown: 1, latenessMax: null, cost: null, addedMiles: 0,
-      co2Kg: 70.7, pending: 1, addedDriverDuty: null, flaggedRoutes: 1,
+      co2Kg: 67.6, pending: 1, addedDriverDuty: null, flaggedRoutes: 1,
     })
     const mixed = evaluateAll(shipments, unknown, [], data, assumptions)
     expect(mixed.totals).toMatchObject({

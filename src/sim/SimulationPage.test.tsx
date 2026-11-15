@@ -25,7 +25,7 @@ const open = async (search = '') => {
   render(<SimulationPage />)
   return screen.findByTestId('arcgis-map')
 }
-const slider = () => screen.getByRole('slider', { name: 'Simulated time of day' })
+const slider = () => screen.getByRole('slider', { name: 'Time of day' })
 const rowFor = (id: string) => screen.getByRole('button', { name: id }).closest('tr')!
 const link = () => (screen.getByLabelText('Link to this setup') as HTMLInputElement).value
 

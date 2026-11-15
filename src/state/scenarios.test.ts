@@ -41,7 +41,7 @@ describe('scenario and reset totals', () => {
     expect(getTotals(normalState)).toEqual(getTotals({ ...initialState, scenario: 'normal' }))
     expect(getTotals(appReducer(normalState, {
       type: 'set_scenario', scenario: 'disrupted',
-    })).cost).toBe(1204)
+    })).cost).toBe(976)
   })
 
   it('resets decisions, preview, rejection, selection and scenario exactly to a fresh load', () => {
@@ -64,6 +64,6 @@ describe('scenario and reset totals', () => {
     })
     expect(cardsFor(reset)).toEqual(cardsFor(initialState))
     expect(getTotals(reset)).toEqual(getTotals(initialState))
-    expect(getTotals(reset).cost).toBe(1204)
+    expect(getTotals(reset).cost).toBe(976)
   })
 })

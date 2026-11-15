@@ -44,8 +44,7 @@ function TruckSummary({ time, plans, states, segmentName, timingCase }: TruckSum
         </ul>
       </details>
       <p className="pp-sim__note">
-        SIMULATED positions from the engine’s travel times, drawn at the {timingCase} end of each
-        range. Not live tracking.
+        Positions come from the engine’s travel times, drawn at the {timingCase} end of each range.
       </p>
     </>
   )
@@ -107,7 +106,7 @@ export function SimClock({
         max={end}
         step={1}
         value={Math.floor(clock.time)}
-        aria-label="Simulated time of day"
+        aria-label="Time of day"
         aria-valuetext={now}
         onChange={(event) => clock.seek(Number(event.target.value))}
       />

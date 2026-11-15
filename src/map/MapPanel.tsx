@@ -132,11 +132,10 @@ export function MapPanel({
     <div className="pp-map">
       <div className="pp-map__header">
         <h2 className="pp-map__title">Routes</h2>
-        <span className="pp-map__badge">Illustrative</span>
       </div>
       <p className="pp-map__note">
         Lines are schematic and routes are not verified for trucks.
-        {' '}Distances are simulated estimates.
+        {' '}Distances are estimates.
       </p>
 
       {mapFailed ? (
@@ -219,7 +218,7 @@ export function MapPanel({
             {community.tracts === 1 ? 'tract' : 'tracts'}.
           </p>
           <p className="pp-map__community-note">
-            Real locations beside an illustrative route: proximity, not measured exposure.
+            This is proximity, not measured exposure.
           </p>
           <ul className="pp-map__sources" aria-label="Sources of the real layers">
             {corridor.sources.map((source) => (
@@ -306,7 +305,7 @@ export function MapPanel({
                   })}
                 </ol>
               ) : (
-                <p className="pp-map__missing">Route not found in the sample data.</p>
+                <p className="pp-map__missing">Route not found.</p>
               )}
             </section>
           )

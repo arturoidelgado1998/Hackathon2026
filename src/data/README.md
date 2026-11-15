@@ -14,7 +14,7 @@ Do not edit the JSON files by hand. Change the feature service, then run:
 python3 scripts/import_map_data.py
 ```
 
-The script rebuilds the generated JSON files except the values in `assumptions.json`, pre-calculates the test-fixture responses, and compares its results with the service's own rows for all three scenarios. It exits with an error if anything disagrees. `python3 scripts/import_map_data.py --check` verifies without writing. It does not generate `demoIncident.ts`.
+The script rebuilds the generated JSON files except the values in `assumptions.json`, pre-calculates the test-fixture responses, and compares its timing, risk and miles with the service's own rows for all three scenarios (not cost or CO2: see Cost and CO2 inputs below). It exits with an error if anything disagrees. `python3 scripts/import_map_data.py --check` verifies without writing. It does not generate `demoIncident.ts`.
 
 Application code imports from `index.ts`, never from the JSON files directly.
 Its summary, baseline and response helpers calculate fresh engine estimates from
@@ -29,7 +29,7 @@ CLI reads raw JSON via `fs` and imports the pure engine, without a Vite loader.
 | `segments.json` | Nine road segments with geometry (GeoJSON LineString, lon/lat), miles and min/max minutes |
 | `routes.json` | One original and one alternative route per warehouse, as ordered segment ids, with stored totals |
 | `shipments.json` | Ten shipments: readiness, appointment window and assigned route |
-| `assumptions.json` | Cost, fuel economy and emission factor placeholders, each with a source |
+| `assumptions.json` | Cost, fuel economy and emission factor inputs, each with its published source; pickup handling time is still a placeholder |
 | `corridor.json` | The corridor analysis: REAL schools and disadvantaged tracts within 150 m of each ILLUSTRATIVE route, with sources and dates. Written by `scripts/corridor_analysis.py` |
 | `corridor-layers.json` | The places counted in `corridor.json` (school points, tract outlines), for the map only |
 | `sample-responses.json` | Generated regression test fixture only: summaries, baselines and options. Never imported by the app or evaluation exporter |
@@ -52,12 +52,33 @@ The same rules the engine implements in E1 to E3.
 - **Lateness** = max(0, max(arrival, appt_start) - appt_end), for the min and max arrival.
 - **Risk:** ON_TRACK when the max arrival meets the deadline; TIGHT when only the min does; LATE when neither does; UNKNOWN when information is missing.
 - **Driver duty** = departure to arrival in the max-arrival case, including waiting at the closure.
-- **Cost** = miles x $1.80 + duty hours x $40, rounded to whole dollars (max-arrival case).
-- **Tailpipe CO2** = miles / 6.5 mpg x 10.21 kg per gallon, rounded to one decimal.
+- **Cost** = miles x $1.31 + duty hours x $36.08, rounded to whole dollars (max-arrival case).
+- **Tailpipe CO2** = miles / 6.8 mpg x 10.21 kg per gallon, rounded to one decimal.
 - **Reroute** uses the destination's alternative route and is unavailable if that route also uses the closed segment.
 - **Request later slot** is pending: no metrics, and its risk stays the shipment's current risk.
 
-The team plan's reference table ($121 normal, $161 wait, $158 reroute) is the min-arrival case of shipment S-01. This data stores the max-arrival case, as the feature service does: $130, $169 and $167.
+The team plan's reference table ($121, $161, $158) and the feature service's rows ($130, $169, $167) were calculated with the earlier placeholder rates. With the sourced inputs, the reference shipment S-01 in the max-arrival case is $103 normal, $138 waiting at the closure and $132 rerouted, with 67.6 kg of tailpipe CO2 on the original route and 90.1 kg rerouted.
+
+## Cost and CO2 inputs
+
+The four inputs behind every cost and CO2 estimate are published figures. The values and their full citations are in `assumptions.json` and are shown in the app under **Assumptions & sources**.
+
+| Input | Value | Source |
+| --- | --- | --- |
+| Fuel economy | 6.8 mpg | San Pedro Bay Ports (Los Angeles and Long Beach), *2021 Update: Feasibility Assessment for Drayage Trucks*, February 2023, p. 71: average diesel fuel economy reported by port truck operators in the 2021 Clean Trucks Program survey |
+| Tailpipe CO2 per gallon of diesel | 10.21 kg | U.S. EPA, *Emission Factors for Greenhouse Gas Inventories* (GHG Emission Factors Hub, 2025 edition), last modified 15 January 2025, Table 2 Mobile Combustion CO2 |
+| Non-labor cost | $1.31 per mile | American Transportation Research Institute, *An Analysis of the Operational Costs of Trucking: 2026 Update* (2025 data), line items as reported by FleetOwner on 22 July 2026: $2.336 per mile in total, less driver wages ($0.818) and benefits ($0.210) |
+| Driver labor | $36.08 per hour | U.S. Bureau of Labor Statistics, Occupational Employment and Wage Statistics, May 2025: $59,710 annual mean wage for heavy and tractor-trailer truck drivers ($28.71 an hour over 2,080 hours), plus benefits at ATRI's ratio of $0.210 per $0.818 of wages |
+
+What these inputs do not capture:
+
+- **They are averages, not a carrier's own figures.** The cost and wage figures are national. ATRI reports the West region's fuel at $0.54 per mile against $0.482 nationally, so California fuel cost is understated.
+- **The fuel economy was reported by fleets, not measured.** It is one figure for every mile: speed, congestion, load, grade and idling do not change it.
+- **The non-labor cost per mile already includes fuel** at ATRI's national average. Fuel is not added again, and it is not recalculated from the fuel economy.
+- **CO2 is tailpipe CO2 only**, with waiting assumed engine-off. Upstream fuel emissions, methane and nitrous oxide are not included.
+- **Pickup handling time (30 minutes) is still a team placeholder.**
+
+The feature service's own cost and CO2 columns were calculated with the earlier placeholder rates ($1.80 per mile, $40 per hour, 6.5 mpg). `scripts/import_map_data.py` no longer compares those two columns with its results.
 
 ## Sample incident
 
@@ -109,13 +130,13 @@ Schools and tracts are counted once per route, within 150 m (real locations, ill
 
 | Shipment | To | Appointment | Departs | Normal | After the closure (wait) | Reroute | Category |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| S-01 (reference) | WH-A | 11:00-11:30 | 10:00 | 11:00 to 11:14 ON_TRACK | 12:00 to 12:12 LATE, 30 to 42 min late | 11:15 to 11:28 ON_TRACK, $167 | LATE; fixed by rerouting |
-| S-02 | WH-A | 13:00-14:00 | 10:15 | 11:15 to 11:29 ON_TRACK | 12:00 to 12:12 ON_TRACK | 11:30 to 11:43 ON_TRACK, $167 | Affected but ON_TRACK |
-| S-03 | WH-A | 11:00-11:34 | 10:20 | 11:20 to 11:34 ON_TRACK | 12:00 to 12:12 LATE, 26 to 38 min late | 11:35 to 11:48 LATE, $167 | LATE; no confirmed response fixes it |
-| S-04 | WH-B | 11:00-11:20 | 10:10 | 11:05 to 11:18 ON_TRACK | 11:55 to 12:06 LATE, 35 to 46 min late | 11:15 to 11:33 TIGHT, $136 | LATE; rerouting may still be late |
-| S-05 | WH-B | 13:30-14:30 | 10:40 | 11:35 to 11:48 ON_TRACK | 11:55 to 12:06 ON_TRACK | 11:45 to 12:03 ON_TRACK, $136 | Affected but ON_TRACK |
+| S-01 (reference) | WH-A | 11:00-11:30 | 10:00 | 11:00 to 11:14 ON_TRACK | 12:00 to 12:12 LATE, 30 to 42 min late | 11:15 to 11:28 ON_TRACK, $132 | LATE; fixed by rerouting |
+| S-02 | WH-A | 13:00-14:00 | 10:15 | 11:15 to 11:29 ON_TRACK | 12:00 to 12:12 ON_TRACK | 11:30 to 11:43 ON_TRACK, $132 | Affected but ON_TRACK |
+| S-03 | WH-A | 11:00-11:34 | 10:20 | 11:20 to 11:34 ON_TRACK | 12:00 to 12:12 LATE, 26 to 38 min late | 11:35 to 11:48 LATE, $132 | LATE; no confirmed response fixes it |
+| S-04 | WH-B | 11:00-11:20 | 10:10 | 11:05 to 11:18 ON_TRACK | 11:55 to 12:06 LATE, 35 to 46 min late | 11:15 to 11:33 TIGHT, $109 | LATE; rerouting may still be late |
+| S-05 | WH-B | 13:30-14:30 | 10:40 | 11:35 to 11:48 ON_TRACK | 11:55 to 12:06 ON_TRACK | 11:45 to 12:03 ON_TRACK, $109 | Affected but ON_TRACK |
 | S-06 | WH-A | 12:30-13:30 | 11:30 | 12:30 to 12:44 ON_TRACK | 12:30 to 12:44 ON_TRACK | none | Unaffected |
-| S-07 | WH-B | 11:30-12:00 | 10:00 | 10:55 to 11:08 ON_TRACK | 11:55 to 12:06 TIGHT, 0 to 6 min late | 11:05 to 11:23 ON_TRACK, $136 | TIGHT; fixed by rerouting |
+| S-07 | WH-B | 11:30-12:00 | 10:00 | 10:55 to 11:08 ON_TRACK | 11:55 to 12:06 TIGHT, 0 to 6 min late | 11:05 to 11:23 ON_TRACK, $109 | TIGHT; fixed by rerouting |
 | S-08 | WH-C | 09:30-10:30 | 09:00 | 09:28 to 09:35 ON_TRACK | 09:28 to 09:35 ON_TRACK | none | Unaffected |
 | S-09 | WH-C | 11:00-12:00 | 10:45 | 11:13 to 11:20 ON_TRACK | 11:13 to 11:20 ON_TRACK | none | Unaffected |
 | S-10 | WH-C | 13:00-14:00 | 12:30 | 12:58 to 13:05 ON_TRACK | 12:58 to 13:05 ON_TRACK | none | Unaffected |

@@ -65,7 +65,7 @@ export function IncidentBanner({ incident, segmentName, reopened = false }: Inci
         </strong>{' '}
         <span
           className="pp-num"
-          title="Simulated closure report; reopening is an estimate, not a guarantee"
+          title="Closure report; reopening is an estimate, not a guarantee"
         >
           from {incident.start_time}. {reopenText}
         </span>

@@ -25,7 +25,7 @@ function Harness() {
   )
 }
 
-const slider = () => screen.getByRole('slider', { name: 'Simulated time of day' })
+const slider = () => screen.getByRole('slider', { name: 'Time of day' })
 const counts = () => within(screen.getByRole('list', { name: /^Trucks at/ })).getAllByRole('listitem').map((li) => li.textContent)
 
 afterEach(() => vi.useRealTimers())

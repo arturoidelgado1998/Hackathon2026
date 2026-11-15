@@ -46,9 +46,12 @@ describe('reference shipment estimates', () => {
       result.lateness_min, result.lateness_max, result.risk, result.miles,
       result.cost, result.co2_kg, result.driver_duty_min, result.driver_duty_increase_min,
     ])).toEqual([
-      ['11:00', '11:14', 0, 0, 'ON_TRACK', 45, 130, 70.7, 74, 0],
-      ['12:00', '12:12', 30, 42, 'LATE', 45, 169, 70.7, 132, 58],
-      ['11:15', '11:28', 0, 0, 'ON_TRACK', 60, 167, 94.2, 88, 14],
+      // 45 mi x $1.31 + 74 min x $36.08/h = $103; 45 mi / 6.8 mpg x 10.21 kg = 67.6 kg
+      ['11:00', '11:14', 0, 0, 'ON_TRACK', 45, 103, 67.6, 74, 0],
+      // 45 mi x $1.31 + 132 min x $36.08/h = $138
+      ['12:00', '12:12', 30, 42, 'LATE', 45, 138, 67.6, 132, 58],
+      // 60 mi x $1.31 + 88 min x $36.08/h = $132; 60 mi / 6.8 mpg x 10.21 kg = 90.1 kg
+      ['11:15', '11:28', 0, 0, 'ON_TRACK', 60, 132, 90.1, 88, 14],
     ])
     for (const result of results) {
       expect(result.estimated).toBe(true)
@@ -118,7 +121,7 @@ describe('unknown timing and explicit normal comparisons', () => {
       service_start_min: null, service_start_max: null,
       lateness_min: null, lateness_max: null, risk: 'UNKNOWN',
       cost: null, driver_duty_min: null, driver_duty_increase_min: null,
-      normal_driver_duty_min: 74, miles: 45, co2_kg: 70.7,
+      normal_driver_duty_min: 74, miles: 45, co2_kg: 67.6,
     })
   })
 
@@ -132,7 +135,7 @@ describe('unknown timing and explicit normal comparisons', () => {
 
   it('retains known max-case metrics when only the earliest bound is unavailable', () => {
     expect(calculateMetrics({ ...base, timing: arrival(null, 674) })).toMatchObject({
-      lateness_min: null, lateness_max: 0, risk: 'UNKNOWN', driver_duty_min: 74, cost: 130,
+      lateness_min: null, lateness_max: 0, risk: 'UNKNOWN', driver_duty_min: 74, cost: 103,
     })
   })
 

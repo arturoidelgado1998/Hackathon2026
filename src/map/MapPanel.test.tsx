@@ -88,9 +88,9 @@ function routeList(name: RegExp) {
 }
 
 describe('MapPanel', () => {
-  it('shows the illustrative note, the legend and the empty state when nothing is highlighted', () => {
+  it('shows the route note, the legend and the empty state when nothing is highlighted', () => {
     renderPanel()
-    expect(screen.getByText('Illustrative')).toBeInTheDocument()
+    expect(screen.queryByText('Illustrative')).toBeNull()
     expect(screen.getByText(/not verified for trucks/)).toBeInTheDocument()
     expect(screen.getByText('Select a shipment to see its routes')).toBeInTheDocument()
     expect(screen.getByRole('list', { name: 'Map legend' })).toBeInTheDocument()
@@ -172,7 +172,7 @@ describe('MapPanel', () => {
     expect(routeList(heading)).toBeInTheDocument()
     expect(screen.queryByRole('list', { name: /Chosen route/ })).toBeNull()
     expect(screen.getByText('Est. 6.1 mi')).toBeInTheDocument()
-    expect(screen.getByText(/Distances are simulated estimates/)).toBeInTheDocument()
+    expect(screen.getByText(/Distances are estimates/)).toBeInTheDocument()
   })
 
   it('marks the closed segment with text', () => {
