@@ -127,7 +127,7 @@ This is the prefilled sample at `/?sample`.
   collapses empty groups, and clears preview and Undo state.
 - **Why?** opens and focuses the option's supplied explanation inputs. Use **Close**
   or Escape to return focus to its Why button. **Assumptions & sources**
-  lists placeholder values, citations, value-type labels and the twelve limitations from
+  lists the cost and CO2 inputs with their published sources, value-type labels and the twelve limitations from
   issue #9. Use **Expand panel** in the bottom bar to read the full, scrollable panel;
   collapse it or press Escape to return to the dashboard. On mobile the bar stays within
   reach at the bottom of the screen. Reset also closes the panel. The reusable limitations

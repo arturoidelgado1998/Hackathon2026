@@ -1210,6 +1210,30 @@
   ],
   "other_changes": [
     {
+      "id": "sourced-cost-co2-inputs",
+      "title": "Cost and CO2 inputs from published trucking sources",
+      "related_issues": [],
+      "branch": "engine/sourced-cost-co2",
+      "pull_request": null,
+      "commit": null,
+      "why": "The four inputs behind every cost and CO2 estimate were placeholders. The team plan asks for them to be confirmed or replaced and cited.",
+      "changes": [
+        "src/data/assumptions.json: the four cost and CO2 inputs are published figures with full citations. Fuel economy 6.5 to 6.8 mpg; non-labor cost $1.80 to $1.31 per mile; driver labor $40 to $36.08 per hour; diesel CO2 stays 10.21 kg per gallon and was checked against the EPA document itself. Pickup handling (30 min) is still a team placeholder.",
+        "Sources: San Pedro Bay Ports, 2021 Update: Feasibility Assessment for Drayage Trucks (February 2023), p. 71; ATRI, An Analysis of the Operational Costs of Trucking: 2026 Update (2025 data), line items as reported by FleetOwner on 22 July 2026; U.S. Bureau of Labor Statistics, OEWS May 2025; U.S. EPA, Emission Factors for Greenhouse Gas Inventories, last modified 15 January 2025, Table 2.",
+        "The engine's formulas are unchanged: cost = miles x non-labor cost per mile + duty hours x labor rate; tailpipe CO2 = miles / mpg x kg per gallon.",
+        "Every estimate changes. Reference shipment S-01, max-arrival case: normal $130 to $103, waiting at the closure $169 to $138, rerouted $167 to $132; CO2 70.7 to 67.6 kg on the original route and 94.2 to 90.1 kg rerouted. Day totals: normal $1,027 to $817, closure with no action $1,204 to $976, 546.5 to 522.7 kg.",
+        "Rerouting S-01 is still cheaper than waiting and still adds 15 miles and 22.5 kg of CO2, so the trade-off the dashboard shows is the same.",
+        "src/data/sample-responses.json regenerated with scripts/import_map_data.py from the service's original rows; docs/evaluation.csv and docs/evaluation.json regenerated with npm run evaluate.",
+        "scripts/import_map_data.py no longer compares cost and CO2 with the feature service, whose columns were calculated with the placeholder rates. It still compares arrival, lateness, risk and miles.",
+        "Assumptions panel, the cost row's description, limitation 10 and the data README no longer call these inputs placeholders. The data README has a Cost and CO2 inputs section listing each source and what the inputs do not capture."
+      ],
+      "verification": [
+        "Each shipment's normal, wait and reroute cost and CO2 were calculated independently with the Python implementation in scripts/import_map_data.py and agree with the engine; the same calculation reproduces the old figures ($1,027 and $1,204) with the old inputs.",
+        "Node 24/npm 11: all 469 unit and integration tests in 34 files pass after updating the 33 expectations that stated the old figures. npm run typecheck and npm run lint pass.",
+        "The EPA factor was read from the EPA PDF (Table 2: Diesel Fuel 10.21 kg CO2 per gallon). The 6.8 mpg figure was read from the ports' PDF, p. 71."
+      ]
+    },
+    {
       "id": "live-truck-simulation",
       "title": "Truck simulation page that drives the dashboard live",
       "related_issues": [],
@@ -1635,6 +1659,135 @@
     }
   ],
   "entries": [
+    {
+      "id": "2026-11-15-sourced-cost-co2-inputs",
+      "date": "2026-11-15",
+      "title": "Cost and CO2 estimates now use published trucking figures",
+      "summary": "Replaced the placeholder cost, labor and fuel-economy inputs with published figures and their citations, confirmed the EPA emission factor against the source document, and updated every test, stored response, evaluation export and document that stated the old numbers. The engine's formulas did not change. Dated in UTC like the entries below; the work was done on 2026-11-14 Pacific time.",
+      "branch": "engine/sourced-cost-co2",
+      "branch_created_from": "sim/live-dashboard at 6a7530d (pull request 45), so this branch also contains that work until it is merged",
+      "inputs": {
+        "mpg": {
+          "before": 6.5,
+          "after": 6.8
+        },
+        "nonlabor_cost_per_mile": {
+          "before": 1.8,
+          "after": 1.31
+        },
+        "labor_rate_per_hr": {
+          "before": 40,
+          "after": 36.08
+        },
+        "diesel_kgCO2_per_gal": {
+          "before": 10.21,
+          "after": 10.21
+        },
+        "pickup_handling_min": {
+          "before": 30,
+          "after": 30,
+          "note": "still a team placeholder"
+        }
+      },
+      "reference_values_changed": [
+        {
+          "shipment": "S-01",
+          "case": "normal",
+          "cost_before": 130,
+          "cost_after": 103,
+          "co2_kg_before": 70.7,
+          "co2_kg_after": 67.6
+        },
+        {
+          "shipment": "S-01",
+          "case": "wait",
+          "cost_before": 169,
+          "cost_after": 138,
+          "co2_kg_before": 70.7,
+          "co2_kg_after": 67.6
+        },
+        {
+          "shipment": "S-01",
+          "case": "reroute",
+          "cost_before": 167,
+          "cost_after": 132,
+          "co2_kg_before": 94.2,
+          "co2_kg_after": 90.1
+        },
+        {
+          "total": "normal day",
+          "cost_before": 1027,
+          "cost_after": 817,
+          "co2_kg_before": 546.5,
+          "co2_kg_after": 522.7
+        },
+        {
+          "total": "closure, no action",
+          "cost_before": 1204,
+          "cost_after": 976,
+          "co2_kg_before": 546.5,
+          "co2_kg_after": 522.7
+        },
+        {
+          "total": "closure, evaluation rule",
+          "cost_before": 1182,
+          "cost_after": 951,
+          "co2_kg_before": 577.9,
+          "co2_kg_after": 552.7
+        }
+      ],
+      "files": {
+        "added": [],
+        "modified": [
+          "README.md",
+          "docs/changelog.json",
+          "docs/evaluation.csv",
+          "docs/evaluation.json",
+          "scripts/import_map_data.py",
+          "src/App.test.tsx",
+          "src/components/assumptions/AssumptionsPanel.test.tsx",
+          "src/components/assumptions/AssumptionsPanel.tsx",
+          "src/components/responses/ResponsePanel.tsx",
+          "src/data/README.md",
+          "src/data/assumptions.json",
+          "src/data/data.test.ts",
+          "src/data/index.ts",
+          "src/data/limitations.ts",
+          "src/data/sample-responses.json",
+          "src/engine/evaluation.test.ts",
+          "src/engine/evaluationExport.test.ts",
+          "src/engine/metrics.test.ts",
+          "src/engine/responses.test.ts",
+          "src/state/engineIntegration.test.ts",
+          "src/state/scenarios.test.ts",
+          "src/state/totals.test.ts"
+        ],
+        "deleted": []
+      },
+      "changes": [
+        "src/data/assumptions.json: the four cost and CO2 inputs are published figures with full citations. Fuel economy 6.5 to 6.8 mpg; non-labor cost $1.80 to $1.31 per mile; driver labor $40 to $36.08 per hour; diesel CO2 stays 10.21 kg per gallon and was checked against the EPA document itself. Pickup handling (30 min) is still a team placeholder.",
+        "Sources: San Pedro Bay Ports, 2021 Update: Feasibility Assessment for Drayage Trucks (February 2023), p. 71; ATRI, An Analysis of the Operational Costs of Trucking: 2026 Update (2025 data), line items as reported by FleetOwner on 22 July 2026; U.S. Bureau of Labor Statistics, OEWS May 2025; U.S. EPA, Emission Factors for Greenhouse Gas Inventories, last modified 15 January 2025, Table 2.",
+        "The engine's formulas are unchanged: cost = miles x non-labor cost per mile + duty hours x labor rate; tailpipe CO2 = miles / mpg x kg per gallon.",
+        "Every estimate changes. Reference shipment S-01, max-arrival case: normal $130 to $103, waiting at the closure $169 to $138, rerouted $167 to $132; CO2 70.7 to 67.6 kg on the original route and 94.2 to 90.1 kg rerouted. Day totals: normal $1,027 to $817, closure with no action $1,204 to $976, 546.5 to 522.7 kg.",
+        "Rerouting S-01 is still cheaper than waiting and still adds 15 miles and 22.5 kg of CO2, so the trade-off the dashboard shows is the same.",
+        "src/data/sample-responses.json regenerated with scripts/import_map_data.py from the service's original rows; docs/evaluation.csv and docs/evaluation.json regenerated with npm run evaluate.",
+        "scripts/import_map_data.py no longer compares cost and CO2 with the feature service, whose columns were calculated with the placeholder rates. It still compares arrival, lateness, risk and miles.",
+        "Assumptions panel, the cost row's description, limitation 10 and the data README no longer call these inputs placeholders. The data README has a Cost and CO2 inputs section listing each source and what the inputs do not capture."
+      ],
+      "verification": [
+        "Each shipment's normal, wait and reroute cost and CO2 were calculated independently with the Python implementation in scripts/import_map_data.py and agree with the engine; the same calculation reproduces the old figures ($1,027 and $1,204) with the old inputs.",
+        "Node 24/npm 11: all 469 unit and integration tests in 34 files pass after updating the 33 expectations that stated the old figures. npm run typecheck and npm run lint pass.",
+        "The EPA factor was read from the EPA PDF (Table 2: Diesel Fuel 10.21 kg CO2 per gallon). The 6.8 mpg figure was read from the ports' PDF, p. 71."
+      ],
+      "limitations": [
+        "The ATRI line items were taken from FleetOwner's report of the study, not from the ATRI report itself, which is behind a request form.",
+        "Cost and wage figures are national averages for all trucking. ATRI reports West region fuel at $0.54 per mile against $0.482 nationally, so California fuel cost is understated.",
+        "The driver labor rate combines two sources: a BLS national mean wage and ATRI's ratio of benefits to wages. A Los Angeles metropolitan wage was not retrieved.",
+        "The 6.8 mpg figure was reported by port truck operators in a 2021 survey, not measured, and is one figure for every mile: speed, congestion, load, grade and idling do not change it.",
+        "The feature service's cost and CO2 columns still hold the placeholder-rate figures. The service was not edited.",
+        "Any slide, evaluation table or script that quotes $130, $169, $167, $1,027, $1,204 or 546.5 kg is now out of date."
+      ]
+    },
     {
       "id": "2026-11-15-live-truck-simulation",
       "date": "2026-11-15",
