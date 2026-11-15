@@ -88,6 +88,13 @@ and [Nicole Traboulsi](https://github.com/nmtraboulsi).
 
 To report a security problem, see [SECURITY.md](SECURITY.md).
 
+## Licence
+
+The code is under the [MIT licence](LICENSE). Two bundled design skills under
+`.github/skills/` keep their own licences, which sit beside them. The public
+datasets the map uses are listed, with their publishers, in
+[`src/data/README.md`](src/data/README.md).
+
 ---
 
 ## For developers
