@@ -1,0 +1,20 @@
+# Weekly dependency updates, as pull requests into staging like every other change.
+# Security fixes are raised as soon as GitHub knows of them, whatever the schedule.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    target-branch: staging
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      # One pull request for the routine bumps, so they are checked together.
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: staging
+    schedule:
+      interval: weekly

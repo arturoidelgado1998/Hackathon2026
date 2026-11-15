@@ -81,6 +81,13 @@ every input and where it comes from.
   small Node server for the AI, Python for the data scripts, and Vitest and
   Playwright for the tests.
 
+## Team
+
+Built by Aaron Cobian, [Arturo Delgado](https://github.com/arturoidelgado1998)
+and [Nicole Traboulsi](https://github.com/nmtraboulsi).
+
+To report a security problem, see [SECURITY.md](SECURITY.md).
+
 ---
 
 ## For developers
