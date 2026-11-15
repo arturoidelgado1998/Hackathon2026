@@ -2,6 +2,7 @@ import { useEffect, useMemo, useReducer, useRef } from 'react'
 import { AssumptionsPanel } from './components/assumptions/AssumptionsPanel.tsx'
 import { ScheduleBoard, TriageBoard } from './components/board/index.ts'
 import { ResponsePanel } from './components/responses/index.ts'
+import { SuggestionPanel } from './components/suggestion/SuggestionPanel.tsx'
 import { OPTION_ACTION_LABELS, OPTION_TITLES } from './components/responses/format.ts'
 import { AppShell } from './components/shell/AppShell.tsx'
 import { IncidentBanner } from './components/shell/IncidentBanner.tsx'
@@ -316,6 +317,11 @@ function App({ incidentInterpretationStatus = 'idle', live: liveMode = false }: 
                   </>
                 )
               }}
+            />
+            {/* Asked for, never shown unasked; it selects nothing and feeds no total. */}
+            <SuggestionPanel
+              key={`suggestion:${scenario}:${selectedShipmentId ?? 'none'}`}
+              view={responseView}
             />
           </>
         )

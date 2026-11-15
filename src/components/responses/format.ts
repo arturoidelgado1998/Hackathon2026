@@ -20,14 +20,14 @@ export const OPTION_ACTION_LABELS: Record<ResponseOptionKind, string> = {
 export const PENDING_STRIP_TEXT = 'n/a until a new slot is confirmed'
 export const NOT_MODELED_TEXT = 'noise, local air quality, driver pay/hours rules'
 
-export function formatArrival(option: ResponseOption): string {
+export function formatArrival(option: Pick<ResponseOption, 'arrival_min' | 'arrival_max'>): string {
   const { arrival_min: min, arrival_max: max } = option
   if (min === null && max === null) return NA
   if (min === null || max === null || min === max) return (min ?? max) as string
   return `${min} to ${max}`
 }
 
-export function formatAppointment(option: ResponseOption): string {
+export function formatAppointment(option: Pick<ResponseOption, 'lateness_min' | 'lateness_max'>): string {
   const { lateness_min: min, lateness_max: max } = option
   if (min === null || max === null) return 'Unknown'
   if (max === 0) return 'Meets window'

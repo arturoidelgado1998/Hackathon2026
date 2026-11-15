@@ -31,8 +31,8 @@
   "summary": {
     "counts": {
       "done": 5,
-      "ready_for_review": 8,
-      "not_started": 4,
+      "ready_for_review": 9,
+      "not_started": 3,
       "in_review": 4,
       "in_progress": 1
     },
@@ -91,7 +91,7 @@
       21
     ],
     "data_source": "ArcGIS feature service, imported by scripts/import_map_data.py",
-    "sanity_checks": "npm run sanity: 50 checks in sanity/, also run by the pipeline's sanity job",
+    "sanity_checks": "npm run sanity: 57 checks in sanity/, also run by the pipeline's sanity job",
     "delivery_checklist": [
       {
         "task": "Update main and create Nicole's branch",
@@ -793,23 +793,95 @@
       "code": "A1",
       "title": "Incident interpretation endpoint and validator",
       "phase": "Phase 3: AI incident",
-      "status": "not_started",
+      "status": "ready_for_review",
       "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
+      "assignee": "arturoidelgado1998",
+      "built_by": "Coordinator",
+      "branch": "ai/a1-incident-endpoint",
       "pull_request": null,
-      "commit": null,
+      "commit": {
+        "hash": "0c1b82c",
+        "date": "2026-11-14T15:37:39-08:00",
+        "message": "A1: Incident interpretation endpoint, with an AI suggestion on the comparison",
+        "files": {
+          "added": [
+            "docs/ai-tests.md",
+            "sanity/server.sanity.test.ts",
+            "server/ai-tests.ts",
+            "server/app.test.ts",
+            "server/app.ts",
+            "server/index.ts",
+            "server/interpret.test.ts",
+            "server/interpret.ts",
+            "server/model.ts",
+            "server/prompt.ts",
+            "server/suggest.test.ts",
+            "server/suggest.ts",
+            "server/test-reports.ts",
+            "src/components/suggestion/SuggestionInApp.test.tsx",
+            "src/components/suggestion/SuggestionPanel.test.tsx",
+            "src/components/suggestion/SuggestionPanel.tsx",
+            "src/components/suggestion/suggestion.css",
+            "src/incident/interpretation.test.ts",
+            "src/incident/interpretation.ts",
+            "src/suggestion/client.ts",
+            "src/suggestion/facts.ts",
+            "src/suggestion/suggestion.test.ts",
+            "src/suggestion/suggestion.ts"
+          ],
+          "modified": [
+            ".env.example",
+            ".github/workflows/advisory-checks.yml",
+            "README.md",
+            "docs/changelog.json",
+            "package.json",
+            "sanity/app.sanity.test.ts",
+            "sanity/build.sanity.test.ts",
+            "sanity/repo.sanity.test.ts",
+            "src/App.tsx",
+            "src/components/responses/format.ts",
+            "tsconfig.node.json",
+            "vite.config.ts"
+          ],
+          "deleted": []
+        }
+      },
       "depends_on": [
         "D1",
         "D2"
       ],
       "already_in_place": [],
-      "changes": [],
-      "verification": [],
-      "deviations_from_issue": [],
+      "changes": [
+        "server/: a small Node server with POST /incident/interpret and GET /health, run with npm run server. It listens on this machine only, and the dev server forwards /incident to it, so the browser never talks to the model",
+        "src/incident/interpretation.ts: the six-field answer format, the JSON schema given to the model (it lists the real segment ids), and the validator every model answer must pass",
+        "Provider: AI Squared's Bolt (bolt-instruct-v2) through an OpenAI-compatible endpoint, called with Node's built-in fetch. The model returns its reading through one function call, record_incident",
+        "The model is sent the report text, each segment's id and name, and the answer format. Nothing else",
+        "A model answer that fails any check is discarded whole and returned as an error with the reasons; there is no partial incident",
+        "server/ai-tests.ts (npm run ai:tests): asks the real model the five test reports and writes docs/ai-tests.md; --check prints without writing",
+        "A new pipeline job, Live AI check on the five test reports, runs them on GitHub with the LLM_API_KEY repository secret and puts the table on the run's summary page",
+        ".env.example and the README record the provider, the variables, the endpoint's answers and the network note"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test pass (244 tests with A1 alone, 49 new); npm run sanity passes (48 checks with A1 alone, 3 new)",
+        "Unit tests give the server canned model answers for all five test reports: each correct answer passes, and an invented segment, a quote that is not in the report, an extra field, a missing structured answer and broken JSON are each refused",
+        "The real server was started with node: with the AI off it answers 503 not_configured, and through a stand-in model on this machine a report is followed end to end",
+        "Tests confirm the key appears in the Authorization header only, and in no response, error or log line; the build check confirms no server-side name is in the browser bundle"
+      ],
+      "deviations_from_issue": [
+        "Acceptance criterion 1 is met with Claude, not with Bolt: docs/ai-tests.md records the real answers of Claude models to the five test reports, all as expected. Bolt, the provider the team named, is still unreachable from the venue network, so its answers are not recorded",
+        "The issue's Vite-only stack gained a dev proxy entry and two npm scripts; no dependency was added",
+        "Evidence is compared with line breaks and repeated spaces collapsed; otherwise it must match the report exactly",
+        "Beyond the issue's rules, the validator also rejects any field outside the six, a duration on a non-closure, a duration over 24 hours, and a closure with no segment that does not ask for clarification",
+        "One dependency was added after all: @anthropic-ai/sdk, for the Claude provider the owner asked for. The Bolt path still uses none"
+      ],
       "revisions": [],
-      "follow_ups": []
+      "follow_ups": [
+        "Record the real answers: run npm run ai:tests on a network that can reach the model, or read the Live AI check job's summary once the branch is pushed",
+        "Whether Bolt honours a forced function call is unverified. If the service refuses the request, the server asks once more without it; if the model answers in JSON text, that is accepted and checked the same way",
+        "The repository secret LLM_API_KEY and the variables LLM_BASE_URL, LLM_MODEL and LLM_PROVIDER were set on GitHub on 2026-11-14. Anyone with write access can read the secret through a workflow change; the key appears to be a shared event key",
+        "For the demo: on the venue network the AI call fails, so the manual-entry path in A2 (#16) will be what the dispatcher sees unless the laptop is on another network",
+        "The feature service now has more segments than src/data; when the importer is updated, the model's segment list follows automatically because it is read from segments.json"
+      ]
     },
     {
       "number": 16,
@@ -1672,9 +1744,119 @@
         "Undo reverses a local sample decision, not an external warehouse request. It is not a multi-step history.",
         "Historical route comparison remains on hold; no new dependencies, calculations or route rankings were introduced."
       ]
+    },
+    {
+      "id": "ai-suggestion",
+      "title": "AI suggestion on the response comparison",
+      "related_issues": [
+        15,
+        16
+      ],
+      "built_by": "Coordinator",
+      "branch": "ai/a1-incident-endpoint",
+      "pull_request": null,
+      "commit": {
+        "hash": "0c1b82c",
+        "date": "2026-11-14T15:37:39-08:00",
+        "message": "A1: Incident interpretation endpoint, with an AI suggestion on the comparison",
+        "files": {
+          "added": [
+            "docs/ai-tests.md",
+            "sanity/server.sanity.test.ts",
+            "server/ai-tests.ts",
+            "server/app.test.ts",
+            "server/app.ts",
+            "server/index.ts",
+            "server/interpret.test.ts",
+            "server/interpret.ts",
+            "server/model.ts",
+            "server/prompt.ts",
+            "server/suggest.test.ts",
+            "server/suggest.ts",
+            "server/test-reports.ts",
+            "src/components/suggestion/SuggestionInApp.test.tsx",
+            "src/components/suggestion/SuggestionPanel.test.tsx",
+            "src/components/suggestion/SuggestionPanel.tsx",
+            "src/components/suggestion/suggestion.css",
+            "src/incident/interpretation.test.ts",
+            "src/incident/interpretation.ts",
+            "src/suggestion/client.ts",
+            "src/suggestion/facts.ts",
+            "src/suggestion/suggestion.test.ts",
+            "src/suggestion/suggestion.ts"
+          ],
+          "modified": [
+            ".env.example",
+            ".github/workflows/advisory-checks.yml",
+            "README.md",
+            "docs/changelog.json",
+            "package.json",
+            "sanity/app.sanity.test.ts",
+            "sanity/build.sanity.test.ts",
+            "sanity/repo.sanity.test.ts",
+            "src/App.tsx",
+            "src/components/responses/format.ts",
+            "tsconfig.node.json",
+            "vite.config.ts"
+          ],
+          "deleted": []
+        }
+      },
+      "why": "The owner asked for the AI to take in the dashboard's simulated data and suggest an option, in place of pasting incident reports",
+      "changes": [
+        "src/suggestion/: the facts given to the AI, the comparison of options, the answer format and the checks",
+        "server/suggest.ts and POST /shipment/suggest",
+        "src/components/suggestion/SuggestionPanel.tsx, below the comparison table",
+        "npm run ai:tests also asks the real model for suggestions on S-01, S-07 and S-03",
+        "Changes tracker rule 4; see the dated entry 2026-11-14-ai-suggestion"
+      ]
     }
   ],
   "entries": [
+    {
+      "id": "2026-11-15-ai-and-live-dashboard-integration",
+      "date": "2026-11-15",
+      "title": "AI suggestion and clock-aware live dashboard, integrated",
+      "summary": "Brought the AI branch (pull request 44) and the clock-aware live dashboard (pull request 47) together on top of staging 312b47c, so the AI suggestion works on a live day. Fixed three visual flaws found while recording the demo.",
+      "branch": "ai/integration-live-dashboard",
+      "related_issues": [
+        15
+      ],
+      "source_staging_commit": "312b47c",
+      "conflicts_resolved": [
+        "docs/changelog.json: kept every entry from both branches, newest first. Nothing else conflicted."
+      ],
+      "integration_changes": [
+        "src/suggestion/facts.ts: the facts sent to the AI use isResponseOptionOpen, so on a live day a response the clock has closed is passed as unavailable and the AI cannot suggest it.",
+        "The suggestion panel is given the live view of the selected shipment, so its figures are the re-timed ones the comparison shows. A delivered load has no options and so no suggestion panel."
+      ],
+      "behaviour_changes": [
+        "The action row under the comparison reaches the bottom edge of its pane, so measures scrolling underneath no longer show through below the buttons.",
+        "A delivered card's badge wraps under the shipment id instead of being clipped.",
+        "The response panel heading for a delivered load shows DELIVERED ON TIME or DELIVERED LATE once, instead of ON TRACK plus a repeated sentence."
+      ],
+      "files": {
+        "added": [],
+        "modified": [
+          "docs/changelog.json",
+          "src/components/board/board.css",
+          "src/components/responses/ResponsePanel.tsx",
+          "src/components/responses/responses.css",
+          "src/sim/live.test.tsx",
+          "src/suggestion/facts.ts"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "On the integrated branch: npm run typecheck and lint pass; npm test passes (631 tests in 43 files); npm run sanity passes (57 of 57).",
+        "Run locally with the AI server on the Claude provider: on a live day at 10:01 the AI was asked about S-01 and leaned towards Reroute in about 2 seconds, with reasons and what it gives up printed from the dashboard's figures. The dashboard, simulation page and driver page loaded with no page errors.",
+        "Before making the repository public, every commit on every branch was scanned for keys: no key-shaped string and none of the real keys used on the development machine appear in the history."
+      ],
+      "not_verified": [
+        "Bolt has still not answered a request from the development machine (the venue network blocks its address); the pipeline's Live AI check is the only real Bolt run.",
+        "docs/ai-tests.md and docs/ai-model-comparison.md record runs made before the cost inputs changed."
+      ]
+    },
     {
       "id": "2026-11-15-clock-aware-dashboard",
       "date": "2026-11-15",
@@ -1753,6 +1935,80 @@
         "The simulation page's own outcome table still applies its wait-for-all or reroute-for-all setting from each ready time; it does not see the dashboard's choices.",
         "The AI suggestion panel (pull request 44) is not on this branch. When both are merged, the facts it sends must use isResponseOptionOpen so it cannot suggest a closed response.",
         "Not tested on a second physical device."
+      ]
+    },
+    {
+      "id": "2026-11-15-merge-staging-312b47c-into-a1",
+      "date": "2026-11-15",
+      "title": "Merged staging into the A1 branch a third time",
+      "summary": "Pull request #44 conflicted with staging again after pull requests 45 (live dashboard and simulation page) and 46 (published cost and CO2 inputs, fake-data labels removed from the screen) were merged. Merged staging 312b47c into ai/a1-incident-endpoint and kept both sides in every conflict.",
+      "branch": "ai/a1-incident-endpoint",
+      "related_issues": [
+        15
+      ],
+      "source_staging_commit": "312b47c",
+      "conflicts_resolved": [
+        "src/App.tsx: kept staging's schedule-only view and live wiring, and put the AI suggestion panel back under the response comparison.",
+        "vite.config.ts: kept staging's simulation relay plugin and this branch's proxy to the AI server, on both the dev and the preview server.",
+        "README.md: kept staging's description of server/ and this branch's line for src/incident/.",
+        "docs/changelog.json: kept every entry from both sides, newest first."
+      ],
+      "integration_changes": [
+        "Suggestion panel footnote: \"the dashboard's own simulated estimate\" now reads \"the dashboard's own estimate\", to follow the owner's decision on staging to drop fake-data labels from the screen. The prompt sent to the model still calls the figures simulated estimates.",
+        "SuggestionPanel.test.tsx: the CO2 figures it reads from the dashboard changed with staging's fuel-economy input (70.7 and 62.8 kg became 67.6 and 60.1 kg)."
+      ],
+      "files": {
+        "added": [],
+        "modified": [
+          "README.md",
+          "docs/changelog.json",
+          "src/App.tsx",
+          "src/components/suggestion/SuggestionPanel.test.tsx",
+          "src/components/suggestion/SuggestionPanel.tsx",
+          "vite.config.ts"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "After the merge: npm run typecheck and lint pass; npm test passes (573 tests in 42 files); npm run sanity passes (56 of 56)."
+      ],
+      "not_verified": [
+        "The AI suggestion panel has not been tried by hand on a live day. On the live dashboard it appears once a run has started and a shipment is selected.",
+        "docs/ai-tests.md and docs/ai-model-comparison.md record runs made before the cost inputs changed. The suggestions in them were given the old cost and CO2 figures; they were not rerun.",
+        "Bolt has still not answered a request from this machine; the pipeline's Live AI check is the first real run."
+      ]
+    },
+    {
+      "id": "2026-11-15-a1-live-check-fix-and-staging-merge",
+      "date": "2026-11-15",
+      "title": "Fixed the live AI check and merged staging into the A1 branch again",
+      "summary": "The first pipeline run of the Live AI check on pull request #44 failed before asking Bolt anything: the job installed no packages, and the server had started importing the Claude SDK. The SDK is now loaded only when Claude is the chosen provider, and the job installs dependencies. Staging's rebrand to RouteRipple and the truck simulation were merged in.",
+      "issues": [
+        15
+      ],
+      "related_issues": [],
+      "branch": "ai/a1-incident-endpoint",
+      "pull_request": null,
+      "merged_branches": {
+        "from": "staging",
+        "into": "ai/a1-incident-endpoint"
+      },
+      "conflicts": [
+        {
+          "file": "docs/changelog.json",
+          "resolution": "Took staging's record and added this branch's entries, A1's issue record and the ai-suggestion item; entries re-sorted newest first; counts recalculated"
+        }
+      ],
+      "decisions": [
+        "server/model.ts imports the Claude adapter only when LLM_PROVIDER is anthropic, so a Bolt-only setup starts with no installed package",
+        "The Live AI check job now runs npm ci --ignore-scripts before asking the model, so either provider works there"
+      ],
+      "verification": [
+        "npm run typecheck and lint pass; npm test passes (549 tests); npm run sanity passes (56 of 56, including the accessibility check that had been failing on the build machine)",
+        "With the Claude SDK hidden from node_modules, npm run ai:tests on the Bolt settings starts and reaches the point of asking the model, which is the step that crashed in the pipeline"
+      ],
+      "not_verified": [
+        "Bolt had still not answered a single request when this was written: the failed run stopped before any request was made"
       ]
     },
     {
@@ -2118,11 +2374,315 @@
       ]
     },
     {
+      "id": "2026-11-14-claude-provider",
+      "date": "2026-11-14",
+      "title": "Claude API as a second model provider, tested for real, with a model comparison",
+      "summary": "The server can now use the Claude API in place of Bolt, chosen by one setting. With a one-day key from the owner, four Claude models were asked the five test reports and three suggestions through the app's own server code. After three fixes to the instructions and one to a check, all four models passed everything in three consecutive runs. Claude Opus 5.5 is recommended and is the default.",
+      "issues": [
+        15
+      ],
+      "related_issues": [
+        16
+      ],
+      "branch": "ai/a1-incident-endpoint",
+      "pull_request": null,
+      "commits": [
+        {
+          "hash": "c82be67",
+          "date": "2026-11-14T16:31:17-08:00",
+          "message": "Add the Claude API as a second model provider, tested for real"
+        }
+      ],
+      "files": {
+        "added": [
+          "docs/ai-model-comparison.md",
+          "server/anthropic.test.ts",
+          "server/anthropic.ts"
+        ],
+        "modified": [
+          ".env.example",
+          "README.md",
+          "docs/ai-tests.md",
+          "docs/changelog.json",
+          "package-lock.json",
+          "package.json",
+          "sanity/build.sanity.test.ts",
+          "sanity/repo.sanity.test.ts",
+          "server/ai-tests.ts",
+          "server/interpret.ts",
+          "server/model.ts",
+          "server/prompt.ts",
+          "server/suggest.test.ts",
+          "server/suggest.ts",
+          "src/suggestion/client.ts",
+          "src/suggestion/suggestion.test.ts",
+          "src/suggestion/suggestion.ts"
+        ],
+        "deleted": []
+      },
+      "numbers_that_moved": [
+        "Tests: 499 to 512",
+        "Dependencies: one added, @anthropic-ai/sdk 1.8.0, used by the server only",
+        "First real run: 4 of 5 reports read correctly per model, and between 1 and 3 of 3 suggestions passing; final three runs: 5 of 5 and 3 of 3 for every model"
+      ],
+      "decisions": [
+        "LLM_PROVIDER=anthropic selects Claude; any other value keeps the OpenAI-compatible path used for Bolt. Claude has its own variables (ANTHROPIC_API_KEY, ANTHROPIC_MODEL), so both sets can sit in .env and the Bolt key is never sent to Claude",
+        "Claude is called through Anthropic's official SDK, with the answer shape enforced by structured outputs; the server's validator still checks every answer",
+        "The SDK is always given the address api.anthropic.com and the server's own key, so it cannot pick up an address or credential from the surrounding environment; a test confirms this",
+        "If Claude declines a request for a policy reason, the API retries on its default fallback model; the model that actually answered is recorded",
+        "The default model is claude-opus-5-5 and stays so until a real run; ANTHROPIC_MODEL changes it",
+        "The prompts no longer say how to deliver the answer; each provider adds that itself (a function call for Bolt, a JSON object for Claude)",
+        "A segment id written in a report settles which segment is meant; a general area such as 'near the port' names no segment. Both were added to the instructions after the first real run",
+        "The AI's sentence may use names the figures already use (a shipment or segment id) and the word CO2; any actual figure is still refused. The target length, 200 characters, is now stated to the model",
+        "Tokens are counted for refused answers too, so the cost comparison is not skewed",
+        "Recommended model: Claude Opus 5.5. It was as accurate as the others, and on the one close trade-off (S-07) it made no suggestion, as the instructions ask; Sonnet 5.5 and Haiku 5.5 suggested Reroute there"
+      ],
+      "verification": [
+        "npm run typecheck, lint and test pass (512 tests)",
+        "Real Claude API, through server/ai-tests.ts: three consecutive runs of 8 questions on each of 4 models, 96 answers, all passing; recorded in docs/ai-tests.md and docs/ai-model-comparison.md",
+        "Viewed in the browser with the real server and Claude Opus 5.5: S-01 showed Reroute with three confirmed reasons and three things it gives up; S-07 showed no suggestion with the AI's sentence; no option was pressed in either case",
+        "Structured outputs, the fallback setting and low effort were accepted by the API for all four models"
+      ],
+      "not_verified": [
+        "Bolt is still unreached, so A1's test record is from Claude, not from the provider the team named",
+        "Eight synthetic questions cannot rank the models finely, and no report written by a real dispatcher was tried",
+        "The fallback after a declined request never triggered, so that path is covered by unit tests only",
+        "Committed locally, not pushed"
+      ],
+      "known_gaps": [
+        "The pipeline's Live AI check still uses Bolt's secret and variables; running it on Claude needs an ANTHROPIC_API_KEY repository secret",
+        "The Claude key in the local .env was created to expire after one day"
+      ],
+      "outside_the_repo": [
+        "A Claude API key supplied by the owner was written to the ignored .env in this working copy; about 20 small API calls' worth of spend per full comparison run, seven runs in all (well under two dollars by the script's estimate)"
+      ]
+    },
+    {
+      "id": "2026-11-14-merge-staging-into-a1",
+      "date": "2026-11-14",
+      "title": "Merged staging into the A1 branch",
+      "summary": "Staging had gained the driver notices (N1 to N3) and Nicole's D9 and engine work (E1 to E4) since this branch was cut. The merge keeps everything from both sides: the AI endpoints and the suggestion panel now sit beside the driver notice desk and read options produced by the engine.",
+      "issues": [
+        15
+      ],
+      "related_issues": [
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "branch": "ai/a1-incident-endpoint",
+      "merged_branches": {
+        "from": "staging",
+        "into": "ai/a1-incident-endpoint"
+      },
+      "conflicts": [
+        {
+          "file": "src/App.tsx",
+          "resolution": "Took staging's layout and added the suggestion panel after the response panel, beside the driver notice desk"
+        },
+        {
+          "file": "vite.config.ts",
+          "resolution": "Took staging's driver notice relay and two-page build, and added the proxy to the AI server"
+        },
+        {
+          "file": "docs/changelog.json",
+          "resolution": "Took staging's record and added this branch's entries, A1's issue record and the ai-suggestion item; counts recalculated"
+        }
+      ],
+      "verification": [
+        "npm run typecheck and lint pass; npm test passes (499 tests)",
+        "npm run sanity: 53 of 54 checks pass on the build machine",
+        "The suggestion tests still pass with options now produced by the engine: the S-07 figures are unchanged"
+      ],
+      "not_verified": [
+        "One sanity check fails on the build machine: the keyboard and contrast check in sanity/accessibility.sanity.test.ts cannot determine the contrast of the Request slot button because it partly overlaps another element. It fails the same way on an untouched copy of staging (3a41597) on this machine and passes in the pipeline on Linux, so it comes from staging, not this branch. It was left as it is",
+        "Not pushed, so the pipeline has not run on the merged code"
+      ],
+      "known_gaps": [
+        "The AI suggestion takes its figures from the response view; it does not yet use the engine's decision deadlines or the predictive model"
+      ]
+    },
+    {
+      "id": "2026-11-14-ai-suggestion",
+      "date": "2026-11-14",
+      "title": "AI suggestion on the response comparison, and a change to rule 4",
+      "summary": "The dispatcher can now ask the AI which response it would lean towards for the selected shipment. The AI is given the figures the table already shows; it returns an option, the measures it rests on and one sentence. The dashboard checks the reasons, prints every figure itself and works out what the suggestion gives up. Nothing is selected and nothing on the board changes.",
+      "issues": [],
+      "related_issues": [
+        15,
+        16
+      ],
+      "branch": "ai/a1-incident-endpoint",
+      "pull_request": null,
+      "commits": [
+        {
+          "hash": "0c1b82c",
+          "message": "A1: Incident interpretation endpoint, with an AI suggestion on the comparison"
+        }
+      ],
+      "files": {
+        "added": [
+          "server/suggest.test.ts",
+          "server/suggest.ts",
+          "src/components/suggestion/SuggestionInApp.test.tsx",
+          "src/components/suggestion/SuggestionPanel.test.tsx",
+          "src/components/suggestion/SuggestionPanel.tsx",
+          "src/components/suggestion/suggestion.css",
+          "src/suggestion/client.ts",
+          "src/suggestion/facts.ts",
+          "src/suggestion/suggestion.test.ts",
+          "src/suggestion/suggestion.ts"
+        ],
+        "modified": [
+          ".github/workflows/advisory-checks.yml",
+          "README.md",
+          "docs/changelog.json",
+          "sanity/app.sanity.test.ts",
+          "sanity/build.sanity.test.ts",
+          "src/App.tsx",
+          "src/components/responses/format.ts",
+          "vite.config.ts"
+        ],
+        "deleted": []
+      },
+      "rule_change": {
+        "rule": "Tracker rule 4: No single \"best option\", ranking or ethics score anywhere",
+        "decided_by": "arturoidelgado1998, the repository owner, on 2026-11-14, after being told it conflicts with the rule",
+        "what_changed": "An AI suggestion can be requested per shipment. The comparison table still ranks and scores nothing, and the words best and recommended are still never shown",
+        "not_done": "The tracker issue (#1) text has not been edited, and the rest of the team has not been asked"
+      },
+      "numbers_that_moved": [
+        "Tests: 244 to 286",
+        "Sanity checks: 48 to 51"
+      ],
+      "decisions": [
+        "The suggestion is shown only when asked for, to limit the pull of an answer the dispatcher did not seek",
+        "The model returns no figures. It names measures; the dashboard prints the values from its own data, and a number in the model's sentence makes the whole answer invalid",
+        "A reason is accepted only if the suggested option really is better on that measure; what the suggestion gives up is computed from the figures and never shortened",
+        "A slot request can be suggested only when no other option is on track, and is always shown as pending",
+        "The browser checks the server's answer again against the facts it sent, so the panel shows nothing it cannot verify itself",
+        "What the AI is asked to weigh is one constant, WEIGHING, shown to the dispatcher word for word: the appointment first, then schools and disadvantaged communities passed, then duty time, cost, miles and emissions, and no suggestion when it is close",
+        "The suggestion's state lives in the panel, not in the reducer, so it cannot reach the decisions or the totals"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test pass (286 tests); npm run sanity passes (51 checks)",
+        "Unit tests on the real S-07 and S-03 figures: a true reason is accepted, a false one, a number in the sentence, an unavailable option and an extra field are each refused",
+        "A dashboard test and a browser check confirm that a suggestion presses no button, records nothing, and leaves the queue and the indicators unchanged",
+        "Viewed in the browser with a stand-in model on the local machine: the panel showed Reroute for S-07 with two confirmed reasons and four things it gives up, with no option pressed"
+      ],
+      "not_verified": [
+        "The real model has never been asked for a suggestion: the venue network blocks it. Whether Bolt returns answers that pass the checks, or how often they are refused, is unknown",
+        "Narrow and phone layouts were not checked with the new panel",
+        "Committed locally, not pushed"
+      ],
+      "known_gaps": [
+        "The predictive model (M1, GitHub issue 30, not yet in this change log) is not among the facts; it is not merged. Its crash and reopening figures can be added to the facts once it is",
+        "The weighing instruction is a value choice written by the builder, not agreed by the team",
+        "Limitation 4 in src/data/limitations.ts speaks only of AI interpretation; the fixed list of eleven was not changed, so the suggestion's own caveat is in the panel",
+        "The comparison's measures treat schools and tracts as two separate counts; no measure combines them"
+      ],
+      "outside_the_repo": [
+        "Nothing changed outside the repo for this feature"
+      ]
+    },
+    {
+      "id": "2026-11-14-a1-incident-endpoint",
+      "date": "2026-11-14",
+      "title": "Incident interpretation endpoint and validator (A1)",
+      "summary": "A server endpoint turns a pasted incident report into a checked, six-field reading using AI Squared's Bolt, or returns a clear error. The real model has not been asked yet because the venue network blocks its address; everything else is built and tested with the model replaced by canned answers.",
+      "issues": [
+        15
+      ],
+      "related_issues": [
+        16,
+        17
+      ],
+      "branch": "ai/a1-incident-endpoint",
+      "pull_request": null,
+      "commits": [
+        {
+          "hash": "0c1b82c",
+          "message": "A1: Incident interpretation endpoint, with an AI suggestion on the comparison"
+        }
+      ],
+      "files": {
+        "added": [
+          "docs/ai-tests.md",
+          "sanity/server.sanity.test.ts",
+          "server/ai-tests.ts",
+          "server/app.test.ts",
+          "server/app.ts",
+          "server/index.ts",
+          "server/interpret.test.ts",
+          "server/interpret.ts",
+          "server/model.ts",
+          "server/prompt.ts",
+          "server/test-reports.ts",
+          "src/incident/interpretation.test.ts",
+          "src/incident/interpretation.ts"
+        ],
+        "modified": [
+          ".env.example",
+          ".github/workflows/advisory-checks.yml",
+          "README.md",
+          "docs/changelog.json",
+          "package.json",
+          "sanity/app.sanity.test.ts",
+          "sanity/build.sanity.test.ts",
+          "sanity/repo.sanity.test.ts",
+          "tsconfig.node.json",
+          "vite.config.ts"
+        ],
+        "deleted": []
+      },
+      "numbers_that_moved": [
+        "Tests: 195 on staging to 244 with A1 alone",
+        "Sanity checks: 45 to 48 with A1 alone"
+      ],
+      "decisions": [
+        "Bolt speaks the OpenAI chat format, so the server uses fetch and no SDK, keeping to the rule against new libraries",
+        "The answer format lives in src/incident so the dashboard (A2) can reuse the same validator; the server-only code stays in server/, and a sanity check stops browser code importing it",
+        "The live model check is a separate pipeline job, so the ordinary tests and sanity checks never need a key and never fail because the model is down",
+        "The key is sent only over HTTPS, except to a server on the same machine, which the tests use",
+        "The predictive model (M1) is not used here. The AI never handles its numbers; A2's review step will look them up in code from the segment the AI names"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test pass (244 tests); npm run sanity passes (48 checks)",
+        "npm run server started the real server; on the venue network a request ended in a clean model_unreachable error in under 50 ms",
+        "npm run ai:tests -- --check reports that the model could not be asked and records nothing"
+      ],
+      "not_verified": [
+        "No request has reached the real model, so its readings of the five test reports, its handling of the prompt-injection report and its response time are all unknown",
+        "The Live AI check job has not run on GitHub: the branch is not pushed",
+        "Whether the pipeline's runners can reach the model's address"
+      ],
+      "known_gaps": [
+        "docs/ai-tests.md has expected results only",
+        "The endpoint has no sign-in; it listens on the local machine only",
+        "No rate limiting: a shared event key could be exhausted by repeated calls"
+      ],
+      "outside_the_repo": [
+        "GitHub: repository secret LLM_API_KEY and variables LLM_BASE_URL, LLM_MODEL and LLM_PROVIDER set at the owner's request",
+        "Local .env files written in the main checkout and in this working copy; both are ignored by git"
+      ]
+    },
+    {
       "id": "2026-11-14-merge-staging-into-nicole-engine",
       "date": "2026-11-14",
       "title": "Merged staging into Nicole's engine branch, preserving both changelogs",
       "summary": "Combined staging's G3-G5 corridor, map-overlay and truck-network work with Nicole's D9 and E1-E4 engine delivery. All seven existing dated entries from both branches are preserved unchanged, along with each branch's issue updates; summary counts and pending-review lists are combined.",
-      "issues": [10, 11, 12, 13, 14, 21, 22, 23],
+      "issues": [
+        10,
+        11,
+        12,
+        13,
+        14,
+        21,
+        22,
+        23
+      ],
       "branch": "nicole/d9-e1-e4-engine-integration",
       "previous_branch_commit": "ed28999",
       "source_staging_commit": "11b1774",
@@ -2154,7 +2714,13 @@
       "date": "2026-11-14",
       "title": "Implemented and validated D9 and E1-E4 on Nicole's branch",
       "summary": "Five issue-specific agents delivered accessible dashboard states, a deterministic timing/metrics/response engine, live engine-backed UI assessments, visible decision deadlines and urgency sorting, and reproducible evaluation exports. Work is verified locally on Nicole's feature branch and ready for review; no merge is included in this delivery.",
-      "issues": [10, 11, 12, 13, 14],
+      "issues": [
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
       "branch": "nicole/d9-e1-e4-engine-integration",
       "base_commit": "1522db7",
       "alignment_with_issues": {
@@ -2245,7 +2811,13 @@
       "date": "2026-11-14",
       "title": "Started D9 and engine implementation on Nicole's branch",
       "summary": "Fetched the current acceptance criteria for D9 and E1-E4 and assigned all five issues to nmtraboulsi. Separate D9 and E1 agents are implementing independent UI hardening and pure timing work concurrently. E2, E3 and E4 are queued in dependency order; E4 also waits for D9 to avoid shared UI and package-file conflicts.",
-      "issues": [10, 11, 12, 13, 14],
+      "issues": [
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
       "branch": "nicole/d9-e1-e4-engine-integration",
       "verification": [
         "Confirmed the branch starts at staging commit 1522db7 with no pre-existing tracked changes.",
