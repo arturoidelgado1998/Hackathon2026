@@ -52,6 +52,17 @@ describe('pipeline', () => {
     expect(workflows).toMatch(/python3 --version/)
   })
 
+  it('asks the real model only with the key from a repository secret, never one written in the file', () => {
+    expect(workflows).toMatch(/\bnpm run ai:tests -- --check\b/)
+    expect(workflows).toMatch(/LLM_API_KEY: \$\{\{ secrets\.LLM_API_KEY \}\}/)
+    // Every mention of the key is the secret reference, a comment or the skip message.
+    const assigned = [...workflows.matchAll(/LLM_API_KEY:\s*(\S.*)/g)].map((m) => m[1].trim())
+    expect(assigned).toEqual(['${{ secrets.LLM_API_KEY }}'])
+    expect(workflows).toMatch(/HAS_KEY: \$\{\{ secrets\.LLM_API_KEY != '' \}\}/)
+    // pull_request_target would hand the secret to code from a fork.
+    expect(workflows).not.toMatch(/pull_request_target/)
+  })
+
   it('picks up every sanity check: none is left out by its file name', () => {
     expect(pkg.scripts['test:sanity']).toContain('vitest.sanity.config.ts')
     expect(readText('vitest.sanity.config.ts')).toContain("include: ['sanity/**/*.sanity.test.ts']")
@@ -114,6 +125,7 @@ describe('secrets and generated files', () => {
       ['ArcGIS API key', /\bAAP[KT][0-9A-Za-z_-]{40,}/],
       ['Anthropic API key', /\bsk-ant-[0-9A-Za-z_-]{20,}/],
       ['OpenAI-style API key', /\bsk-(proj-)?[0-9A-Za-z]{32,}/],
+      ['AI Squared Bolt key', /\bsk-bolt-[0-9A-Za-z][0-9A-Za-z-]{5,}/],
       ['GitHub token', /\bgh[pousr]_[0-9A-Za-z]{30,}/],
       ['Google API key', /\bAIza[0-9A-Za-z_-]{35}\b/],
       ['private key', /-----BEGIN [A-Z ]*PRIVATE KEY-----/],
@@ -139,7 +151,11 @@ describe('secrets and generated files', () => {
       for (const [, name] of content.matchAll(/import\.meta\.env\.([A-Za-z_]\w*)/g)) {
         if (!name.startsWith('VITE_') && !builtIn.has(name)) problems.push(`${file}: import.meta.env.${name}`)
       }
-      if (/\bLLM_(API_KEY|PROVIDER)\b/.test(content)) problems.push(`${file}: names a server-side variable`)
+      if (/\b(LLM_(API_KEY|PROVIDER|BASE_URL|MODEL)|ANTHROPIC_(API_KEY|MODEL))\b/.test(content)) {
+        problems.push(`${file}: names a server-side variable`)
+      }
+      if (/@anthropic-ai\/sdk/.test(content)) problems.push(`${file}: imports the model SDK into browser code`)
+      if (/from\s+['"][^'"]*\/server\//.test(content)) problems.push(`${file}: imports from server/`)
       if (/\bprocess\.env\b/.test(content)) problems.push(`${file}: reads process.env`)
     }
     expect(problems).toEqual([])

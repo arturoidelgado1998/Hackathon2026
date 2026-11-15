@@ -22,7 +22,16 @@ export type AppAction =
   | { type: 'select_shipment'; shipmentId: string }
   | { type: 'preview'; shipmentId: string; optionKind: ResponseOptionKind; timestamp: string }
   | { type: 'cancel_preview' }
-  | { type: 'select_option'; shipmentId: string; optionKind: ResponseOptionKind; timestamp: string }
+  | {
+      type: 'select_option'
+      shipmentId: string
+      optionKind: ResponseOptionKind
+      timestamp: string
+      /** Simulated minutes since midnight on a live day; omitted on the prefilled sample. */
+      simTime?: number
+    }
+  /** The live clock was moved back: choices made after `time` have not happened yet. */
+  | { type: 'clock_rewound'; time: number }
   | { type: 'undo_decision' }
   | { type: 'reject_all'; shipmentId: string }
   | { type: 'toggle_empty_groups' }
@@ -63,6 +72,13 @@ function requireTimestamp(timestamp: string): void {
   }
 }
 
+function requireSimTime(time: number): number {
+  if (typeof time !== 'number' || !Number.isFinite(time) || time < 0 || time >= 24 * 60) {
+    throw new Error('Simulated time must be minutes since midnight on the demo day')
+  }
+  return time
+}
+
 /** Dispatcher workflow only. Estimates are supplied by the data module. */
 export function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
@@ -91,6 +107,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         option_kind: action.optionKind,
         status: action.optionKind === 'request_slot' ? 'pending_confirmation' : 'selected',
         timestamp: action.timestamp,
+        ...(action.simTime === undefined ? {} : { sim_time: requireSimTime(action.simTime) }),
       }
       return {
         ...state,
@@ -135,6 +152,26 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         rejectedShipmentIds: state.rejectedShipmentIds.includes(action.shipmentId)
           ? state.rejectedShipmentIds
           : [...state.rejectedShipmentIds, action.shipmentId],
+      }
+    }
+    case 'clock_rewound': {
+      requireSimTime(action.time)
+      const isLater = (decision: Decision | null) =>
+        decision?.sim_time !== undefined && decision.sim_time > action.time
+      const later = Object.values(state.decisions).filter(isLater)
+      if (later.length === 0) return state
+      const decisions = { ...state.decisions }
+      for (const decision of later) delete decisions[decision.shipment_id]
+      const change = state.lastDecisionChange
+      return {
+        ...state,
+        decisions,
+        previewDecision: null,
+        // An undo must not bring back a choice that has not happened yet either.
+        lastDecisionChange:
+          change && (later.some((d) => d.shipment_id === change.shipmentId) || isLater(change.previousDecision))
+            ? null
+            : change,
       }
     }
     case 'toggle_empty_groups':

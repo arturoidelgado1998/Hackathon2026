@@ -58,9 +58,16 @@ function simRelay(): Plugin {
   }
 }
 
+// The AI server (npm run server) holds the model key. The browser calls it
+// through this proxy, so it only ever talks to its own origin.
+const aiServer = { target: 'http://127.0.0.1:8787', changeOrigin: false }
+const aiProxy = { '/incident': aiServer, '/shipment': aiServer }
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), driverNoticeRelay(), simRelay()],
+  server: { proxy: aiProxy },
+  preview: { proxy: aiProxy },
   build: {
     // Three pages: the dashboard, the driver notice page (issue #34) and the simulation page.
     rolldownOptions: {

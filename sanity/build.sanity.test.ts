@@ -79,7 +79,7 @@ describe('production build', () => {
   it('has no server-side variable names in the browser bundle', () => {
     const leaks = assets
       .filter((f) => f.endsWith('.js'))
-      .filter((f) => /\bLLM_(API_KEY|PROVIDER)\b/.test(readText('dist', 'assets', f)))
+      .filter((f) => /\bLLM_(API_KEY|PROVIDER|BASE_URL|MODEL)\b|sk-bolt-|record_incident|suggest_response|ANTHROPIC_API_KEY|api\.anthropic\.com/.test(readText('dist', 'assets', f)))
     expect(leaks).toEqual([])
   })
 

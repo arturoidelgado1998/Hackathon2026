@@ -23,6 +23,8 @@ export interface DriverNoticePanelProps {
   phone?: RelayStatus
   /** The driver's answer to the notice that stands now (issue #36). */
   reply?: DriverReply | null
+  /** Why there is nothing to send, when it is not for want of a chosen response. */
+  nothingToSend?: string
 }
 
 /** What the driver said. It informs the dispatcher and changes nothing by itself. */
@@ -107,6 +109,7 @@ export function DriverNoticePanel({
   onSend,
   phone,
   reply,
+  nothingToSend,
 }: DriverNoticePanelProps) {
   const canSend = draft !== null && onSend !== undefined && !isCurrent
   return (
@@ -147,7 +150,8 @@ export function DriverNoticePanel({
         </details>
       ) : (
         <p className="driver-panel__note">
-          No response is chosen for this shipment, so there is nothing new to send.
+          {nothingToSend ??
+            'No response is chosen for this shipment, so there is nothing new to send.'}
         </p>
       )}
       {phone && <PhoneDelivery phone={phone} shipmentId={shipmentId} />}

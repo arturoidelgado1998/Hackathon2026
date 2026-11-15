@@ -21,6 +21,8 @@ export type BoardColumn =
   | 'needs_review'
   | 'awaiting_confirmation'
   | 'decision_recorded'
+  /** Live day only: the truck has reached the warehouse. */
+  | 'delivered'
 
 /** Listed in the order a dispatcher works them: what needs attention first. */
 export const BOARD_COLUMNS: { id: BoardColumn; title: string }[] = [
@@ -28,6 +30,12 @@ export const BOARD_COLUMNS: { id: BoardColumn; title: string }[] = [
   { id: 'awaiting_confirmation', title: 'Awaiting confirmation' },
   { id: 'decision_recorded', title: 'Decision recorded' },
   { id: 'monitoring', title: 'Monitoring' },
+]
+
+/** A live day adds the loads that have arrived, which need nothing more. */
+export const LIVE_BOARD_COLUMNS: { id: BoardColumn; title: string }[] = [
+  ...BOARD_COLUMNS,
+  { id: 'delivered', title: 'Delivered' },
 ]
 
 /** One shipment's current status in one scenario. All values are estimates. */
@@ -69,6 +77,13 @@ export interface ShipmentCardView {
   rejectionNote?: string
   /** Where the truck is right now, when positions are arriving. */
   liveNote?: string
+  /** Set once the truck has reached the warehouse (live day only). */
+  delivered_at?: TimeHHMM
+  /**
+   * Deadline lines as they stand at the current clock time. When present they
+   * replace the two planned-day deadline lines.
+   */
+  liveDeadlines?: string[]
 }
 
 /** Sensitive-zone facts for the route an option would use. Null until G3. */
@@ -107,4 +122,6 @@ export interface ResponsePanelView {
   community: Partial<Record<ResponseOptionKind, CommunityInfo>>
   /** Truck network record per option kind; absent when the check is switched off. */
   truckNetwork?: Partial<Record<ResponseOptionKind, TruckNetworkInfo>>
+  /** Shown in place of the comparison when nothing is left to decide (delivered). */
+  closedNote?: string
 }

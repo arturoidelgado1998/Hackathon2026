@@ -298,6 +298,66 @@ describe('built app in a browser', () => {
     expect(pageErrors).toEqual([])
   })
 
+  it('shows an AI suggestion only when asked, and selects nothing when it arrives', async () => {
+    await openApp()
+    let asked = 0
+    await page.route('**/shipment/suggest', (route) => {
+      asked += 1
+      return route.fulfill({
+        json: {
+          suggestion: {
+            suggested_option: 'reroute',
+            because: [{ measure: 'risk', against: 'wait' }],
+            gives_up: [],
+            pending: false,
+            note: 'Rerouting keeps the appointment, at a cost to the people along the alternative route.',
+          },
+        },
+      })
+    })
+    await card(referenceId).click()
+    const options = region('Response options')
+    const panel = options.getByRole('region', { name: 'AI suggestion', exact: true })
+    await panel.getByText('Suggestion only. You decide.').waitFor()
+    expect(asked).toBe(0)
+    const totals = await text(region('Indicators'))
+    const needsReview = await text(page.getByTestId('count-needs_review'))
+
+    await panel.getByRole('button', { name: 'Ask the AI for a suggestion', exact: true }).click()
+    await panel.getByText('The AI leans towards').waitFor()
+    expect(asked).toBe(1)
+
+    // The figures are the dashboard's, and the downsides are listed although the reply gave none.
+    const shown = await text(panel)
+    const { original, alternative } = routesOf(referenceId)
+    expect(shown).toContain('What it gives up')
+    expect(shown).toContain(`Schools within 150 m: ${alternative.schools_150m}, against ${original.schools_150m} for Wait`)
+    expect(shown).toContain('the AI supplied none of them')
+
+    // Nothing is selected, previewed or counted because of the suggestion.
+    expect(await options.locator('button[aria-pressed="true"]').count()).toBe(0)
+    expect(await text(options)).not.toContain(`recorded for ${referenceId}`)
+    expect(await text(region('Indicators'))).toBe(totals)
+    expect(await text(page.getByTestId('count-needs_review'))).toBe(needsReview)
+    // The comparison still ranks nothing, and neither does the suggestion.
+    expect(await text(options)).not.toMatch(/\b(best|recommended)\b/i)
+    expect(pageErrors).toEqual([])
+  })
+
+  it('carries on without a suggestion when the AI cannot be asked', async () => {
+    await openApp()
+    await page.route('**/shipment/suggest', (route) => route.abort())
+    await card(referenceId).click()
+    const panel = region('Response options').getByRole('region', { name: 'AI suggestion', exact: true })
+    await panel.getByRole('button', { name: 'Ask the AI for a suggestion', exact: true }).click()
+    await panel.getByText('No AI suggestion:').waitFor()
+    expect(await text(panel)).toContain('Compare the options in the table yourself.')
+    // The dispatcher can still choose.
+    await page.getByRole('button', { name: 'Preview Reroute', exact: true }).click()
+    await region('Response options').getByText('Preview only: Reroute.').waitFor()
+    expect(pageErrors).toEqual([])
+  })
+
   it('loads the real map chunk, and starts the map where the browser can', async () => {
     await openApp({ realMap: true })
     await scenarioButton('Disrupted').click()
@@ -388,5 +448,71 @@ describe('built app in a browser', () => {
     // Either way the layers and their data loaded, and the panel shows the counts.
     expect(failedLoads).toEqual([])
     expect(await text(region('Community near the route'))).toContain(corridorLine(alternative))
+  })
+})
+
+// The live dashboard, driven the way a demo drives it: the simulation page in
+// one tab is the feed, the dashboard in another follows it. Both run from the
+// built bundle and share one browser profile, so they talk over the same
+// channel a presenter's two tabs do.
+describe('a live day in a browser', () => {
+  it('closes responses as the day moves on, and ends with every load delivered', async () => {
+    const context = await browser.newContext({ viewport: { width: 1366, height: 768 } })
+    const errors: string[] = []
+    try {
+      const dashboard = await context.newPage()
+      const simulation = await context.newPage()
+      for (const tab of [dashboard, simulation]) {
+        tab.setDefaultTimeout(10_000)
+        tab.on('pageerror', (error) => errors.push(error.message))
+        await tab.route('**/assets/ArcgisMap-*.js', (route) => route.abort())
+      }
+      const shipmentCard = (id: string) => dashboard.locator(`[data-shipment-id="${id}"]`)
+      const groupOf = (id: string) =>
+        shipmentCard(id).evaluate((element) => element.closest('[data-column]')?.getAttribute('data-column'))
+      const action = (name: string) => dashboard.getByRole('button', { name, exact: true })
+
+      await dashboard.goto(`${origin}/`)
+      await dashboard.getByText('Waiting for live updates.').waitFor()
+      await simulation.goto(`${origin}/simulation.html`)
+      await simulation.getByRole('button', { name: 'Start simulation' }).click()
+      await simulation.getByRole('button', { name: 'Pause', exact: true }).click()
+      const slider = simulation.getByRole('slider', { name: 'Time of day' })
+      const seek = (minutes: number) => slider.fill(String(minutes))
+
+      // 10:45: the closure has been reported and the reference shipment can still be rerouted.
+      await seek(10 * 60 + 45)
+      await dashboard.getByText(/Closure on NB-03/).waitFor()
+      await shipmentCard(referenceId).click()
+      await expect.poll(() => action('Use reroute').isEnabled()).toBe(true)
+      expect(await groupOf(referenceId)).toBe('needs_review')
+
+      // 11:15: the road has reopened and the truck is on it. Nothing is left to reroute around.
+      await seek(11 * 60 + 15)
+      await dashboard.getByText(/reopened/).first().waitFor()
+      await expect.poll(() => action('Use reroute').isDisabled()).toBe(true)
+      expect(await action('Use reroute').getAttribute('title')).toMatch(/no closure left to avoid/)
+      expect(await action('Choose wait').isDisabled()).toBe(true)
+      expect(await action('Request slot').isEnabled()).toBe(true)
+
+      // The end of the day: every load is delivered, and the page asks for nothing.
+      await seek(Number(await slider.getAttribute('max')))
+      await expect.poll(() => dashboard.getByTestId('count-delivered').textContent()).toBe(String(shipmentIds.length))
+      expect(await dashboard.getByTestId('count-needs_review').textContent()).toBe('0')
+      expect(await groupOf(referenceId)).toBe('delivered')
+      await dashboard.getByText(`Nothing is left to decide for ${referenceId}.`, { exact: false }).waitFor()
+      for (const name of ['Use reroute', 'Choose wait', 'Request slot']) {
+        expect(await action(name).count(), name).toBe(0)
+      }
+      expect(await dashboard.getByRole('button', { name: /^Reject all options/ }).count()).toBe(0)
+
+      // Moving the clock back brings the choice back: nothing was lost for good.
+      await seek(10 * 60 + 45)
+      await expect.poll(() => groupOf(referenceId)).toBe('needs_review')
+      await expect.poll(() => action('Use reroute').isEnabled()).toBe(true)
+      expect(errors).toEqual([])
+    } finally {
+      await context.close()
+    }
   })
 })

@@ -29,6 +29,11 @@ export interface TruckLeg {
   enter: number | null
   /** Leaves the segment. Null: reopening unknown. */
   exit: number | null
+  /**
+   * Set when the truck stood at the start of this segment because another
+   * segment at the same junction was closed, and then turned onto this one.
+   */
+  waited_for?: string
 }
 
 export interface TruckPlan {
@@ -135,6 +140,116 @@ export function planTruck(
   }
 }
 
+/** A truck's trip after it switches to another route part-way through the day. */
+export interface RouteSwitch {
+  plan: TruckPlan
+  /** Segments of the old trip the truck had already entered; all are on the new route too. */
+  kept: number
+  /** When the truck starts the rest of the new route. */
+  from: number
+  /** The engine's arrival range for the new route from where the truck is. */
+  arrival_min: number
+  arrival_max: number
+}
+
+/**
+ * The trip a truck makes if it is told at clock time `at` to take `route`
+ * instead of the trip in `base`. Null when it no longer can: it has arrived,
+ * or it has entered a segment the new route does not start with.
+ *
+ * A truck standing still (held at the port, or queued at a closed segment)
+ * starts the new route on the next whole minute. A truck moving on a segment
+ * both routes share carries on and turns off at its end. Every time comes
+ * from the engine's routeTiming; the new route is timed without the closure,
+ * so the caller must only pass a route that avoids it.
+ */
+export function switchRoute(
+  base: TruckPlan,
+  assigned: Pick<Route, 'segment_ids'>,
+  route: Route,
+  segments: readonly RoadSegment[],
+  at: number,
+  timingCase: TimingCase = 'slow',
+): RouteSwitch | null {
+  const slow = timingCase === 'slow'
+  const left = base.leaves !== null && at >= base.leaves
+  const entered = left ? base.legs.filter((leg) => leg.enter !== null && at >= leg.enter).length : 0
+  if (left && base.arrival !== null && at >= base.arrival) return null
+  let shared = 0
+  while (
+    shared < route.segment_ids.length &&
+    assigned.segment_ids[shared] === route.segment_ids[shared]
+  ) shared += 1
+  if (entered > shared || entered >= route.segment_ids.length) return null
+
+  const kept = base.legs.slice(0, entered).map((leg) => ({ ...leg }))
+  const lastExit = entered === 0 ? base.departure : kept[entered - 1].exit!
+  const from = Math.max(Math.ceil(at), lastExit)
+  const rest = routeTiming({ segment_ids: route.segment_ids.slice(entered) }, segments, from, null)
+  // A truck still moving on a shared segment has not waited anywhere, so the
+  // engine's range for the whole new route from when it left is the honest one.
+  const moving = entered > 0 && lastExit > at
+  const range = moving ? routeTiming(route, segments, base.leaves!, null) : rest
+  const queuedAt = entered < base.legs.length ? base.legs[entered] : undefined
+  const legs: TruckLeg[] = [
+    ...kept,
+    ...rest.segments.map((segment, index) => {
+      const enter = (slow ? segment.entry_max : segment.entry_min)!
+      const leg: TruckLeg = {
+        segment_id: segment.segment_id,
+        // Only a truck already on the road can have stood at the turn-off.
+        arrive:
+          index > 0
+            ? (slow ? segment.arrival_max : segment.arrival_min)!
+            : entered === 0 ? enter : Math.min(lastExit, enter),
+        enter,
+        exit: (slow ? segment.exit_max : segment.exit_min)!,
+      }
+      // It stood at the junction for the closed segment before turning off.
+      if (index === 0 && entered > 0 && leg.arrive < enter && queuedAt) {
+        leg.waited_for = queuedAt.segment_id
+      }
+      return leg
+    }),
+  ]
+  const held = entered === 0 && from > base.departure
+  return {
+    kept: entered,
+    from,
+    arrival_min: range.arrival_min!,
+    arrival_max: range.arrival_max!,
+    plan: {
+      shipment_id: base.shipment_id,
+      route_id: route.id,
+      rerouted: true,
+      departure: base.departure,
+      leaves: entered === 0 ? from : base.leaves,
+      held_for: held ? base.held_for : null,
+      first_segment_id: route.segment_ids[0],
+      arrival: (slow ? rest.arrival_max : rest.arrival_min)!,
+      legs,
+    },
+  }
+}
+
+/**
+ * True when two trips have had the truck do the same things up to `time`:
+ * leave the port, and enter the same segments at the same minutes. Swapping
+ * one trip for the other then does not move the truck. A truck that starts a
+ * segment at exactly `time` has not moved yet.
+ */
+export function sameProgress(a: TruckPlan, b: TruckPlan, time: number): boolean {
+  const done = (plan: TruckPlan) =>
+    plan.leaves === null || plan.leaves >= time
+      ? ''
+      : plan.legs
+          .filter((leg) => leg.enter !== null && leg.enter < time)
+          .map((leg) => `${leg.segment_id}@${leg.enter}`)
+          .join(' ')
+  const arrived = (plan: TruckPlan) => plan.arrival !== null && plan.arrival <= time
+  return done(a) === done(b) && arrived(a) === arrived(b)
+}
+
 /** Distance between two lon/lat points in km (flat-earth, fine at city scale). */
 function km(a: LonLat, b: LonLat): number {
   const lat = ((a[1] + b[1]) / 2) * (Math.PI / 180)
@@ -201,7 +316,7 @@ export function truckStateAt(
       return {
         ...base,
         status: 'waiting',
-        segment_id: leg.segment_id,
+        segment_id: leg.waited_for ?? leg.segment_id,
         fraction: 0,
         wait_until: leg.enter,
         position: pointAlong(coordinates, 0),

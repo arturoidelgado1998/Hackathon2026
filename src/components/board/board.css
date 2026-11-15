@@ -141,13 +141,16 @@
 
 .shipment-card__top {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--pp-space-2);
+  gap: var(--pp-space-1) var(--pp-space-2);
 }
 
+/* The id never breaks; a badge too long for the row wraps under it instead. */
 .shipment-card__id {
   font-weight: 650;
   font-size: var(--pp-text-md);
+  white-space: nowrap;
 }
 
 .shipment-card__top .risk-badge {
@@ -250,4 +253,9 @@
 /* A schedule entry is not a control. */
 .shipment-card--schedule {
   cursor: default;
+}
+
+/* A delivered load: finished, so it reads quieter than the open ones. */
+.shipment-card--delivered {
+  border-style: dashed;
 }
