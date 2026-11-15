@@ -2,7 +2,7 @@
 // relay on the app's own server (other devices) and a BroadcastChannel (other
 // tabs in this browser, even when the relay is not there).
 
-import { isSimBroadcast, SIM_CHANNEL, SIM_RELAY_PATH, type SimBroadcast } from './live.ts'
+import { isSimBroadcast, SIM_CHANNEL, SIM_RELAY_PATH, takesControl, type SimBroadcast } from './live.ts'
 
 function openChannel(): BroadcastChannel | null {
   try {
@@ -41,11 +41,14 @@ export function publishSim(state: SimBroadcast): void {
 /** Calls back with each new state. Returns a function that stops listening. */
 export function subscribeSim(onState: (state: SimBroadcast) => void): () => void {
   const latest = new Map<string, number>()
+  let controller: string | null = null
   const accept = (value: unknown) => {
     if (!isSimBroadcast(value)) return
+    if (!takesControl(value, controller)) return
     // The same message can arrive by both paths; an older one must never win.
     if ((latest.get(value.sender) ?? -Infinity) >= value.seq) return
     latest.set(value.sender, value.seq)
+    controller = value.sender
     onState(value)
   }
 

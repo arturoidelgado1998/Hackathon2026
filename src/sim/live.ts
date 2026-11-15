@@ -16,10 +16,15 @@ export interface SimBroadcast {
   started: boolean
   /** Simulated minutes per real second. */
   speed: number
+  /**
+   * True for the once-a-second repeat a running page sends. Only a change made
+   * by a person (false) can take the dashboards over from another page.
+   */
+  beat: boolean
 }
 
 export const SIM_RELAY_PATH = '/api/sim-state'
-export const SIM_CHANNEL = 'portplan-sim'
+export const SIM_CHANNEL = 'routeripple-sim'
 
 export function isSimBroadcast(value: unknown): value is SimBroadcast {
   if (typeof value !== 'object' || value === null) return false
@@ -32,6 +37,17 @@ export function isSimBroadcast(value: unknown): value is SimBroadcast {
     typeof b.time === 'number' && b.time >= 0 && b.time < 24 * 60 &&
     typeof b.running === 'boolean' &&
     typeof b.started === 'boolean' &&
-    typeof b.speed === 'number' && b.speed > 0 && b.speed <= 60
+    typeof b.speed === 'number' && b.speed > 0 && b.speed <= 60 &&
+    typeof b.beat === 'boolean'
   )
+}
+
+/**
+ * Whether the dashboards should follow this message, given the page they
+ * follow now. A change made by a person on any page takes control. Another
+ * page's once-a-second repeats never do, so two running pages cannot make a
+ * dashboard jump between them.
+ */
+export function takesControl(state: SimBroadcast, controller: string | null): boolean {
+  return controller === null || state.sender === controller || !state.beat
 }

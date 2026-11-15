@@ -82,25 +82,37 @@ export function SimulationPage() {
   const origin = local && lanUrl ? lanUrl : window.location.origin
   const link = `${origin}${window.location.pathname}?${query}`
 
-  // Broadcast the setup and the clock so every open dashboard follows this page:
-  // at once on any change, and once a second while the clock runs.
+  // Broadcast the setup and the clock so the dashboards follow this page: at
+  // once when something is changed here, and once a second while the clock runs.
+  // Opening the page sends nothing, so a teammate who only opens the link does
+  // not disturb a run someone else is driving.
   const canRun = run.error === null
   // The run has begun once the clock has moved off the start of the day.
   const started = clock.running || Math.floor(clock.time) > range.start
-  const latest = useRef<Omit<SimBroadcast, 'seq'> | null>(null)
+  const latest = useRef<Omit<SimBroadcast, 'seq' | 'beat'> | null>(null)
   useEffect(() => {
     latest.current = canRun
       ? { v: 1, sender: SENDER, query, time: clock.time, running: clock.running, started, speed: clock.speed }
       : null
   })
-  const publish = () => {
-    if (latest.current) publishSim({ ...latest.current, seq: ++sequence })
+  const publish = (beat: boolean) => {
+    if (latest.current) publishSim({ ...latest.current, beat, seq: ++sequence })
   }
   const pausedAt = clock.running ? 'running' : String(Math.floor(clock.time))
-  useEffect(publish, [query, canRun, clock.running, pausedAt])
+  const sentKey = useRef<string | null>(null)
+  useEffect(() => {
+    const key = `${query}|${canRun}|${clock.running}|${pausedAt}`
+    if (sentKey.current === null) {
+      sentKey.current = key
+      return
+    }
+    if (sentKey.current === key) return
+    sentKey.current = key
+    publish(false)
+  }, [query, canRun, clock.running, pausedAt])
   useEffect(() => {
     if (!clock.running) return
-    const id = setInterval(publish, 1000)
+    const id = setInterval(() => publish(true), 1000)
     return () => clearInterval(id)
   }, [clock.running])
 

@@ -16,6 +16,7 @@ const state: SimBroadcast = {
   running: true,
   started: true,
   speed: 5,
+  beat: false,
 }
 
 let relay: SimRelayHandler
@@ -79,6 +80,24 @@ describe('simulation relay', () => {
     await readUntil('"seq":2')
     expect(text).toContain('"time":646')
     await reader.cancel()
+  })
+
+  it('follows one page at a time: a change takes control, another page’s repeats do not', async () => {
+    const current = async () =>
+      ((await (await fetch(`${base}${SIM_RELAY_PATH}`)).json()) as { state: SimBroadcast }).state
+    await put({ ...state, sender: 'page-1', seq: 1, time: 600 })
+    // A second page that is also running keeps repeating its own clock.
+    expect((await put({ ...state, sender: 'page-2', seq: 1, time: 700, beat: true })).status).toBe(204)
+    expect(await current()).toMatchObject({ sender: 'page-1', time: 600 })
+    // The page being followed keeps the clock moving with its repeats.
+    await put({ ...state, sender: 'page-1', seq: 2, time: 605, beat: true })
+    expect(await current()).toMatchObject({ sender: 'page-1', time: 605 })
+    // Someone changes something on the second page: it takes control.
+    await put({ ...state, sender: 'page-2', seq: 2, time: 710, beat: false })
+    expect(await current()).toMatchObject({ sender: 'page-2', time: 710 })
+    // And now the first page's repeats are the ones ignored.
+    await put({ ...state, sender: 'page-1', seq: 3, time: 610, beat: true })
+    expect(await current()).toMatchObject({ sender: 'page-2', time: 710 })
   })
 
   it('passes other requests on', async () => {

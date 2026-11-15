@@ -1,5 +1,7 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { axe } from 'vitest-axe'
+import { SIM_CHANNEL, type SimBroadcast } from './live.ts'
 import { SimulationPage } from './SimulationPage.tsx'
 
 // A stand-in for the ArcGIS map that reports what it was asked to draw.
@@ -98,5 +100,41 @@ describe('SimulationPage', () => {
     const map = await open()
     fireEvent.click(screen.getByRole('button', { name: 'S-04' }))
     expect(JSON.parse(map.getAttribute('data-routes')!)).toEqual({ original: 'R-B-ORIG' })
+  })
+  it('sends nothing when it is opened, and takes the dashboards over only when something is changed', async () => {
+    const heard: SimBroadcast[] = []
+    const dashboard = new BroadcastChannel(SIM_CHANNEL)
+    dashboard.onmessage = (event) => heard.push(event.data as SimBroadcast)
+    try {
+      await open()
+      await new Promise((resolve) => setTimeout(resolve, 40))
+      // A teammate who only opens the link does not disturb a run in progress.
+      expect(heard).toEqual([])
+      fireEvent.click(screen.getByRole('button', { name: 'Start simulation' }))
+      await waitFor(() => expect(heard.length).toBeGreaterThan(0))
+      expect(heard[0]).toMatchObject({ running: true, started: true, beat: false })
+      expect(heard[0].query).toContain('segment=NB-03')
+    } finally {
+      dashboard.close()
+    }
+  })
+
+  it('has no serious or critical axe violations, with and without a runnable setup', async () => {
+    const serious = async (container: HTMLElement) => {
+      const results = await axe(container, {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+        // jsdom has no layout engine. Contrast is checked separately in a real browser.
+        rules: { 'color-contrast': { enabled: false } },
+      })
+      return results.violations
+        .filter(({ impact }) => impact === 'serious' || impact === 'critical')
+        .map(({ id, nodes }) => ({ id, targets: nodes.map(({ target }) => target) }))
+    }
+    await open('?response=reroute')
+    fireEvent.change(slider(), { target: { value: '645' } })
+    fireEvent.click(screen.getByRole('button', { name: 'S-01' }))
+    expect(await serious(document.body)).toEqual([])
+    fireEvent.change(screen.getByLabelText('Reopens at'), { target: { value: '09:00' } })
+    expect(await serious(document.body)).toEqual([])
   })
 })

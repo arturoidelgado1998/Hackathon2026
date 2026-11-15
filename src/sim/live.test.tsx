@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { axe } from 'vitest-axe'
 import App from '../App.tsx'
 import { getActiveIncident, sampleIncident, setActiveIncident } from '../data/index.ts'
 import { isSimBroadcast, SIM_CHANNEL, type SimBroadcast } from './live.ts'
@@ -20,6 +21,7 @@ async function broadcast(settings: Partial<SimSettings>, clock: Partial<SimBroad
     running: false,
     started: true,
     speed: 5,
+    beat: false,
     ...clock,
   }
   await act(async () => {
@@ -54,9 +56,9 @@ afterEach(() => setActiveIncident(null))
 
 describe('isSimBroadcast', () => {
   it('accepts a well-formed state and refuses anything else', () => {
-    const good = { v: 1, sender: 'a', seq: 1, query: 'closure=1', time: 600, running: true, started: true, speed: 5 }
+    const good = { v: 1, sender: 'a', seq: 1, query: 'closure=1', time: 600, running: true, started: true, speed: 5, beat: false }
     expect(isSimBroadcast(good)).toBe(true)
-    for (const bad of [null, 'x', { ...good, v: 2 }, { ...good, time: 1440 }, { ...good, sender: '' }, { ...good, speed: 0 }, { ...good, running: 'yes' }, { ...good, started: undefined }]) {
+    for (const bad of [null, 'x', { ...good, v: 2 }, { ...good, time: 1440 }, { ...good, sender: '' }, { ...good, speed: 0 }, { ...good, running: 'yes' }, { ...good, started: undefined }, { ...good, beat: undefined }]) {
       expect(isSimBroadcast(bad)).toBe(false)
     }
   })
@@ -188,6 +190,20 @@ describe('the live dashboard', () => {
     clean()
   })
 
+  it('follows one page at a time: another running page cannot pull the dashboard away', async () => {
+    render(<App live />)
+    await broadcast({}, { time: 645, running: true })
+    fireEvent.click(card('S-01'))
+    fireEvent.click(screen.getByRole('button', { name: 'Use reroute' }))
+    // A second page, also running at another time of day, keeps repeating its clock.
+    await broadcast({ closure: false }, { sender: 'second-page', time: 560, running: true, beat: true })
+    expect(screen.getByText(/Closure on NB-03/)).toBeInTheDocument()
+    expect(screen.getByTestId('count-decision_recorded')).toHaveTextContent('1')
+    // Someone changes something on that second page: now it is followed.
+    await broadcast({ closure: false }, { sender: 'second-page', time: 560, running: true, beat: false })
+    expect(screen.getByText('No active incident.')).toBeInTheDocument()
+  })
+
   it('ignores an older update that arrives late', async () => {
     render(<App live />)
     await broadcast({ closure: false }, { time: 700 })
@@ -196,5 +212,40 @@ describe('the live dashboard', () => {
     await broadcast({ closure: false }, { time: 500 })
     seq += 2
     expect(await trucks()).toBe(before)
+  })
+})
+
+describe('accessibility of the live dashboard', () => {
+  const serious = async (container: HTMLElement) => {
+    const results = await axe(container, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+      // jsdom has no layout engine. Contrast is checked separately in a real browser.
+      rules: { 'color-contrast': { enabled: false } },
+    })
+    return results.violations
+      .filter(({ impact }) => impact === 'serious' || impact === 'critical')
+      .map(({ id, nodes }) => ({ id, targets: nodes.map(({ target }) => target) }))
+  }
+
+  it('has no serious or critical axe violations while only the schedule is shown', async () => {
+    const { container } = render(<App live />)
+    await map()
+    expect(await serious(container)).toEqual([])
+  })
+
+  it('has no serious or critical axe violations during a run with a closure and a choice made', async () => {
+    const { container } = render(<App live />)
+    await broadcast({}, { time: 645 })
+    fireEvent.click(card('S-01'))
+    fireEvent.click(screen.getByRole('button', { name: 'Use reroute' }))
+    await map()
+    expect(await serious(container)).toEqual([])
+  })
+
+  it('has no serious or critical axe violations after the road has reopened', async () => {
+    const { container } = render(<App live />)
+    await broadcast({}, { time: 700 })
+    await map()
+    expect(await serious(container)).toEqual([])
   })
 })

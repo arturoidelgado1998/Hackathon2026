@@ -9,7 +9,7 @@
 
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { AddressInfo } from 'node:net'
-import { isSimBroadcast, SIM_RELAY_PATH, type SimBroadcast } from '../src/sim/live.ts'
+import { isSimBroadcast, SIM_RELAY_PATH, takesControl, type SimBroadcast } from '../src/sim/live.ts'
 import { lanUrls } from './driverNotices.ts'
 
 export const SIM_MAX_BODY_BYTES = 2 * 1024
@@ -45,6 +45,8 @@ function readBody(req: IncomingMessage): Promise<string | null> {
 
 export function createSimRelay(options: SimRelayOptions = {}): SimRelayHandler {
   let state: SimBroadcast | null = null
+  /** The simulation page the dashboards follow. */
+  let controller: string | null = null
   const streams = new Set<ServerResponse>()
   const send = (res: ServerResponse, event: string) =>
     res.write(`event: ${event}\ndata: ${JSON.stringify({ state })}\n\n`)
@@ -67,8 +69,12 @@ export function createSimRelay(options: SimRelayOptions = {}): SimRelayHandler {
       return sendJson(res, 400, { error: 'Body is not valid JSON.' })
     }
     if (!isSimBroadcast(body)) return sendJson(res, 400, { error: 'Body is not a simulation state.' })
-    state = body
-    streams.forEach((stream) => send(stream, 'state'))
+    // Heard, but not followed: another running page's repeats do not take over.
+    if (takesControl(body, controller)) {
+      controller = body.sender
+      state = body
+      streams.forEach((stream) => send(stream, 'state'))
+    }
     res.writeHead(204, { 'Cache-Control': 'no-store' })
     res.end()
   }
