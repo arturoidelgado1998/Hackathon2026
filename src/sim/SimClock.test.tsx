@@ -42,9 +42,10 @@ describe('SimClock', () => {
     render(<Harness />)
     fireEvent.change(slider(), { target: { value: String(parseTime('10:45')) } })
     expect(slider()).toHaveAttribute('aria-valuetext', '10:45')
-    // S-06 and S-10 have not left; S-05 and S-09 are on the first segment; S-08 has arrived.
-    expect(counts()).toEqual(['2 at the port', '2 on the road', '5 waiting at a closure', '1 arrived'])
-    expect(screen.getByText(/Waiting at I-710 northbound to SR-60 east \(shared corridor\) until 11:10/, {
+    // Six trucks are held at the port for the closure; S-06 and S-10 are not due yet;
+    // S-09 is on its way to WH-C; S-08 has arrived.
+    expect(counts()).toEqual(['8 at the port', '1 on the road', '0 waiting at a closure', '1 arrived'])
+    expect(screen.getByText(/Held at the port until 10:58: NB-03 is closed/, {
       selector: 'li:first-child',
     })).toBeInTheDocument()
   })
@@ -69,6 +70,10 @@ describe('SimClock', () => {
     act(() => void vi.advanceTimersByTime(3000))
     expect(screen.getByRole('button', { name: 'Play' })).toBeInTheDocument()
     expect(counts()[3]).toBe('10 arrived')
+    // Moving the slider back after the end stays paused.
+    fireEvent.change(slider(), { target: { value: String(range.start + 60) } })
+    act(() => void vi.advanceTimersByTime(3000))
+    expect(slider()).toHaveAttribute('aria-valuetext', '09:45')
     fireEvent.click(screen.getByRole('button', { name: 'Restart' }))
     expect(slider()).toHaveAttribute('aria-valuetext', '08:45')
   })

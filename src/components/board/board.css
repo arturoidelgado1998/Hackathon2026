@@ -239,3 +239,15 @@
     text-underline-offset: 0.2em;
   }
 }
+
+/* Where the truck is right now. */
+.shipment-card__live {
+  font-size: var(--pp-text-xs);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* A schedule entry is not a control. */
+.shipment-card--schedule {
+  cursor: default;
+}

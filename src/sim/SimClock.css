@@ -1,4 +1,4 @@
-/* Truck simulation clock, under the map. */
+/* The simulation page's clock. */
 
 .pp-sim {
   display: grid;
@@ -86,12 +86,4 @@
 .pp-sim__note {
   color: var(--pp-text-muted);
   font-size: var(--pp-text-xs);
-}
-
-.pp-sim__more {
-  font-size: var(--pp-text-xs);
-}
-
-.pp-sim__more a {
-  color: var(--pp-accent);
 }

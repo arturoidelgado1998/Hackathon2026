@@ -319,7 +319,7 @@
   list-style: none;
 }
 
-/* Simulated trucks in the legend: shape as well as colour. */
+/* Trucks in the legend: shape as well as colour. */
 .pp-map__legend-truck {
   flex: none;
   stroke: var(--pp-surface);

@@ -13,7 +13,7 @@ import type {
 import type { Baseline, Scenario, ShipmentSummary } from '../viewModels'
 import { assessShipment } from '../engine/responses.ts'
 import type { EngineResponseOption, ShipmentAssessment } from '../engine/responses.ts'
-import { sampleIncident } from './demoIncident.ts'
+import { getActiveIncident, sampleIncident, setActiveIncident } from './demoIncident.ts'
 import assumptionsJson from './assumptions.json'
 import corridorJson from './corridor.json'
 import facilitiesJson from './facilities.json'
@@ -22,7 +22,7 @@ import segmentsJson from './segments.json'
 import shipmentsJson from './shipments.json'
 
 export type { Baseline, Scenario, ShipmentSummary }
-export { sampleIncident }
+export { getActiveIncident, sampleIncident, setActiveIncident }
 
 /** One real public layer used by the corridor analysis. */
 export interface CorridorSource {
@@ -106,7 +106,7 @@ export function getShipmentAssessment(shipmentId: string, scenario: Scenario): S
   const shipment = getShipment(shipmentId)
   if (!shipment) throw new Error(`Unknown shipment: ${shipmentId}`)
   return assessShipment(
-    shipment, scenario === 'disrupted' ? sampleIncident : null, { routes, segments }, assumptions,
+    shipment, scenario === 'disrupted' ? getActiveIncident() : null, { routes, segments }, assumptions,
   )
 }
 

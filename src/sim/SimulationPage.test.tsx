@@ -1,5 +1,7 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { axe } from 'vitest-axe'
+import { SIM_CHANNEL, type SimBroadcast } from './live.ts'
 import { SimulationPage } from './SimulationPage.tsx'
 
 // A stand-in for the ArcGIS map that reports what it was asked to draw.
@@ -36,7 +38,12 @@ describe('SimulationPage', () => {
     const title = screen.getByRole('heading', { level: 1, name: 'RouteRipple simulation' })
     expect(title.querySelector('img')).toHaveAttribute('alt', '')
     expect(screen.getByRole('heading', { name: 'NB-03 closed 10:00 to 11:10' })).toBeInTheDocument()
+    // The road is drawn closed only between its closing and reopening times.
+    expect(map).toHaveAttribute('data-incident', '')
+    fireEvent.change(slider(), { target: { value: '630' } })
     expect(map).toHaveAttribute('data-incident', 'NB-03')
+    fireEvent.change(slider(), { target: { value: '680' } })
+    expect(map).toHaveAttribute('data-incident', '')
     expect(map).toHaveAttribute('data-trucks', '10')
     expect(screen.getAllByRole('row')).toHaveLength(11)
     expect(within(rowFor('S-01')).getByText('30 to 42 min late')).toBeInTheDocument()
@@ -59,6 +66,7 @@ describe('SimulationPage', () => {
     expect(within(rowFor('S-01')).getByText('Rerouted')).toBeInTheDocument()
     expect(within(rowFor('S-01')).getByText('11:15 to 11:28')).toBeInTheDocument()
     fireEvent.change(screen.getByLabelText('Closed segment'), { target: { value: 'WEST-405' } })
+    fireEvent.change(slider(), { target: { value: '630' } })
     expect(map).toHaveAttribute('data-incident', 'WEST-405')
     expect(link()).toContain('segment=WEST-405')
     expect(link()).toContain('response=reroute')
@@ -68,6 +76,7 @@ describe('SimulationPage', () => {
   it('a teammate’s link restores the same setup', async () => {
     const map = await open('?closure=1&segment=EB-405&start=09%3A30&reopen=10%3A15&response=wait&case=fast&speed=15')
     expect(screen.getByRole('heading', { name: 'EB-405 closed 09:30 to 10:15' })).toBeInTheDocument()
+    fireEvent.change(slider(), { target: { value: '585' } })
     expect(map).toHaveAttribute('data-incident', 'EB-405')
     expect(screen.getByLabelText('Draw trucks at')).toHaveValue('fast')
     expect(screen.getByRole('combobox', { name: 'Speed' })).toHaveValue('15')
@@ -91,5 +100,41 @@ describe('SimulationPage', () => {
     const map = await open()
     fireEvent.click(screen.getByRole('button', { name: 'S-04' }))
     expect(JSON.parse(map.getAttribute('data-routes')!)).toEqual({ original: 'R-B-ORIG' })
+  })
+  it('sends nothing when it is opened, and takes the dashboards over only when something is changed', async () => {
+    const heard: SimBroadcast[] = []
+    const dashboard = new BroadcastChannel(SIM_CHANNEL)
+    dashboard.onmessage = (event) => heard.push(event.data as SimBroadcast)
+    try {
+      await open()
+      await new Promise((resolve) => setTimeout(resolve, 40))
+      // A teammate who only opens the link does not disturb a run in progress.
+      expect(heard).toEqual([])
+      fireEvent.click(screen.getByRole('button', { name: 'Start simulation' }))
+      await waitFor(() => expect(heard.length).toBeGreaterThan(0))
+      expect(heard[0]).toMatchObject({ running: true, started: true, beat: false })
+      expect(heard[0].query).toContain('segment=NB-03')
+    } finally {
+      dashboard.close()
+    }
+  })
+
+  it('has no serious or critical axe violations, with and without a runnable setup', async () => {
+    const serious = async (container: HTMLElement) => {
+      const results = await axe(container, {
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+        // jsdom has no layout engine. Contrast is checked separately in a real browser.
+        rules: { 'color-contrast': { enabled: false } },
+      })
+      return results.violations
+        .filter(({ impact }) => impact === 'serious' || impact === 'critical')
+        .map(({ id, nodes }) => ({ id, targets: nodes.map(({ target }) => target) }))
+    }
+    await open('?response=reroute')
+    fireEvent.change(slider(), { target: { value: '645' } })
+    fireEvent.click(screen.getByRole('button', { name: 'S-01' }))
+    expect(await serious(document.body)).toEqual([])
+    fireEvent.change(screen.getByLabelText('Reopens at'), { target: { value: '09:00' } })
+    expect(await serious(document.body)).toEqual([])
   })
 })

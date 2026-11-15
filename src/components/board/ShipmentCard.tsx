@@ -61,6 +61,7 @@ export function ShipmentCard({ card, selected = false, onSelectShipment }: Shipm
           </span>
         </span>
       </span>
+      {card.liveNote && <span className="shipment-card__live">{card.liveNote}</span>}
       <span className="shipment-card__reason">{summary.reason}</span>
       {summary.affected && card.incidentSegmentId && card.reopen_needed_by && (
         <span className="shipment-card__deadline">

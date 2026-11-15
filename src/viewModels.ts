@@ -67,6 +67,8 @@ export interface ShipmentCardView {
   /** Committed choice only; previews never change the queue. */
   decision?: Decision
   rejectionNote?: string
+  /** Where the truck is right now, when positions are arriving. */
+  liveNote?: string
 }
 
 /** Sensitive-zone facts for the route an option would use. Null until G3. */

@@ -24,10 +24,10 @@ export interface MapPanelProps {
   /** AI match awaiting confirmation. */
   candidateSegmentId: string | null
   onSegmentClick?: (segmentId: string) => void
-  /** Simulated truck positions at the clock time. */
+  /** Truck positions to draw; omitted when none are known. */
   trucks?: TruckState[]
-  /** The simulation clock controls, shown under the map. */
-  simClock?: ReactNode
+  /** Shown under the map, e.g. the live updates log. */
+  footer?: ReactNode
 }
 
 type Highlight = keyof MapPanelProps['highlightedRouteIds']
@@ -76,7 +76,7 @@ function LegendMark({ kind }: { kind: 'school' | 'tract' | 'corridor' }) {
   )
 }
 
-/** Legend symbols for simulated trucks: a triangle is moving, a square is held. */
+/** Legend symbols for trucks: a triangle is moving, a square is held. */
 function TruckMark({ kind }: { kind: 'moving' | 'waiting' }) {
   return (
     <svg className={`pp-map__legend-truck pp-map__legend-truck--${kind}`} width="16" height="14" aria-hidden="true">
@@ -97,7 +97,7 @@ export function MapPanel({
   candidateSegmentId,
   onSegmentClick,
   trucks,
-  simClock,
+  footer,
 }: MapPanelProps) {
   const idPrefix = useId()
   const [mapFailed, setMapFailed] = useState(false)
@@ -207,7 +207,7 @@ export function MapPanel({
         </>
       )}
 
-      {simClock}
+      {footer}
 
       {community && (
         <section className="pp-map__community" aria-label="Community near the route">
