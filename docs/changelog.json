@@ -1656,7 +1656,13 @@
       ],
       "branch": "ai/a1-incident-endpoint",
       "pull_request": null,
-      "commits": [],
+      "commits": [
+        {
+          "hash": "c82be67",
+          "date": "2026-11-14T16:31:17-08:00",
+          "message": "Add the Claude API as a second model provider, tested for real"
+        }
+      ],
       "files": {
         "added": [
           "docs/ai-model-comparison.md",
@@ -1711,7 +1717,7 @@
         "Bolt is still unreached, so A1's test record is from Claude, not from the provider the team named",
         "Eight synthetic questions cannot rank the models finely, and no report written by a real dispatcher was tried",
         "The fallback after a declined request never triggered, so that path is covered by unit tests only",
-        "Not committed or pushed"
+        "Committed locally, not pushed"
       ],
       "known_gaps": [
         "The pipeline's Live AI check still uses Bolt's secret and variables; running it on Claude needs an ANTHROPIC_API_KEY repository secret",
