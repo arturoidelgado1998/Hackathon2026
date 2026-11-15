@@ -147,9 +147,8 @@
 }
 
 .driver-page__product {
-  font-size: var(--pp-text-sm);
-  font-weight: 600;
-  color: var(--pp-text-muted);
+  font-size: var(--pp-text-lg);
+  font-weight: 700;
 }
 
 .driver-page__title {

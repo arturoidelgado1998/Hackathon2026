@@ -49,7 +49,7 @@ async function openApp(width = 1440) {
   await page.route('**/src/map/ArcgisMap.tsx*', (route) => route.abort())
   // The prefilled sample; without ?sample the page waits for live updates.
   await page.goto(`${origin}/?sample`)
-  await page.getByRole('heading', { name: 'PortPlan', exact: true }).waitFor()
+  await page.getByRole('heading', { name: 'RouteRipple', exact: true }).waitFor()
 }
 
 async function tabTo(target: Locator) {
@@ -91,6 +91,44 @@ async function audit() {
 }
 
 describe('dashboard accessibility in Chromium', () => {
+  it('keeps the approved brand visible on desktop and phone-sized dashboard, driver and simulation pages', async () => {
+    await openApp()
+    for (const path of ['/', '/driver.html#S-01', '/simulation.html']) {
+      await page.goto(`${origin}${path}`)
+      const brand = page.locator('.pp-brand')
+      await brand.waitFor()
+      await brand.locator('img').evaluate(async (image) => {
+        if (!(image instanceof HTMLImageElement)) throw new Error('Brand image is missing')
+        await image.decode()
+      })
+      expect(await brand.textContent()).toBe('RouteRipple')
+      for (const width of [320, 390, 760, 1440]) {
+        await page.setViewportSize({ width, height: 1000 })
+        const bounds = await brand.evaluate((element) => {
+          const box = element.getBoundingClientRect()
+          const mark = element.querySelector('img')?.getBoundingClientRect()
+          const header = element.closest('header')?.getBoundingClientRect()
+          if (!mark || !header) throw new Error('Brand must have a logo inside the page header')
+          return {
+            left: box.left,
+            right: box.right,
+            headerLeft: header.left,
+            headerRight: header.right,
+            markWidth: mark.width,
+            markHeight: mark.height,
+            noOverflow: document.documentElement.scrollWidth <= innerWidth,
+          }
+        })
+        expect(bounds.left, `${path} at ${width}px`).toBeGreaterThanOrEqual(0)
+        expect(bounds.right, `${path} at ${width}px`).toBeLessThanOrEqual(width)
+        expect(bounds.left).toBeGreaterThanOrEqual(bounds.headerLeft)
+        expect(bounds.right).toBeLessThanOrEqual(bounds.headerRight)
+        expect([bounds.markWidth, bounds.markHeight]).toEqual([32, 32])
+        expect(bounds.noOverflow, `${path} at ${width}px`).toBe(true)
+      }
+    }
+  })
+
   it('supports keyboard shipment → preview → select → Reset, with contextual focus', async () => {
     await openApp()
     const totals = await region('Indicators').textContent()
@@ -114,7 +152,10 @@ describe('dashboard accessibility in Chromium', () => {
     await page.keyboard.press('Enter')
     expect(await region('Decision recorded').textContent()).toContain('S-01')
     expect(await region('Indicators').textContent()).not.toBe(totals)
+    // Let axe measure the sticky table cells without overlap artifacts.
+    await page.setViewportSize({ width: 1440, height: 2000 })
     await audit()
+    await page.setViewportSize({ width: 1440, height: 1000 })
 
     await tabTo(button('Reset'))
     await page.keyboard.press('Enter')

@@ -1,4 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
+import { Brand } from '../components/brand/Brand.tsx'
 import { AlertIcon, CheckIcon } from '../components/icons.tsx'
 import { getShipment, shipments } from '../data/index.ts'
 import type { NoticeChannel } from './channel.ts'
@@ -215,7 +216,7 @@ export function DriverPage({ channel = getNoticeChannel(), relay }: DriverPagePr
   return (
     <div className="driver-page">
       <header className="driver-page__header">
-        <p className="driver-page__product">PortPlan</p>
+        <p className="driver-page__product"><Brand /></p>
         <h1 className="driver-page__title">
           Driver notice{known && <span className="pp-num"> · {shipmentId}</span>}
         </h1>

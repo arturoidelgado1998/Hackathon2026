@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1d4f91" />
+    <title>RouteRipple - Logo concepts</title>
+    <style>
+      :root {
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        color: #16191d;
+        background: #f1f3f6;
+        font-synthesis: none;
+        accent-color: #1d4f91;
+      }
+
+      * { box-sizing: border-box; }
+      body { margin: 0; padding: 48px 32px; }
+      ::selection { background: #1d4f91; color: white; }
+      :focus-visible { outline: 3px solid #1f6feb; outline-offset: 4px; }
+      main { max-width: 1320px; margin-inline: auto; }
+      h1, h2, h3, p { margin: 0; }
+      h1 { font-size: clamp(26px, 3vw, 36px); letter-spacing: -0.025em; line-height: 1.2; text-wrap: balance; }
+      h2 { font-size: 22px; letter-spacing: -0.015em; }
+      h3 { font-size: 14px; font-weight: 600; color: #4d5560; }
+      p { font-size: 16px; line-height: 1.6; }
+      .intro { max-width: 66ch; margin-top: 16px; color: #4d5560; }
+      .concepts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: 36px; }
+      .concept { min-width: 0; padding: 28px 24px; background: #fff; border: 1px solid #dde1e6; }
+      .description { min-height: 104px; margin-top: 12px; color: #4d5560; }
+      .identity { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 160px; }
+      .identity img { flex: none; }
+      .wordmark { font-size: 29px; font-weight: 700; letter-spacing: -0.025em; white-space: nowrap; }
+      .wordmark span { color: #1d4f91; }
+      .application { padding-top: 24px; margin-top: 24px; border-top: 1px solid #dde1e6; }
+      .mobile-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; min-height: 64px; padding: 12px; background: #f4f6f8; }
+      .mobile-brand { display: flex; align-items: center; gap: 8px; }
+      .mobile-brand .wordmark { font-size: 18px; letter-spacing: -0.015em; }
+      .mobile-label { color: #4d5560; font-size: 14px; }
+      .sizes { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-top: 20px; }
+      figure { margin: 0; text-align: center; }
+      .size-image { display: grid; place-items: center; min-height: 48px; }
+      figcaption { margin-top: 8px; color: #4d5560; font-size: 14px; }
+      .reversed { display: flex; align-items: center; justify-content: center; min-height: 80px; margin-top: 24px; background: #1d4f91; }
+      .reversed img { filter: brightness(0) invert(1); }
+      a { display: inline-flex; align-items: center; min-height: 44px; margin-top: 16px; color: #1d4f91; font-size: 15px; font-weight: 600; text-underline-offset: 4px; }
+      footer { margin-top: 28px; color: #4d5560; }
+      footer p { font-size: 14px; }
+
+      @media (max-width: 1050px) {
+        .concepts { grid-template-columns: 1fr; max-width: 560px; margin-inline: auto; }
+        .description { min-height: 0; }
+      }
+
+      @media (max-width: 480px) {
+        body { padding: 28px 16px; }
+        .concepts { gap: 24px; margin-top: 28px; }
+        .concept { padding: 24px 16px; }
+        .identity { gap: 8px; }
+        .identity > img { width: 48px; height: 48px; }
+        .identity .wordmark { font-size: 26px; }
+        .mobile-header { padding-inline: 8px; gap: 8px; }
+        .mobile-label { font-size: 14px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Three directions for RouteRipple</h1>
+        <p class="intro">Original vector marks using the dashboard's deep blue. Compare the full identity, compact mobile header, and real-size icons before choosing your direction.</p>
+      </header>
+
+      <div class="concepts">
+        <section class="concept" aria-labelledby="ripple-r-heading">
+          <h2 id="ripple-r-heading">Ripple R</h2>
+          <p class="description">A route-shaped R with an outward ripple. The clearest connection to the name, with a compact lettermark that can stand on its own.</p>
+          <div class="identity" aria-label="Ripple R desktop identity">
+            <img src="concepts/ripple-r.svg" alt="" width="64" height="64" />
+            <span class="wordmark">Route<span>Ripple</span></span>
+          </div>
+          <div class="application">
+            <h3>Mobile header</h3>
+            <div class="mobile-header">
+              <span class="mobile-brand">
+                <img src="concepts/ripple-r.svg" alt="" width="24" height="24" />
+                <span class="wordmark">Route<span>Ripple</span></span>
+              </span>
+              <span class="mobile-label">Driver</span>
+            </div>
+          </div>
+          <div class="application">
+            <h3>Actual icon sizes</h3>
+            <div class="sizes">
+              <figure><div class="size-image"><img src="concepts/ripple-r.svg" alt="Ripple R favicon" width="16" height="16" /></div><figcaption>16 px</figcaption></figure>
+              <figure><div class="size-image"><img src="concepts/ripple-r.svg" alt="Ripple R small icon" width="24" height="24" /></div><figcaption>24 px</figcaption></figure>
+              <figure><div class="size-image"><img src="concepts/ripple-r.svg" alt="Ripple R app icon" width="32" height="32" /></div><figcaption>32 px</figcaption></figure>
+              <figure><div class="size-image"><img src="concepts/ripple-r.svg" alt="Ripple R large icon" width="48" height="48" /></div><figcaption>48 px</figcaption></figure>
+            </div>
+          </div>
+          <div class="reversed"><img src="concepts/ripple-r.svg" alt="Ripple R in white on blue" width="48" height="48" /></div>
+          <a href="concepts/ripple-r.svg" download="routeripple-ripple-r.svg">Download Ripple R SVG</a>
+        </section>
+
+        <section class="concept" aria-labelledby="flow-lines-heading">
+          <h2 id="flow-lines-heading">Flow Lines</h2>
+          <p class="description">Three continuous paths move around a disruption together. An abstract, forward-moving identity built from the rhythm of routes and ripples.</p>
+          <div class="identity" aria-label="Flow Lines desktop identity">
+            <img src="concepts/flow-lines.svg" alt="" width="64" height="64" />
+            <span class="wordmark">Route<span>Ripple</span></span>
+          </div>
+          <div class="application">
+            <h3>Mobile header</h3>
+            <div class="mobile-header">
+              <span class="mobile-brand">
+                <img src="concepts/flow-lines.svg" alt="" width="24" height="24" />
+                <span class="wordmark">Route<span>Ripple</span></span>
+              </span>
+              <span class="mobile-label">Driver</span>
+            </div>
+          </div>
+          <div class="application">
+            <h3>Actual icon sizes</h3>
+            <div class="sizes">
+              <figure><div class="size-image"><img src="concepts/flow-lines.svg" alt="Flow Lines favicon" width="16" height="16" /></div><figcaption>16 px</figcaption></figure>
+              <figure><div class="size-image"><img src="concepts/flow-lines.svg" alt="Flow Lines small icon" width="24" height="24" /></div><figcaption>24 px</figcaption></figure>
+              <figure><div class="size-image"><img src="concepts/flow-lines.svg" alt="Flow Lines app icon" width="32" height="32" /></div><figcaption>32 px</figcaption></figure>
+              <figure><div class="size-image"><img src="concepts/flow-lines.svg" alt="Flow Lines large icon" width="48" height="48" /></div><figcaption>48 px</figcaption></figure>
+            </div>
+          </div>
+          <div class="reversed"><img src="concepts/flow-lines.svg" alt="Flow Lines in white on blue" width="48" height="48" /></div>
+          <a href="concepts/flow-lines.svg" download="routeripple-flow-lines.svg">Download Flow Lines SVG</a>
+        </section>
+
+        <section class="concept" aria-labelledby="route-node-heading">
+          <h2 id="route-node-heading">Route Node</h2>
+          <p class="description">A single route connects through expanding rings. A more symbolic mark for seeing how one decision ripples through the delivery network.</p>
+          <div class="identity" aria-label="Route Node desktop identity">
+            <img src="concepts/route-node.svg" alt="" width="64" height="64" />
+            <span class="wordmark">Route<span>Ripple</span></span>
+          </div>
+          <div class="application">
+            <h3>Mobile header</h3>
+            <div class="mobile-header">
+              <span class="mobile-brand">
+                <img src="concepts/route-node.svg" alt="" width="24" height="24" />
+                <span class="wordmark">Route<span>Ripple</span></span>
+              </span>
+              <span class="mobile-label">Driver</span>
+            </div>
+          </div>
+          <div class="application">
+            <h3>Actual icon sizes</h3>
+            <div class="sizes">
+              <figure><div class="size-image"><img src="concepts/route-node.svg" alt="Route Node favicon" width="16" height="16" /></div><figcaption>16 px</figcaption></figure>
+              <figure><div class="size-image"><img src="concepts/route-node.svg" alt="Route Node small icon" width="24" height="24" /></div><figcaption>24 px</figcaption></figure>
+              <figure><div class="size-image"><img src="concepts/route-node.svg" alt="Route Node app icon" width="32" height="32" /></div><figcaption>32 px</figcaption></figure>
+              <figure><div class="size-image"><img src="concepts/route-node.svg" alt="Route Node large icon" width="48" height="48" /></div><figcaption>48 px</figcaption></figure>
+            </div>
+          </div>
+          <div class="reversed"><img src="concepts/route-node.svg" alt="Route Node in white on blue" width="48" height="48" /></div>
+          <a href="concepts/route-node.svg" download="routeripple-route-node.svg">Download Route Node SVG</a>
+        </section>
+      </div>
+
+      <footer>
+        <p>These are logo concepts, not a dashboard redesign. Your chosen mark will be applied consistently to the dispatch dashboard, the mobile driver page, and browser icons.</p>
+      </footer>
+    </main>
+  </body>
+</html>

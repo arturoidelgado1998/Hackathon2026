@@ -150,6 +150,9 @@ describe('driver notice, dashboard to driver page', () => {
 describe('driver page', () => {
   it('always says the notice is simulated and to read it when parked', () => {
     const { driver } = setup()
+    const brand = driver.getByRole('banner')
+    expect(brand).toHaveTextContent('RouteRipple')
+    expect(brand.querySelector('img')).toHaveAttribute('alt', '')
     expect(driver.getByText(SIMULATED_NOTICE_TEXT)).toBeInTheDocument()
     expect(driver.getByText('Read only when parked.')).toBeInTheDocument()
     expect(driver.getByRole('heading', { level: 1 })).toHaveTextContent('Driver notice · S-01')

@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
 import { RiskBadge } from '../components/board/RiskBadge.tsx'
+import { Brand } from '../components/brand/Brand.tsx'
 import { facilities, getSegment, routes, segments } from '../data/index.ts'
 import { formatTime, parseTime } from '../engine/time.ts'
 import { MapBoundary } from '../map/MapPanel.tsx'
@@ -134,7 +135,7 @@ export function SimulationPage() {
     <div className="sim-page">
       <header className="sim-page__header">
         <div>
-          <h1 className="sim-page__title">PortPlan simulation</h1>
+          <h1 className="sim-page__title"><Brand /> simulation</h1>
           <p className="sim-page__lede">
             Set up a day and press Start. Until then the dashboard shows only the day’s schedule.
             Once it runs, the dashboard receives trucks and the closure as they happen.

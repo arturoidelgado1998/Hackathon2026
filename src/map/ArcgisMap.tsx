@@ -138,7 +138,7 @@ export default function ArcgisMap({
     const element = mapRef.current
     if (!element) return
     let cancelled = false
-    const layer = new GraphicsLayer({ title: 'PortPlan routes' })
+    const layer = new GraphicsLayer({ title: 'RouteRipple routes' })
     layerRef.current = layer
     // Trucks sit on their own layer so the clock can move them without redrawing the routes.
     const truckLayer = new GraphicsLayer({ title: 'PortPlan trucks' })
@@ -162,7 +162,7 @@ export default function ArcgisMap({
       .then(() => {
         if (!cancelled) setBufferReady(true)
       })
-      .catch(() => console.warn('PortPlan map: the 150 m corridor cannot be drawn'))
+      .catch(() => console.warn('RouteRipple map: the 150 m corridor cannot be drawn'))
 
     element
       .viewOnReady()
@@ -332,7 +332,7 @@ export default function ArcgisMap({
       }).expand(1.4)
       element.goTo(frame, { duration: 300 }).catch((error: { name?: string }) => {
         // A newer navigation interrupting this one is expected; anything else is worth seeing.
-        if (error?.name !== 'AbortError') console.warn('PortPlan map: could not frame the routes', error)
+        if (error?.name !== 'AbortError') console.warn('RouteRipple map: could not frame the routes', error)
       })
     }
   }, [
