@@ -1814,6 +1814,33 @@
   ],
   "entries": [
     {
+      "id": "2026-11-15-readme-inline-video",
+      "date": "2026-11-15",
+      "title": "The full demo video now plays inside the README",
+      "summary": "The README's Demo section opens with a video player for the full 3-minute demo, instead of a link that downloads it. The 22-second preview clip and the screenshots stay below it.",
+      "branch": "docs/readme-inline-video",
+      "changes": [
+        "README.md: the Demo section starts with the video's GitHub attachment address on its own line, which GitHub turns into a player. The release file stays as a download link underneath, and the preview clip follows.",
+        "The video was uploaded to GitHub by the project owner through the web page, which is the only way GitHub gives a video an address it will play. The copy uploaded is 9.6 MB, re-encoded from the 11.7 MB original at the same size and length, because the upload limit on this plan is 10 MB."
+      ],
+      "files": {
+        "added": [],
+        "modified": [
+          "README.md",
+          "docs/changelog.json"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "GitHub's own markdown service renders the address as a video player with controls.",
+        "The address returns the uploaded file (9,626,699 bytes, video/mp4) to a signed-in member of the repository.",
+        "npm run sanity passes (57 of 57). No application code changed."
+      ],
+      "not_verified": [
+        "Whether the video plays for the public once the repository is made public. It was uploaded while the repository was private, and without a sign-in the address currently answers 404. If it does not play after the repository is public, upload the file again and replace the address."
+      ]
+    },
+    {
       "id": "2026-11-15-readme-demo",
       "date": "2026-11-15",
       "title": "README opens with the demo: a preview clip, the full video and product screenshots",

@@ -5,9 +5,15 @@ Stack: Vite + React + TypeScript, Vitest, ESLint, plain CSS.
 
 ## Demo
 
-[![RouteRipple demo: a road closes, the dispatcher compares responses, asks the AI, tells the driver, and the loads are delivered](docs/media/demo-preview.gif)](https://github.com/arturoidelgado1998/Hackathon2026/releases/download/demo-video/RouteRipple-demo-3min.mp4)
+The full demo, 3 minutes, no audio:
 
-**[Watch the full 3-minute demo](https://github.com/arturoidelgado1998/Hackathon2026/releases/download/demo-video/RouteRipple-demo-3min.mp4)** (MP4, 11 MB, no audio). The clip above is a 22-second cut of it.
+https://github.com/user-attachments/assets/972f40e1-bc4e-4814-988a-7aca2efdd278
+
+If the player does not load, [download the video](https://github.com/arturoidelgado1998/Hackathon2026/releases/download/demo-video/RouteRipple-demo-3min.mp4) (MP4, 11 MB).
+
+A 22-second cut of it:
+
+![RouteRipple demo: a road closes, the dispatcher compares responses, asks the AI, tells the driver, and the loads are delivered](docs/media/demo-preview.gif)
 
 A road out of the Port of Long Beach closes at 10:00. RouteRipple shows the
 dispatcher which shipments it delays, what each response would cost, and who
