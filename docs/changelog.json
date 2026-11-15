@@ -1814,6 +1814,46 @@
   ],
   "entries": [
     {
+      "id": "2026-11-15-readme-polish",
+      "date": "2026-11-15",
+      "title": "README: the pitch first, readable screenshots, and developer notes below a divider",
+      "summary": "Rendered the README as GitHub shows it and fixed four things a first-time visitor would trip on: a preview clip repeating the video above it, screenshots too small to read, the explanation of the product buried under both, and internal notes straight after the demo.",
+      "branch": "docs/readme-polish",
+      "changes": [
+        "The page now opens with one line on what the product is, a short paragraph on what it does, and the video player.",
+        "A What it does section follows, with six short parts: comparing responses, the map, the AI suggestion, the driver notice, the clock-aware dashboard and delivered loads. Each has a close-up crop that is readable at the README's width instead of a full-screen capture shrunk to a thumbnail.",
+        "The 22-second preview clip is removed; the video plays in the page, so the clip only repeated it.",
+        "What is real and what is simulated, and How it is built, are their own short sections. How it is built now names the stack.",
+        "Everything else sits below a rule and a For developers heading. The Brand section moved down next to the design skill section. No developer section was changed or removed."
+      ],
+      "files": {
+        "added": [
+          "docs/media/route-map.png"
+        ],
+        "modified": [
+          "README.md",
+          "docs/changelog.json",
+          "docs/media/ai-suggestion.png",
+          "docs/media/compare-responses.png",
+          "docs/media/delivered.png",
+          "docs/media/driver-notice.png",
+          "docs/media/road-reopened.png"
+        ],
+        "deleted": [
+          "docs/media/demo-preview.gif"
+        ]
+      },
+      "verification": [
+        "Rendered the new top of the README through GitHub's markdown service with GitHub's stylesheet and looked at it: one video player, six images, none broken; the five wide crops display at close to their real size and the map at its full 448 px.",
+        "npm run sanity passes (57 of 57), including the check that every path the README's layout lists exists. No application code changed."
+      ],
+      "limitations": [
+        "The README still does not say who built the project, which event it was for, or how to reach the team.",
+        "The screenshots are crops of frames from the demo video, so some show the drawn cursor, and the driver one shows the phone frame added for the video.",
+        "The test counts in the README are fixed text."
+      ]
+    },
+    {
       "id": "2026-11-15-readme-inline-video",
       "date": "2026-11-15",
       "title": "The full demo video now plays inside the README",
