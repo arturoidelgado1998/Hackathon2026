@@ -59,7 +59,11 @@ export function useSimClock(start: number, end: number, initialSpeed: SimSpeed =
       setRawTime(start)
       setPlaying(true)
     },
-    seek: (next) => setRawTime(Math.min(end, Math.max(start, next))),
+    seek: (next) => {
+      // After the day has played to its end, moving the slider must not start it again.
+      if (!running) setPlaying(false)
+      setRawTime(Math.min(end, Math.max(start, next)))
+    },
     setSpeed,
     restart: () => {
       setPlaying(false)

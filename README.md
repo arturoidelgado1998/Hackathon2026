@@ -61,7 +61,46 @@ npm run ai:tests    # ask the real model the five test reports and record its an
 
 The browser check needs Chromium once per machine: `npx playwright install --only-shell chromium`. The data checks need `python3` (3.9 or later, standard library only) and never use the network. Use `npm run test:sanity` to rerun the checks without rebuilding.
 
+## Live dashboard and simulation page
+
+The dashboard at `/` is fed live and has no simulation controls or wording. The
+run is set up and started on a separate page, `/simulation.html`, which stands in
+for a live data feed.
+
+- **Before a run starts** the dashboard shows only the day's schedule: each
+  shipment's destination, appointment and cargo-ready time. There are no arrival
+  estimates, risk, closure, trucks or totals, and nothing can be selected.
+- **On the simulation page** choose a normal day or a road closure (segment,
+  closing and reopening times), then press **Start simulation**. Play, pause,
+  restart, the time slider and the speed are all there. **Link to this setup**
+  holds the settings, so a teammate who opens it gets the same setup.
+- **Once the run starts** the dashboard fills in: estimates and risk appear,
+  trucks move on the map, each card says where its truck is, and **Live updates**
+  under the map lists what has happened. A closure is reported when its start
+  time is reached, not before, and the road is drawn open again once it reopens.
+- **The dispatcher still makes every choice.** Choosing **Use reroute** moves that
+  truck onto the alternative route. The simulation never chooses a response.
+- **Trucks and closures.** A truck that is not yet on the road when a closure
+  starts is held at the port and leaves in time to reach the segment as it
+  reopens. A truck already on the road queues at the closed segment. The
+  engine's arrivals, cost and CO2 are the same either way.
+- **Other devices.** The page and the dashboard talk through a relay on the app's
+  own server (`/api/sim-state`, in `server/simRelay.ts`), mounted by the dev server
+  and by Vite's preview server. Start it with `npm run dev -- --host` so a teammate
+  on the same network can open the simulation page. Without the relay, for example on a
+  static copy of the build, only tabs in the same browser follow each other.
+  DEMO ONLY: there is no sign-in. Opening the simulation page sends nothing; the
+  dashboards follow whichever page last had something changed on it, and a second
+  running page cannot pull them away.
+- **The prefilled sample** described below is still available at `/?sample`. The
+  browser sanity checks use it.
+
+All positions and times are SIMULATED and come from the engine. Trucks follow
+the schematic segment lines, not real roads.
+
 ## Sample dashboard workflow
+
+This is the prefilled sample at `/?sample`.
 
 - The dashboard starts in **Disrupted**, showing the simulated NB-03 closure. Select a
   shipment under **Needs review** to compare responses. **Normal** remains available.
@@ -91,7 +130,7 @@ The browser check needs Chromium once per machine: `npx playwright install --onl
   collapses empty groups, and clears preview and Undo state.
 - **Why?** opens and focuses the option's supplied explanation inputs. Use **Close**
   or Escape to return focus to its Why button. **Assumptions & sources**
-  lists placeholder values, citations, value-type labels and the twelve limitations from
+  lists the cost and CO2 inputs with their published sources, value-type labels and the twelve limitations from
   issue #9. Use **Expand panel** in the bottom bar to read the full, scrollable panel;
   collapse it or press Escape to return to the dashboard. On mobile the bar stays within
   reach at the bottom of the screen. Reset also closes the panel. The reusable limitations
@@ -212,8 +251,9 @@ Below the comparison table the dispatcher can ask the AI which response it would
 - `scripts/`: Python scripts that rebuild `src/data` (standard library only)
 - `src/components/`: React components
 - `src/map/`: map panel
+- `src/sim/`: truck simulation, the simulation page and the live link to the dashboard
 - `src/state/`: app state
-- `server/`: small Node endpoint for the LLM call
+- `server/`: small Node endpoint for the LLM call, and the relays the dev server mounts (driver notices, simulation)
 - `src/incident/`: what the AI may return, and the check every answer must pass
 - `sanity/`: sanity checks on the repository, the change log, the build and the built app
 - `docs/`: project documentation

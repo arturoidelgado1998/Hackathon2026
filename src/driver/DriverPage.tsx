@@ -16,7 +16,7 @@ import {
 } from './types.ts'
 import './driver.css'
 
-export const SIMULATED_NOTICE_TEXT = 'SIMULATED notice: demo only, no real message was sent.'
+export const SIMULATED_NOTICE_TEXT = 'Sent by dispatch through RouteRipple.'
 export const REVISION_TEXT = 'Dispatch is revising this notice. A new one will follow.'
 
 function subscribeToHash(onChange: () => void): () => void {

@@ -40,12 +40,6 @@ export function IndicatorsBar({ atRisk, cost, co2Kg }: IndicatorsBarProps) {
           </dd>
         </div>
       </dl>
-      <span
-        className="pp-indicators__badge"
-        title="Sample data and estimates; not live operations"
-      >
-        SIMULATED
-      </span>
     </div>
   )
 }

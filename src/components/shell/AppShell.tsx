@@ -22,6 +22,8 @@ export interface AppShellProps {
   responses: ReactNode
   /** Assumptions & sources (D8). */
   assumptions?: ReactNode
+  /** Fed by live data: the scenario is not switched by hand. */
+  liveMode?: boolean
 }
 
 const SCENARIOS: { id: Scenario; label: string }[] = [
@@ -45,6 +47,7 @@ export function AppShell({
   map,
   responses,
   assumptions,
+  liveMode = false,
 }: AppShellProps) {
   const [assumptionsExpanded, setAssumptionsExpanded] = useState(false)
   const assumptionsId = useId()
@@ -56,24 +59,26 @@ export function AppShell({
         <div className="pp-shell__topbar">
           <h1 className="pp-shell__title"><Brand /></h1>
           <div className="pp-shell__controls">
-            <div className="pp-shell__scenario">
-              <span className="pp-shell__scenario-label" id="pp-scenario-label">
-                Scenario
-              </span>
-              <div className="pp-shell__toggle" role="group" aria-labelledby="pp-scenario-label">
-                {SCENARIOS.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    className="pp-shell__toggle-btn"
-                    aria-pressed={scenario === s.id}
-                    onClick={() => onScenarioChange(s.id)}
-                  >
-                    {s.label}
-                  </button>
-                ))}
+            {!liveMode && (
+              <div className="pp-shell__scenario">
+                <span className="pp-shell__scenario-label" id="pp-scenario-label">
+                  Scenario
+                </span>
+                <div className="pp-shell__toggle" role="group" aria-labelledby="pp-scenario-label">
+                  {SCENARIOS.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      className="pp-shell__toggle-btn"
+                      aria-pressed={scenario === s.id}
+                      onClick={() => onScenarioChange(s.id)}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
             <button
               type="button"
               className="pp-button"
@@ -105,7 +110,7 @@ export function AppShell({
             {indicators}
           </section>
         </div>
-        {scenario === 'normal' && (
+        {scenario === 'normal' && !liveMode && (
           <p className="pp-shell__guidance">
             <strong>Explore the sample disruption:</strong> switch to <strong>Disrupted</strong>,
             {' '}then select a shipment under <strong>Needs review</strong> to compare responses.
@@ -160,7 +165,7 @@ export function AppShell({
                 <span>
                   <strong>Assumptions & sources</strong>
                   <span className="pp-shell__assumptions-hint">
-                    Model inputs, value types and prototype limitations
+                    Model inputs, value types and limitations
                   </span>
                 </span>
               </span>

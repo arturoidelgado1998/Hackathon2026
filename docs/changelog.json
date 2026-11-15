@@ -1282,6 +1282,157 @@
   ],
   "other_changes": [
     {
+      "id": "remove-fake-data-wording",
+      "title": "Remove wording that labels the data as simulated or fictional",
+      "related_issues": [],
+      "branch": "engine/sourced-cost-co2",
+      "pull_request": 46,
+      "commit": null,
+      "why": "Requested by the project owner: the audience knows the data is not real, and the repeated labels made the product look unfinished.",
+      "changes": [
+        "Removed the wording that labels the data as fake from what people see: the SIMULATED badge beside the totals and on the simulation page, the Illustrative badge on the Routes pane, \"(SIMULATED)\" in headings, \"simulated scenario\" in tooltips, \"(placeholder)\" on zone flags, and the Simulated value type.",
+        "Facility names and route notes are shown without \"(fictional)\", \"(real locations, illustrative route)\" and \"ILLUSTRATIVE\". The generated JSON files keep those labels; src/data/index.ts drops them for display.",
+        "Driver notice: the \"SIMULATED: no real message is sent\" lines are gone. The dashboard still says nothing goes to the driver until Send.",
+        "Limitations 1, 8, 9 and 12 are reworded without those words; there are still twelve.",
+        "Estimates are still called estimates, routes are still called not verified for trucks, and the Assumptions panel still lists every input and source."
+      ]
+    },
+    {
+      "id": "sourced-cost-co2-inputs",
+      "title": "Cost and CO2 inputs from published trucking sources",
+      "related_issues": [],
+      "branch": "engine/sourced-cost-co2",
+      "pull_request": null,
+      "commit": null,
+      "why": "The four inputs behind every cost and CO2 estimate were placeholders. The team plan asks for them to be confirmed or replaced and cited.",
+      "changes": [
+        "src/data/assumptions.json: the four cost and CO2 inputs are published figures with full citations. Fuel economy 6.5 to 6.8 mpg; non-labor cost $1.80 to $1.31 per mile; driver labor $40 to $36.08 per hour; diesel CO2 stays 10.21 kg per gallon and was checked against the EPA document itself. Pickup handling (30 min) is still a team placeholder.",
+        "Sources: San Pedro Bay Ports, 2021 Update: Feasibility Assessment for Drayage Trucks (February 2023), p. 71; ATRI, An Analysis of the Operational Costs of Trucking: 2026 Update (2025 data), line items as reported by FleetOwner on 22 July 2026; U.S. Bureau of Labor Statistics, OEWS May 2025; U.S. EPA, Emission Factors for Greenhouse Gas Inventories, last modified 15 January 2025, Table 2.",
+        "The engine's formulas are unchanged: cost = miles x non-labor cost per mile + duty hours x labor rate; tailpipe CO2 = miles / mpg x kg per gallon.",
+        "Every estimate changes. Reference shipment S-01, max-arrival case: normal $130 to $103, waiting at the closure $169 to $138, rerouted $167 to $132; CO2 70.7 to 67.6 kg on the original route and 94.2 to 90.1 kg rerouted. Day totals: normal $1,027 to $817, closure with no action $1,204 to $976, 546.5 to 522.7 kg.",
+        "Rerouting S-01 is still cheaper than waiting and still adds 15 miles and 22.5 kg of CO2, so the trade-off the dashboard shows is the same.",
+        "src/data/sample-responses.json regenerated with scripts/import_map_data.py from the service's original rows; docs/evaluation.csv and docs/evaluation.json regenerated with npm run evaluate.",
+        "scripts/import_map_data.py no longer compares cost and CO2 with the feature service, whose columns were calculated with the placeholder rates. It still compares arrival, lateness, risk and miles.",
+        "Assumptions panel, the cost row's description, limitation 10 and the data README no longer call these inputs placeholders. The data README has a Cost and CO2 inputs section listing each source and what the inputs do not capture."
+      ],
+      "verification": [
+        "Each shipment's normal, wait and reroute cost and CO2 were calculated independently with the Python implementation in scripts/import_map_data.py and agree with the engine; the same calculation reproduces the old figures ($1,027 and $1,204) with the old inputs.",
+        "Node 24/npm 11: all 469 unit and integration tests in 34 files pass after updating the 33 expectations that stated the old figures. npm run typecheck and npm run lint pass.",
+        "The EPA factor was read from the EPA PDF (Table 2: Diesel Fuel 10.21 kg CO2 per gallon). The 6.8 mpg figure was read from the ports' PDF, p. 71."
+      ]
+    },
+    {
+      "id": "live-truck-simulation",
+      "title": "Truck simulation page that drives the dashboard live",
+      "related_issues": [],
+      "branch": "sim/live-dashboard",
+      "pull_request": null,
+      "earlier_pull_requests": [
+        42
+      ],
+      "commit": {
+        "hash": "565d6e8",
+        "date": "2026-11-14T16:52:00-08:00",
+        "message": "Drive the dashboard live from the simulation page",
+        "files": {
+          "added": [
+            "server/simRelay.test.ts",
+            "server/simRelay.ts",
+            "src/components/board/ScheduleBoard.tsx",
+            "src/sim/LiveUpdates.css",
+            "src/sim/LiveUpdates.tsx",
+            "src/sim/events.ts",
+            "src/sim/live.test.tsx",
+            "src/sim/live.ts",
+            "src/sim/liveChannel.ts",
+            "src/sim/useLiveSim.ts"
+          ],
+          "modified": [
+            "sanity/accessibility.sanity.test.ts",
+            "sanity/app.sanity.test.ts",
+            "server/driverNotices.ts",
+            "src/App.tsx",
+            "src/components/board/ShipmentCard.tsx",
+            "src/components/board/board.css",
+            "src/components/board/index.ts",
+            "src/components/shell/AppShell.tsx",
+            "src/components/shell/IncidentBanner.tsx",
+            "src/data/demoIncident.ts",
+            "src/data/index.ts",
+            "src/main.tsx",
+            "src/map/ArcgisMap.tsx",
+            "src/map/MapPanel.css",
+            "src/map/MapPanel.tsx",
+            "src/sim/SimClock.css",
+            "src/sim/SimClock.test.tsx",
+            "src/sim/SimClock.tsx",
+            "src/sim/SimulationPage.test.tsx",
+            "src/sim/SimulationPage.tsx",
+            "src/sim/trucks.test.ts",
+            "src/sim/trucks.ts",
+            "src/sim/useSimClock.ts",
+            "src/state/selectors.ts",
+            "src/state/totals.ts",
+            "src/state/trucks.ts",
+            "src/viewModels.ts",
+            "vite.config.ts"
+          ],
+          "deleted": []
+        }
+      },
+      "earlier_commit": {
+        "hash": "f3d73d8",
+        "date": "2026-11-14T16:05:19-08:00",
+        "message": "Add a truck simulation: clock on the dashboard and a simulation page",
+        "pull_request": 42,
+        "files": {
+          "added": [
+            "simulation.html",
+            "src/sim/SimClock.css",
+            "src/sim/SimClock.test.tsx",
+            "src/sim/SimClock.tsx",
+            "src/sim/SimulationPage.css",
+            "src/sim/SimulationPage.test.tsx",
+            "src/sim/SimulationPage.tsx",
+            "src/sim/main.tsx",
+            "src/sim/settings.test.ts",
+            "src/sim/settings.ts",
+            "src/sim/trucks.test.ts",
+            "src/sim/trucks.ts",
+            "src/sim/useSimClock.ts",
+            "src/state/simulation.ts",
+            "src/state/trucks.ts"
+          ],
+          "modified": [
+            "src/App.tsx",
+            "src/map/ArcgisMap.tsx",
+            "src/map/MapPanel.css",
+            "src/map/MapPanel.tsx",
+            "vite.config.ts"
+          ],
+          "deleted": []
+        }
+      },
+      "why": "Let the team run a live demo: one person sets up and starts a run on a separate page, and the dashboard fills in as a dispatcher would see it, with nothing prefilled.",
+      "changes": [
+        "src/sim/trucks.ts: a timed trip per shipment and the truck's place on its route at any minute. Every time comes from the engine's routeTiming; nothing here calculates travel.",
+        "simulation.html and src/sim/SimulationPage.tsx: settings (normal day or closure, segment, times, wait or reroute for every delayed truck, slow or fast end of the range), Start, a clock (play, pause, restart, slider, speed), a map, an outcome table and a link that restores the same setup.",
+        "server/simRelay.ts and src/sim/liveChannel.ts: the simulation page's setup and clock reach every open dashboard through a relay on the dev and preview servers (/api/sim-state) and a BroadcastChannel for tabs in the same browser.",
+        "The dashboard at / is fed live and has no simulation controls or wording. Before a run starts it shows only the day's schedule; the Normal/Disrupted switch is not shown there. The prefilled sample is still at /?sample, which the browser sanity checks now open.",
+        "Once a run starts, a closure is reported when its start time is reached. Each shipment card carries a note on where its truck is, and a Live updates log under the map lists what has happened. The dispatcher still makes every choice.",
+        "A truck that is not yet on the road when a closure starts is held at the port and leaves in time to reach the segment as it reopens; a truck already on the road queues at the closed segment. The engine's arrivals, cost and CO2 are unchanged.",
+        "A closed segment is drawn closed only between its closing and reopening times, and the incident banner says when it has reopened.",
+        "src/data/demoIncident.ts: the closure the dashboard works with can be replaced by the one set on the simulation page; it is the sample incident otherwise.",
+        "Opening the simulation page sends nothing. The dashboards follow one page at a time: a change made by a person on any page takes control, and another running page's once-a-second repeats do not.",
+        "Pull request 42 put a clock with play and pause on the dashboard itself. That clock was removed again here: the dashboard only follows."
+      ],
+      "verification": [
+        "Node 24/npm 11: all 469 unit and integration tests in 34 files pass, including axe checks on the live dashboard and the simulation page.",
+        "npm run typecheck, npm run lint and npm run build pass; all 50 sanity checks in six files pass after merging staging eaaf869.",
+        "Browser, two tabs on the dev server: before Start the dashboard listed the 10 scheduled shipments with no risk badges and blank totals; at 10:30 no truck was on the map and S-01 read \"Held at the port: NB-03 is closed. Leaves 10:58.\"; at 11:30 the banner said NB-03 had reopened and the six held trucks were moving. The dashboard never showed the word \"simulation\"."
+      ]
+    },
+    {
       "id": "routeripple-branding",
       "title": "RouteRipple name and approved Route Node identity",
       "related_issues": [],
@@ -1663,6 +1814,47 @@
   ],
   "entries": [
     {
+      "id": "2026-11-15-merge-staging-312b47c-into-a1",
+      "date": "2026-11-15",
+      "title": "Merged staging into the A1 branch a third time",
+      "summary": "Pull request #44 conflicted with staging again after pull requests 45 (live dashboard and simulation page) and 46 (published cost and CO2 inputs, fake-data labels removed from the screen) were merged. Merged staging 312b47c into ai/a1-incident-endpoint and kept both sides in every conflict.",
+      "branch": "ai/a1-incident-endpoint",
+      "related_issues": [
+        15
+      ],
+      "source_staging_commit": "312b47c",
+      "conflicts_resolved": [
+        "src/App.tsx: kept staging's schedule-only view and live wiring, and put the AI suggestion panel back under the response comparison.",
+        "vite.config.ts: kept staging's simulation relay plugin and this branch's proxy to the AI server, on both the dev and the preview server.",
+        "README.md: kept staging's description of server/ and this branch's line for src/incident/.",
+        "docs/changelog.json: kept every entry from both sides, newest first."
+      ],
+      "integration_changes": [
+        "Suggestion panel footnote: \"the dashboard's own simulated estimate\" now reads \"the dashboard's own estimate\", to follow the owner's decision on staging to drop fake-data labels from the screen. The prompt sent to the model still calls the figures simulated estimates.",
+        "SuggestionPanel.test.tsx: the CO2 figures it reads from the dashboard changed with staging's fuel-economy input (70.7 and 62.8 kg became 67.6 and 60.1 kg)."
+      ],
+      "files": {
+        "added": [],
+        "modified": [
+          "README.md",
+          "docs/changelog.json",
+          "src/App.tsx",
+          "src/components/suggestion/SuggestionPanel.test.tsx",
+          "src/components/suggestion/SuggestionPanel.tsx",
+          "vite.config.ts"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "After the merge: npm run typecheck and lint pass; npm test passes (573 tests in 42 files); npm run sanity passes (56 of 56)."
+      ],
+      "not_verified": [
+        "The AI suggestion panel has not been tried by hand on a live day. On the live dashboard it appears once a run has started and a shipment is selected.",
+        "docs/ai-tests.md and docs/ai-model-comparison.md record runs made before the cost inputs changed. The suggestions in them were given the old cost and CO2 figures; they were not rerun.",
+        "Bolt has still not answered a request from this machine; the pipeline's Live AI check is the first real run."
+      ]
+    },
+    {
       "id": "2026-11-15-a1-live-check-fix-and-staging-merge",
       "date": "2026-11-15",
       "title": "Fixed the live AI check and merged staging into the A1 branch again",
@@ -1693,6 +1885,283 @@
       ],
       "not_verified": [
         "Bolt had still not answered a single request when this was written: the failed run stopped before any request was made"
+      ]
+    },
+    {
+      "id": "2026-11-15-remove-fake-data-wording",
+      "date": "2026-11-15",
+      "title": "Removed simulated, fictional and similar labels from the app",
+      "summary": "Took the fake-data labels out of the dashboard, driver page and simulation page at the project owner's request. Internal data labels and the generated files are unchanged.",
+      "branch": "engine/sourced-cost-co2",
+      "files": {
+        "added": [],
+        "modified": [
+          "docs/changelog.json",
+          "sanity/app.sanity.test.ts",
+          "src/App.test.tsx",
+          "src/components/assumptions/AssumptionsPanel.test.tsx",
+          "src/components/assumptions/AssumptionsPanel.tsx",
+          "src/components/responses/ResponsePanel.test.tsx",
+          "src/components/responses/ResponsePanel.tsx",
+          "src/components/responses/format.ts",
+          "src/components/shell/AppShell.tsx",
+          "src/components/shell/IncidentBanner.tsx",
+          "src/components/shell/IndicatorsBar.test.tsx",
+          "src/components/shell/IndicatorsBar.tsx",
+          "src/data/assumptions.json",
+          "src/data/data.test.ts",
+          "src/data/demoIncident.ts",
+          "src/data/index.ts",
+          "src/data/limitations.ts",
+          "src/driver/DriverNoticePanel.tsx",
+          "src/driver/DriverPage.tsx",
+          "src/driver/NoticeBody.tsx",
+          "src/driver/driverNotice.flow.test.tsx",
+          "src/map/MapPanel.test.tsx",
+          "src/map/MapPanel.tsx",
+          "src/sim/SimClock.test.tsx",
+          "src/sim/SimClock.tsx",
+          "src/sim/SimulationPage.test.tsx",
+          "src/sim/SimulationPage.tsx",
+          "src/sim/settings.ts",
+          "src/state/simulation.ts"
+        ],
+        "deleted": []
+      },
+      "changes": [
+        "Removed the wording that labels the data as fake from what people see: the SIMULATED badge beside the totals and on the simulation page, the Illustrative badge on the Routes pane, \"(SIMULATED)\" in headings, \"simulated scenario\" in tooltips, \"(placeholder)\" on zone flags, and the Simulated value type.",
+        "Facility names and route notes are shown without \"(fictional)\", \"(real locations, illustrative route)\" and \"ILLUSTRATIVE\". The generated JSON files keep those labels; src/data/index.ts drops them for display.",
+        "Driver notice: the \"SIMULATED: no real message is sent\" lines are gone. The dashboard still says nothing goes to the driver until Send.",
+        "Limitations 1, 8, 9 and 12 are reworded without those words; there are still twelve.",
+        "Estimates are still called estimates, routes are still called not verified for trucks, and the Assumptions panel still lists every input and source."
+      ],
+      "verification": [
+        "All 469 unit and integration tests pass after updating the 21 that required the removed words; typecheck, lint and build pass; all 50 sanity checks pass.",
+        "Browser: the dashboard with a shipment selected and the driver page contain none of simulated, fictional, synthetic, illustrative, placeholder or prototype, in text, tooltips or labels."
+      ],
+      "limitations": [
+        "The challenge brief asks teams to identify simulated features. The app no longer says so on screen, so the presentation should.",
+        "The simulation page keeps its name and address.",
+        "README files, the evaluation exports and the internal data labels still use the word SIMULATED."
+      ]
+    },
+    {
+      "id": "2026-11-15-sourced-cost-co2-inputs",
+      "date": "2026-11-15",
+      "title": "Cost and CO2 estimates now use published trucking figures",
+      "summary": "Replaced the placeholder cost, labor and fuel-economy inputs with published figures and their citations, confirmed the EPA emission factor against the source document, and updated every test, stored response, evaluation export and document that stated the old numbers. The engine's formulas did not change. Dated in UTC like the entries below; the work was done on 2026-11-14 Pacific time.",
+      "branch": "engine/sourced-cost-co2",
+      "branch_created_from": "sim/live-dashboard at 6a7530d (pull request 45), so this branch also contains that work until it is merged",
+      "inputs": {
+        "mpg": {
+          "before": 6.5,
+          "after": 6.8
+        },
+        "nonlabor_cost_per_mile": {
+          "before": 1.8,
+          "after": 1.31
+        },
+        "labor_rate_per_hr": {
+          "before": 40,
+          "after": 36.08
+        },
+        "diesel_kgCO2_per_gal": {
+          "before": 10.21,
+          "after": 10.21
+        },
+        "pickup_handling_min": {
+          "before": 30,
+          "after": 30,
+          "note": "still a team placeholder"
+        }
+      },
+      "reference_values_changed": [
+        {
+          "shipment": "S-01",
+          "case": "normal",
+          "cost_before": 130,
+          "cost_after": 103,
+          "co2_kg_before": 70.7,
+          "co2_kg_after": 67.6
+        },
+        {
+          "shipment": "S-01",
+          "case": "wait",
+          "cost_before": 169,
+          "cost_after": 138,
+          "co2_kg_before": 70.7,
+          "co2_kg_after": 67.6
+        },
+        {
+          "shipment": "S-01",
+          "case": "reroute",
+          "cost_before": 167,
+          "cost_after": 132,
+          "co2_kg_before": 94.2,
+          "co2_kg_after": 90.1
+        },
+        {
+          "total": "normal day",
+          "cost_before": 1027,
+          "cost_after": 817,
+          "co2_kg_before": 546.5,
+          "co2_kg_after": 522.7
+        },
+        {
+          "total": "closure, no action",
+          "cost_before": 1204,
+          "cost_after": 976,
+          "co2_kg_before": 546.5,
+          "co2_kg_after": 522.7
+        },
+        {
+          "total": "closure, evaluation rule",
+          "cost_before": 1182,
+          "cost_after": 951,
+          "co2_kg_before": 577.9,
+          "co2_kg_after": 552.7
+        }
+      ],
+      "files": {
+        "added": [],
+        "modified": [
+          "README.md",
+          "docs/changelog.json",
+          "docs/evaluation.csv",
+          "docs/evaluation.json",
+          "scripts/import_map_data.py",
+          "src/App.test.tsx",
+          "src/components/assumptions/AssumptionsPanel.test.tsx",
+          "src/components/assumptions/AssumptionsPanel.tsx",
+          "src/components/responses/ResponsePanel.tsx",
+          "src/data/README.md",
+          "src/data/assumptions.json",
+          "src/data/data.test.ts",
+          "src/data/index.ts",
+          "src/data/limitations.ts",
+          "src/data/sample-responses.json",
+          "src/engine/evaluation.test.ts",
+          "src/engine/evaluationExport.test.ts",
+          "src/engine/metrics.test.ts",
+          "src/engine/responses.test.ts",
+          "src/state/engineIntegration.test.ts",
+          "src/state/scenarios.test.ts",
+          "src/state/totals.test.ts"
+        ],
+        "deleted": []
+      },
+      "changes": [
+        "src/data/assumptions.json: the four cost and CO2 inputs are published figures with full citations. Fuel economy 6.5 to 6.8 mpg; non-labor cost $1.80 to $1.31 per mile; driver labor $40 to $36.08 per hour; diesel CO2 stays 10.21 kg per gallon and was checked against the EPA document itself. Pickup handling (30 min) is still a team placeholder.",
+        "Sources: San Pedro Bay Ports, 2021 Update: Feasibility Assessment for Drayage Trucks (February 2023), p. 71; ATRI, An Analysis of the Operational Costs of Trucking: 2026 Update (2025 data), line items as reported by FleetOwner on 22 July 2026; U.S. Bureau of Labor Statistics, OEWS May 2025; U.S. EPA, Emission Factors for Greenhouse Gas Inventories, last modified 15 January 2025, Table 2.",
+        "The engine's formulas are unchanged: cost = miles x non-labor cost per mile + duty hours x labor rate; tailpipe CO2 = miles / mpg x kg per gallon.",
+        "Every estimate changes. Reference shipment S-01, max-arrival case: normal $130 to $103, waiting at the closure $169 to $138, rerouted $167 to $132; CO2 70.7 to 67.6 kg on the original route and 94.2 to 90.1 kg rerouted. Day totals: normal $1,027 to $817, closure with no action $1,204 to $976, 546.5 to 522.7 kg.",
+        "Rerouting S-01 is still cheaper than waiting and still adds 15 miles and 22.5 kg of CO2, so the trade-off the dashboard shows is the same.",
+        "src/data/sample-responses.json regenerated with scripts/import_map_data.py from the service's original rows; docs/evaluation.csv and docs/evaluation.json regenerated with npm run evaluate.",
+        "scripts/import_map_data.py no longer compares cost and CO2 with the feature service, whose columns were calculated with the placeholder rates. It still compares arrival, lateness, risk and miles.",
+        "Assumptions panel, the cost row's description, limitation 10 and the data README no longer call these inputs placeholders. The data README has a Cost and CO2 inputs section listing each source and what the inputs do not capture."
+      ],
+      "verification": [
+        "Each shipment's normal, wait and reroute cost and CO2 were calculated independently with the Python implementation in scripts/import_map_data.py and agree with the engine; the same calculation reproduces the old figures ($1,027 and $1,204) with the old inputs.",
+        "Node 24/npm 11: all 469 unit and integration tests in 34 files pass after updating the 33 expectations that stated the old figures. npm run typecheck and npm run lint pass.",
+        "The EPA factor was read from the EPA PDF (Table 2: Diesel Fuel 10.21 kg CO2 per gallon). The 6.8 mpg figure was read from the ports' PDF, p. 71."
+      ],
+      "limitations": [
+        "The ATRI line items were taken from FleetOwner's report of the study, not from the ATRI report itself, which is behind a request form.",
+        "Cost and wage figures are national averages for all trucking. ATRI reports West region fuel at $0.54 per mile against $0.482 nationally, so California fuel cost is understated.",
+        "The driver labor rate combines two sources: a BLS national mean wage and ATRI's ratio of benefits to wages. A Los Angeles metropolitan wage was not retrieved.",
+        "The 6.8 mpg figure was reported by port truck operators in a 2021 survey, not measured, and is one figure for every mile: speed, congestion, load, grade and idling do not change it.",
+        "The feature service's cost and CO2 columns still hold the placeholder-rate figures. The service was not edited.",
+        "Any slide, evaluation table or script that quotes $130, $169, $167, $1,027, $1,204 or 546.5 kg is now out of date."
+      ]
+    },
+    {
+      "id": "2026-11-15-live-truck-simulation",
+      "date": "2026-11-15",
+      "title": "Truck simulation: a separate page that drives the dashboard live",
+      "summary": "Added a truck simulation built on the engine's own times, then moved its controls off the dashboard onto a separate simulation page that drives every open dashboard live. The dashboard now starts with only the day's schedule and fills in once a run starts. Merged staging eaaf869 (pull request 42 and the RouteRipple rebrand) before opening the pull request. Dated in UTC like the entry below; the commits were made on 2026-11-14 Pacific time.",
+      "branch": "sim/live-dashboard",
+      "earlier_branch": "sim/truck-animation, merged into staging by pull request 42 (27d2fb7)",
+      "source_staging_commit": "eaaf869",
+      "conflicts_resolved": [
+        "sanity/accessibility.sanity.test.ts and sanity/app.sanity.test.ts: kept staging's RouteRipple heading and this branch's /?sample address."
+      ],
+      "integration_changes": [
+        "The new truck layer, broadcast channel and Vite plugin use the RouteRipple name. Existing driver relay identifiers are untouched.",
+        "README: new section on the live dashboard and simulation page; the sample workflow section now says it is at /?sample."
+      ],
+      "behaviour_changes": [
+        "The page at / no longer opens on the prefilled Disrupted sample. It waits for a run to start on /simulation.html. Open /?sample for the prefilled sample.",
+        "On a static copy of the build there is no relay, so the dashboard only follows a simulation page open in the same browser."
+      ],
+      "files": {
+        "added": [
+          "server/simRelay.test.ts",
+          "server/simRelay.ts",
+          "simulation.html",
+          "src/components/board/ScheduleBoard.tsx",
+          "src/sim/LiveUpdates.css",
+          "src/sim/LiveUpdates.tsx",
+          "src/sim/SimClock.css",
+          "src/sim/SimClock.test.tsx",
+          "src/sim/SimClock.tsx",
+          "src/sim/SimulationPage.css",
+          "src/sim/SimulationPage.test.tsx",
+          "src/sim/SimulationPage.tsx",
+          "src/sim/events.ts",
+          "src/sim/live.test.tsx",
+          "src/sim/live.ts",
+          "src/sim/liveChannel.ts",
+          "src/sim/main.tsx",
+          "src/sim/settings.test.ts",
+          "src/sim/settings.ts",
+          "src/sim/trucks.test.ts",
+          "src/sim/trucks.ts",
+          "src/sim/useLiveSim.ts",
+          "src/sim/useSimClock.ts",
+          "src/state/simulation.ts",
+          "src/state/trucks.ts"
+        ],
+        "modified": [
+          "README.md",
+          "docs/changelog.json",
+          "sanity/accessibility.sanity.test.ts",
+          "sanity/app.sanity.test.ts",
+          "server/driverNotices.ts",
+          "src/App.tsx",
+          "src/components/board/ShipmentCard.tsx",
+          "src/components/board/board.css",
+          "src/components/board/index.ts",
+          "src/components/shell/AppShell.tsx",
+          "src/components/shell/IncidentBanner.tsx",
+          "src/data/demoIncident.ts",
+          "src/data/index.ts",
+          "src/main.tsx",
+          "src/map/ArcgisMap.tsx",
+          "src/map/MapPanel.css",
+          "src/map/MapPanel.tsx",
+          "src/state/selectors.ts",
+          "src/state/totals.ts",
+          "src/viewModels.ts",
+          "vite.config.ts"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "Node 24/npm 11: all 469 unit and integration tests in 34 files pass, including axe checks on the live dashboard and the simulation page.",
+        "npm run typecheck, npm run lint and npm run build pass; all 50 sanity checks in six files pass after merging staging eaaf869.",
+        "Browser, two tabs on the dev server: before Start the dashboard listed the 10 scheduled shipments with no risk badges and blank totals; at 10:30 no truck was on the map and S-01 read \"Held at the port: NB-03 is closed. Leaves 10:58.\"; at 11:30 the banner said NB-03 had reopened and the six held trucks were moving. The dashboard never showed the word \"simulation\"."
+      ],
+      "outside_repo_changes": [
+        "Added a portplan-sim entry to the shared, untracked .claude/launch.json, and ran the dev server with --host on port 5199 from this branch's worktree."
+      ],
+      "limitations": [
+        "Trucks follow the schematic segment lines, not real roads. Real-road routing with ArcGIS needs an API key with routing and is not built.",
+        "DEMO ONLY: the relay has no sign-in. Anyone who can reach the server can open the simulation page and take the dashboards over by changing something on it.",
+        "Not tested on a second physical device; the cross-device path was exercised only through the relay's HTTP tests and two tabs on one computer.",
+        "Choosing a response during a live run is covered by a unit test, not by a browser run.",
+        "Deadlines on cards are not clock-aware: a card can show a reroute deadline that the run's clock has already passed.",
+        "Decisions are cleared when a closure is reported or withdrawn, including when the simulation clock is moved back before the closure.",
+        "Still the 10-shipment data. The feature service has since grown to 16 shipments and scripts/import_map_data.py stops on it."
       ]
     },
     {

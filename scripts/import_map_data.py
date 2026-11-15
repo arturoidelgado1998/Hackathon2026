@@ -8,7 +8,9 @@ files the app loads, and pre-calculates the sample responses with the
 team plan's rules (the same rules the engine will implement in E1 to E3).
 
 It then checks its results against the service's own rows for all three
-scenarios and exits non-zero if anything disagrees.
+scenarios (arrival, lateness, risk and miles) and exits non-zero if anything
+disagrees. The service's cost and CO2 columns were calculated with earlier
+placeholder rates and are not compared.
 
 Usage (Python 3.9+, standard library only):
 
@@ -55,7 +57,8 @@ ROUTES = [
 ORIGIN = "PORT-LB"
 REFERENCE_SHIPMENT = "S-01"
 
-# Placeholder assumptions (team to confirm). Kept in assumptions.json.
+# Pickup handling is still a team placeholder. The cost and CO2 inputs are
+# published figures kept, with their sources, in assumptions.json.
 PICKUP_HANDLING_MIN = 30
 TRUCK_LEAD_MIN = 15  # truck is available this long before the cargo is ready
 
@@ -545,8 +548,10 @@ def verify(rows, routes, computed):
         check(tag, "lateness (max)", result["late_max"], int(r["lateness_max_min"]))
         check(tag, "risk", risk_text[result["risk"]], r["risk"])
         check(tag, "miles", result["miles"], r["miles"])
-        check(tag, "CO2 kg", round(result["co2_exact"], 2), round(r["co2_kg"], 2))
-        check(tag, "cost (max)", round(result["cost_exact"], 2), round(r["cost_max_usd"], 2))
+        # The service's co2_kg and cost_max_usd columns were calculated with the
+        # earlier placeholder rates ($1.80 per mile, $40 per hour, 6.5 mpg). The
+        # app now uses the sourced inputs in assumptions.json, so those two
+        # columns are no longer compared. Timing, risk and miles still are.
         check(tag, "route miles", routes[r["route_id"]]["total_miles"], r["miles"])
     return problems
 

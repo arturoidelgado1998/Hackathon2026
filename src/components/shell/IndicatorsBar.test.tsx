@@ -21,10 +21,10 @@ describe('IndicatorsBar', () => {
     }
   })
 
-  it('always shows the SIMULATED badge', () => {
+  it('does not label the totals as simulated', () => {
     const { rerender } = render(<IndicatorsBar atRisk={null} cost={null} co2Kg={null} />)
-    expect(screen.getByText('SIMULATED')).toBeInTheDocument()
+    expect(screen.queryByText('SIMULATED')).toBeNull()
     rerender(<IndicatorsBar atRisk={0} cost={0} co2Kg={0} />)
-    expect(screen.getByText('SIMULATED')).toBeInTheDocument()
+    expect(screen.queryByText('SIMULATED')).toBeNull()
   })
 })

@@ -4,7 +4,7 @@
 // routeTiming, so a truck reaches its warehouse at exactly the arrival the
 // board shows. This module only turns those times into a place on a line.
 
-import { formatTime } from '../engine/time.ts'
+import { formatTime, parseTime } from '../engine/time.ts'
 import { departure, routeTiming } from '../engine/timing.ts'
 import type {
   Assumptions,
@@ -36,7 +36,17 @@ export interface TruckPlan {
   route_id: string
   /** True when the truck takes a route other than its assigned one. */
   rerouted: boolean
+  /** Ready to leave: cargo and truck ready, pickup handled. */
   departure: number
+  /**
+   * When the truck actually leaves the port. Later than `departure` when it is
+   * held there for a closure; null when it is held and the reopening is unknown.
+   */
+  leaves: number | null
+  /** The closed segment the truck is held at the port for, or null. */
+  held_for: string | null
+  /** Where the trip starts, so a held truck can still be placed at the port. */
+  first_segment_id: string
   /** Arrival at the warehouse. Null: reopening unknown. */
   arrival: number | null
   legs: TruckLeg[]
@@ -53,6 +63,8 @@ export interface TruckState {
   fraction: number
   /** When a waiting truck can move again. Null: not waiting, or reopening unknown. */
   wait_until: number | null
+  /** Held at the port for this closed segment, instead of being sent to queue at it. */
+  held_for: string | null
   /** Null when the segment has no drawn line. */
   position: LonLat | null
 }
@@ -84,11 +96,40 @@ export function planTruck(
       exit: slow ? segment.exit_max : segment.exit_min,
     })
   }
+
+  // A dispatcher does not send a truck to queue at a road already known to be
+  // closed. If the closure has started by the time the truck is ready, it is
+  // held at the port and leaves in time to reach the segment as it reopens.
+  // The engine's arrival is unchanged: the wait simply happens at the port.
+  let leaves: number | null = start
+  let heldFor: string | null = null
+  const blocked = legs.findIndex((leg) => leg.enter === null || leg.enter > leg.arrive)
+  if (incident !== null && blocked >= 0 && start >= parseTime(incident.start_time)) {
+    const leg = legs[blocked]
+    heldFor = leg.segment_id
+    if (leg.enter === null) {
+      leaves = null
+      legs.length = 0
+    } else {
+      const wait = leg.enter - leg.arrive
+      leaves = start + wait
+      for (const earlier of legs.slice(0, blocked)) {
+        earlier.arrive += wait
+        if (earlier.enter !== null) earlier.enter += wait
+        if (earlier.exit !== null) earlier.exit += wait
+      }
+      leg.arrive = leg.enter
+    }
+  }
+
   return {
     shipment_id: shipment.id,
     route_id: route.id,
     rerouted: route.id !== shipment.assigned_route_id,
     departure: start,
+    leaves,
+    held_for: heldFor,
+    first_segment_id: route.segment_ids[0],
     arrival: slow ? timing.arrival_max : timing.arrival_min,
     legs,
   }
@@ -131,18 +172,25 @@ export function truckStateAt(
 ): TruckState {
   const line = (segmentId: string) =>
     segments.find((s) => s.id === segmentId)?.geometry?.coordinates ?? []
-  const base = { shipment_id: plan.shipment_id, route_id: plan.route_id, rerouted: plan.rerouted }
+  const base = {
+    shipment_id: plan.shipment_id,
+    route_id: plan.route_id,
+    rerouted: plan.rerouted,
+    held_for: null as string | null,
+  }
   const first = plan.legs[0]
   const last = plan.legs[plan.legs.length - 1]
 
-  if (!first || time < plan.departure) {
+  if (!first || plan.leaves === null || time < plan.leaves) {
+    const held = time >= plan.departure
     return {
       ...base,
       status: 'at_port',
       segment_id: null,
       fraction: 0,
-      wait_until: null,
-      position: first ? pointAlong(line(first.segment_id), 0) : null,
+      wait_until: held ? plan.leaves : null,
+      held_for: held ? plan.held_for : null,
+      position: pointAlong(line(plan.first_segment_id), 0),
     }
   }
 
@@ -221,7 +269,12 @@ export function describeTruck(
   const route = state.rerouted ? ` (rerouted, ${state.route_id})` : ''
   switch (state.status) {
     case 'at_port':
-      return `At the port, leaves ${formatTime(plan.departure)}${route}`
+      if (state.held_for !== null) {
+        return state.wait_until === null
+          ? `Held at the port: ${state.held_for} is closed, reopening unknown`
+          : `Held at the port until ${formatTime(state.wait_until)}: ${state.held_for} is closed`
+      }
+      return `At the port, leaves ${formatTime(plan.leaves ?? plan.departure)}${route}`
     case 'waiting':
       return state.wait_until === null
         ? `Waiting at ${segmentName(state.segment_id!)}, reopening unknown`

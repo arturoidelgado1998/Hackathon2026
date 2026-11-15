@@ -48,17 +48,17 @@ describe('fixture response options', () => {
       arrival_min: '12:00', arrival_max: '12:12', risk: 'LATE',
       lateness_min: 30, lateness_max: 42, affected: true,
     })
-    expect(result.baseline).toMatchObject({ miles: 45, cost: 130, co2_kg: 70.7, driver_duty_min: 74 })
+    expect(result.baseline).toMatchObject({ miles: 45, cost: 103, co2_kg: 67.6, driver_duty_min: 74 })
     expect(result.options[0].metrics).toMatchObject({
-      cost: 169, driver_duty_min: 132, normal_driver_duty_min: 74, driver_duty_increase_min: 58,
+      cost: 138, driver_duty_min: 132, normal_driver_duty_min: 74, driver_duty_increase_min: 58,
     })
     expect(result.options[1]).toMatchObject({
       kind: 'reroute', route_id: 'R-A-ALT', added_miles: 15,
       arrival_min: '11:15', arrival_max: '11:28', risk: 'ON_TRACK',
-      cost: 167, co2_kg: 94.2,
+      cost: 132, co2_kg: 90.1,
       metrics: { driver_duty_min: 88, normal_driver_duty_min: 74, driver_duty_increase_min: 14 },
     })
-    expect(result.options[0].explanation_inputs.join('\n')).toContain('$169')
+    expect(result.options[0].explanation_inputs.join('\n')).toContain('$138')
     expect(result.options[1].stakeholder_notes.join('\n')).toContain('flagged sensitive zone')
   })
 
@@ -115,12 +115,12 @@ describe('decision deadlines and reopening uncertainty', () => {
     const result = assessShipment(reference, unknown, data, assumptions)
     expect(result.options[0]).toMatchObject({
       arrival_min: null, arrival_max: null, lateness_min: null, lateness_max: null,
-      cost: null, driver_duty_min: null, risk: 'UNKNOWN', miles: 45, co2_kg: 70.7,
+      cost: null, driver_duty_min: null, risk: 'UNKNOWN', miles: 45, co2_kg: 67.6,
     })
     expect(result.options[0].status).toContain('works only if NB-03 reopens by 10:28')
     expect(result.options[0].explanation_inputs.join('\n'))
       .toContain('works only if NB-03 reopens by 10:28')
-    expect(result.options[1]).toMatchObject({ arrival_min: '11:15', arrival_max: '11:28', cost: 167 })
+    expect(result.options[1]).toMatchObject({ arrival_min: '11:15', arrival_max: '11:28', cost: 132 })
     expect(result.options[2]).toMatchObject({ risk: 'UNKNOWN', status: 'pending_confirmation' })
   })
 

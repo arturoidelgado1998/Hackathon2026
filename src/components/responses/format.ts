@@ -83,9 +83,8 @@ function plural(n: number, one: string, many: string): string {
 /** Community sentence when real counts exist (after G3). */
 export function formatCommunityCounts(schools: number, tracts: number | null): string {
   const schoolText = plural(schools, 'school', 'schools')
-  const tail = '(real locations, illustrative route)'
   if (tracts === null) {
-    return `${schoolText} within 150 m; disadvantaged tracts not available ${tail}`
+    return `${schoolText} within 150 m; disadvantaged tracts not available`
   }
-  return `${schoolText} and ${plural(tracts, 'disadvantaged tract', 'disadvantaged tracts')} within 150 m ${tail}`
+  return `${schoolText} and ${plural(tracts, 'disadvantaged tract', 'disadvantaged tracts')} within 150 m`
 }

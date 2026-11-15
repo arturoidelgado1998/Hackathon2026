@@ -13,7 +13,7 @@ import type {
 import type { Baseline, Scenario, ShipmentSummary } from '../viewModels'
 import { assessShipment } from '../engine/responses.ts'
 import type { EngineResponseOption, ShipmentAssessment } from '../engine/responses.ts'
-import { sampleIncident } from './demoIncident.ts'
+import { getActiveIncident, sampleIncident, setActiveIncident } from './demoIncident.ts'
 import assumptionsJson from './assumptions.json'
 import corridorJson from './corridor.json'
 import facilitiesJson from './facilities.json'
@@ -22,7 +22,7 @@ import segmentsJson from './segments.json'
 import shipmentsJson from './shipments.json'
 
 export type { Baseline, Scenario, ShipmentSummary }
-export { sampleIncident }
+export { getActiveIncident, sampleIncident, setActiveIncident }
 
 /** One real public layer used by the corridor analysis. */
 export interface CorridorSource {
@@ -81,9 +81,31 @@ export type RouteRecord = Route & {
   total_minutes_max: number
 }
 
-export const facilities: Facility[] = facilitiesJson.items as Facility[]
-export const segments: RoadSegment[] = segmentsJson.items as unknown as RoadSegment[]
-export const routes: RouteRecord[] = routesJson.items as RouteRecord[]
+/**
+ * The generated files carry labels such as "(fictional)" and "ILLUSTRATIVE".
+ * They stay in the files, which are not edited by hand, and are dropped here
+ * so the app shows plain names and notes.
+ */
+function plain(text: string): string {
+  return text
+    .replace(/\s*\((?:fictional|synthetic|real locations, illustrative route)\)/gi, '')
+    .replace(/^ILLUSTRATIVE - not verified for trucks$/i, 'Not verified for trucks')
+    .replace(/\bSYNTHETIC\s+/g, '')
+}
+
+export const facilities: Facility[] = (facilitiesJson.items as Facility[]).map((facility) => ({
+  ...facility,
+  name: plain(facility.name),
+}))
+export const segments: RoadSegment[] = (segmentsJson.items as unknown as RoadSegment[]).map((segment) => ({
+  ...segment,
+  sensitive_zone_note: plain(segment.sensitive_zone_note),
+}))
+export const routes: RouteRecord[] = (routesJson.items as RouteRecord[]).map((route) => ({
+  ...route,
+  sensitive_zone_note: plain(route.sensitive_zone_note),
+  truck_suitability_note: plain(route.truck_suitability_note),
+}))
 export const shipments: Shipment[] = shipmentsJson.items as Shipment[]
 
 export const assumptions: Assumptions = {
@@ -95,7 +117,7 @@ export const assumptions: Assumptions = {
   sources: assumptionsJson.sources,
 }
 
-/** Assumption field name -> true when the value is a placeholder (all are). */
+/** Assumption field name -> true when the value is still a team placeholder, false when it cites a published source. */
 export const assumptionPlaceholders: Record<string, boolean> = assumptionsJson.placeholders
 
 /** S-01 to WH-A: the team plan's reference shipment (45 mi original, 60 mi alternative). */
@@ -106,7 +128,7 @@ export function getShipmentAssessment(shipmentId: string, scenario: Scenario): S
   const shipment = getShipment(shipmentId)
   if (!shipment) throw new Error(`Unknown shipment: ${shipmentId}`)
   return assessShipment(
-    shipment, scenario === 'disrupted' ? sampleIncident : null, { routes, segments }, assumptions,
+    shipment, scenario === 'disrupted' ? getActiveIncident() : null, { routes, segments }, assumptions,
   )
 }
 

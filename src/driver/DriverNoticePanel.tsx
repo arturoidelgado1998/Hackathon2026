@@ -152,7 +152,7 @@ export function DriverNoticePanel({
       )}
       {phone && <PhoneDelivery phone={phone} shipmentId={shipmentId} />}
       <p className="driver-panel__note">
-        SIMULATED: no real message is sent. Nothing goes to the driver on Preview or when a
+        Nothing goes to the driver on Preview or when a
         response is chosen, only on Send.
       </p>
     </section>

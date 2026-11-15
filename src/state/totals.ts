@@ -1,5 +1,5 @@
 import {
-  assumptions, getResponseOptions, routes, sampleIncident, segments, shipments,
+  assumptions, getActiveIncident, getResponseOptions, routes, segments, shipments,
 } from '../data/index.ts'
 import { evaluateAll } from '../engine/evaluation.ts'
 import { isResponseOptionAvailable } from './options.ts'
@@ -25,7 +25,7 @@ export function getTotals(state: AppState): Totals {
     }
   }
   const { totals } = evaluateAll(
-    shipments, state.scenario === 'disrupted' ? sampleIncident : null,
+    shipments, state.scenario === 'disrupted' ? getActiveIncident() : null,
     Object.values(state.decisions), { routes, segments }, assumptions,
   )
   return { atRisk: totals.late + totals.tightOrUnknown, cost: totals.cost, co2Kg: totals.co2Kg }

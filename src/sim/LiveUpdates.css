@@ -1,0 +1,56 @@
+.pp-updates {
+  display: grid;
+  gap: var(--pp-space-2);
+  padding: var(--pp-space-3);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius-sm);
+  background: var(--pp-surface-muted);
+  font-size: var(--pp-text-sm);
+}
+
+.pp-updates__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--pp-space-2);
+}
+
+.pp-updates__title {
+  font-size: var(--pp-text-md);
+  font-weight: 650;
+}
+
+.pp-updates__now {
+  font-weight: 650;
+}
+
+.pp-updates__empty {
+  color: var(--pp-text-muted);
+}
+
+.pp-updates__list {
+  display: grid;
+  gap: var(--pp-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pp-updates__item {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: var(--pp-space-2);
+}
+
+.pp-updates__item--incident {
+  color: var(--pp-danger);
+  font-weight: 600;
+}
+
+.pp-updates__time {
+  color: var(--pp-text-muted);
+}
+
+.pp-updates__item--incident .pp-updates__time {
+  color: inherit;
+}

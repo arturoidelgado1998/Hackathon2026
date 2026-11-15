@@ -65,8 +65,7 @@ const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one :
 /** The community sentence the comparison table shows for a route. */
 const communityText = (route: RouteRecord) =>
   `${plural(route.schools_150m, 'school', 'schools')} and ` +
-  `${plural(route.dac_tracts.length, 'disadvantaged tract', 'disadvantaged tracts')} within 150 m ` +
-  '(real locations, illustrative route)'
+  `${plural(route.dac_tracts.length, 'disadvantaged tract', 'disadvantaged tracts')} within 150 m`
 /** The line the map panel shows for the route whose corridor is drawn. */
 const corridorLine = (route: RouteRecord) =>
   `Within 150 m of ${route.id}: ${plural(route.schools_150m, 'school', 'schools')} and ` +
@@ -132,12 +131,16 @@ async function openApp({ realMap = false } = {}) {
   failedLoads = []
   page.on('pageerror', (error) => pageErrors.push(error.message))
   page.on('response', (response) => {
-    if (response.url().startsWith(origin) && response.status() >= 400) {
+    // This preview runs without the project's Vite config, so it has no
+    // simulation relay. The dashboard asks for it once and carries on without.
+    const isSimRelay = new URL(response.url()).pathname.startsWith('/api/sim-state')
+    if (response.url().startsWith(origin) && response.status() >= 400 && !isSimRelay) {
       failedLoads.push(`${response.status()} ${response.url()}`)
     }
   })
   if (!realMap) await page.route('**/assets/ArcgisMap-*.js', (route) => route.abort())
-  await page.goto(origin)
+  // The prefilled sample; without ?sample the page waits for live updates.
+  await page.goto(`${origin}/?sample`)
   await page.getByRole('heading', { level: 1, name: 'RouteRipple' }).waitFor()
 }
 
@@ -149,7 +152,9 @@ describe('built app in a browser', () => {
   it('starts with no errors and shows every shipment', async () => {
     await openApp()
 
-    await page.getByText('SIMULATED').first().waitFor()
+    // The page does not label its data as simulated, fictional or illustrative.
+    await page.getByText('Est. cost').first().waitFor()
+    expect(await page.getByText(/SIMULATED|fictional|Illustrative/).count()).toBe(0)
     await expect(page.title()).resolves.toBe('RouteRipple')
     expect(await page.locator('[data-shipment-id]').count()).toBe(shipmentIds.length)
     for (const id of shipmentIds) expect(await card(id).count(), id).toBe(1)
@@ -256,7 +261,10 @@ describe('built app in a browser', () => {
     expect(await text(community.nth(1))).toContain(communityText(alternative))
     // The script that writes the data and the app that shows it use the same words.
     for (const route of [original, alternative]) {
-      if (route.sensitive_zone_note) expect(route.sensitive_zone_note, route.id).toBe(communityText(route))
+      // The stored note keeps its label; the page shows the sentence without it.
+      if (route.sensitive_zone_note) {
+        expect(route.sensitive_zone_note, route.id).toBe(`${communityText(route)} (real locations, illustrative route)`)
+      }
     }
 
     // Beside the map: the original route first, then the route being previewed.

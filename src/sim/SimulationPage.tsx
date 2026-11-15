@@ -1,11 +1,13 @@
-import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
 import { RiskBadge } from '../components/board/RiskBadge.tsx'
 import { Brand } from '../components/brand/Brand.tsx'
 import { facilities, getSegment, routes, segments } from '../data/index.ts'
-import { formatTime } from '../engine/time.ts'
+import { formatTime, parseTime } from '../engine/time.ts'
 import { MapBoundary } from '../map/MapPanel.tsx'
 import { runSimulation, type SimRow } from '../state/simulation.ts'
 import { SimClock } from './SimClock.tsx'
+import type { SimBroadcast } from './live.ts'
+import { fetchLanUrls, publishSim } from './liveChannel.ts'
 import {
   parseSettings,
   serializeSettings,
@@ -21,6 +23,10 @@ import './SimulationPage.css'
 const ArcgisMap = lazy(() => import('../map/ArcgisMap.tsx'))
 
 const segmentIds = segments.map((segment) => segment.id)
+
+// One id per open simulation page, and a counter that keeps rising across reloads.
+const SENDER = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+let sequence = Date.now()
 const segmentName = (id: string) => getSegment(id)?.name ?? id
 
 function arrival(row: SimRow): string {
@@ -59,13 +65,67 @@ export function SimulationPage() {
   useEffect(() => {
     window.history.replaceState(null, '', `?${query}`)
   }, [query])
-  const link = `${window.location.origin}${window.location.pathname}?${query}`
+
+  // A teammate cannot open "localhost", so the link uses this computer's
+  // network address when the server is reachable from other devices.
+  const [lanUrl, setLanUrl] = useState<string | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    void fetchLanUrls().then((urls) => {
+      if (!cancelled && urls.length > 0) setLanUrl(urls[0])
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+  const local = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname)
+  const origin = local && lanUrl ? lanUrl : window.location.origin
+  const link = `${origin}${window.location.pathname}?${query}`
+
+  // Broadcast the setup and the clock so the dashboards follow this page: at
+  // once when something is changed here, and once a second while the clock runs.
+  // Opening the page sends nothing, so a teammate who only opens the link does
+  // not disturb a run someone else is driving.
+  const canRun = run.error === null
+  // The run has begun once the clock has moved off the start of the day.
+  const started = clock.running || Math.floor(clock.time) > range.start
+  const latest = useRef<Omit<SimBroadcast, 'seq' | 'beat'> | null>(null)
+  useEffect(() => {
+    latest.current = canRun
+      ? { v: 1, sender: SENDER, query, time: clock.time, running: clock.running, started, speed: clock.speed }
+      : null
+  })
+  const publish = (beat: boolean) => {
+    if (latest.current) publishSim({ ...latest.current, beat, seq: ++sequence })
+  }
+  const pausedAt = clock.running ? 'running' : String(Math.floor(clock.time))
+  const sentKey = useRef<string | null>(null)
+  useEffect(() => {
+    const key = `${query}|${canRun}|${clock.running}|${pausedAt}`
+    if (sentKey.current === null) {
+      sentKey.current = key
+      return
+    }
+    if (sentKey.current === key) return
+    sentKey.current = key
+    publish(false)
+  }, [query, canRun, clock.running, pausedAt])
+  useEffect(() => {
+    if (!clock.running) return
+    const id = setInterval(() => publish(true), 1000)
+    return () => clearInterval(id)
+  }, [clock.running])
 
   const update = (change: Partial<SimSettings>) => {
     setCopied(false)
     setSettings((current) => ({ ...current, ...change }))
   }
 
+  // The road is drawn closed only between the closing and reopening times.
+  const closedNow =
+    run.incident !== null &&
+    clock.time >= parseTime(run.incident.start_time) &&
+    clock.time < parseTime(run.incident.reported_reopen_time!)
   const selectedRow = run.rows.find((row) => row.shipment.id === selectedId)
   const highlightedRouteIds = useMemo(
     () =>
@@ -89,12 +149,11 @@ export function SimulationPage() {
         <div>
           <h1 className="sim-page__title"><Brand /> simulation</h1>
           <p className="sim-page__lede">
-            Set up a day, press Start, and watch where each truck is. Every time comes from the
-            same engine as the dashboard.
+            Set up a day and press Start. Until then the dashboard shows only the day’s schedule.
+            Once it runs, the dashboard receives trucks and the closure as they happen.
           </p>
         </div>
         <div className="sim-page__header-side">
-          <span className="sim-page__badge">SIMULATED</span>
           <a className="pp-button" href="index.html">
             Back to dashboard
           </a>
@@ -182,7 +241,8 @@ export function SimulationPage() {
               </select>
             </label>
             <p className="sim-page__hint">
-              One rule for every delayed truck, to compare outcomes. It is not a recommendation.
+              One rule for every delayed truck on this page, to compare outcomes. It is not a
+              recommendation. On the dashboard, trucks follow the dispatcher’s choices.
             </p>
           </fieldset>
 
@@ -232,7 +292,9 @@ export function SimulationPage() {
             <p className="sim-page__hint" role="status">
               {copied
                 ? 'Link copied.'
-                : 'A teammate who opens this link gets the same settings and presses Start.'}
+                : local && !lanUrl
+                  ? 'This server only answers on this computer. Start it with --host so a teammate can open the link.'
+                  : 'A teammate who opens this link gets the same settings and can run the simulation.'}
             </p>
           </div>
         </form>
@@ -272,7 +334,7 @@ export function SimulationPage() {
                     segments={segments}
                     routes={routes}
                     highlightedRouteIds={highlightedRouteIds}
-                    incidentSegmentId={run.incident?.segment_id ?? null}
+                    incidentSegmentId={closedNow ? run.incident!.segment_id : null}
                     candidateSegmentId={null}
                     trucks={states}
                     selectedShipmentId={selectedId}
@@ -283,8 +345,9 @@ export function SimulationPage() {
             </div>
           )}
           <p className="sim-page__hint">
-            Triangle: truck moving. Red square: truck held at the closure. Lines are schematic and
-            routes are not verified for trucks.
+            Triangle: truck moving. Red square: truck caught at the closure. Trucks not yet sent
+            when the road closes are held at the port. Lines are schematic and routes are not
+            verified for trucks.
           </p>
 
           {!run.error && (
@@ -353,7 +416,7 @@ export function SimulationPage() {
             </div>
             <p className="sim-page__hint">
               Select a shipment to highlight its route on the map. Arrivals are estimates from
-              simulated data, not measured outcomes.
+              the inputs, not measured outcomes.
             </p>
           </section>
         )}

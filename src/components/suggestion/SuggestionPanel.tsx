@@ -175,8 +175,8 @@ export function SuggestionPanel({ view, request = requestSuggestion }: Suggestio
             </ol>
           </details>
           <p className="pp-suggestion__foot">
-            Every figure here is the dashboard's own simulated estimate; the AI supplied none of them. A suggestion can
-            be wrong.
+            Every figure here is the dashboard's own estimate; the AI supplied none of them. A suggestion can be
+            wrong.
           </p>
           <button type="button" className="pp-button" onClick={() => setState({ status: 'idle' })}>
             Dismiss suggestion

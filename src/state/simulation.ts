@@ -68,6 +68,6 @@ export function runSimulation(settings: SimSettings): SimRun {
   } catch (error) {
     // The engine refuses times that run past midnight or other invalid inputs.
     const detail = error instanceof Error ? error.message : 'unknown problem'
-    return { incident: null, plans: [], rows: [], error: `These settings cannot be simulated: ${detail}.` }
+    return { incident: null, plans: [], rows: [], error: `These settings cannot run: ${detail}.` }
   }
 }

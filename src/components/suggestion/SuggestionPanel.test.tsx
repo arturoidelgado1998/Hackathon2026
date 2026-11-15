@@ -66,7 +66,7 @@ describe('SuggestionPanel', () => {
       'Schools within 150 m: 18, against 5 for Wait',
       'Disadvantaged tracts within 150 m: 79, against 51 for Wait',
       'Miles: 45 mi, against 40 mi for Wait',
-      'Est. tailpipe CO2: 70.7 kg, against 62.8 kg for Wait',
+      'Est. tailpipe CO2: 67.6 kg, against 60.1 kg for Wait',
     ])
     expect(result).toHaveTextContent(`In the AI's words: ${NOTE}`)
     expect(screen.getByRole('region', { name: 'AI suggestion' })).toHaveTextContent('the AI supplied none of them')

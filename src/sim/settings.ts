@@ -87,7 +87,7 @@ export function incidentOf(settings: SimSettings): Incident | null {
     start_time: settings.start,
     reported_reopen_time: settings.reopen,
     assumed_reopen_time: null,
-    evidence_text: `SIMULATED: ${settings.segmentId} closed from ${settings.start}, reopening ${settings.reopen} (set on the simulation page).`,
+    evidence_text: `Report: ${settings.segmentId} closed from ${settings.start}; reopening reported for ${settings.reopen}.`,
     confirmed_by_user: true,
   }
 }

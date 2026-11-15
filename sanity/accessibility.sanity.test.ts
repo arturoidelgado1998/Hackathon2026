@@ -47,7 +47,8 @@ async function openApp(width = 1440) {
   page = await browser.newPage({ viewport: { width, height: 1000 } })
   // Like the existing dashboard sanity checks, isolate UI from WebGL/network access.
   await page.route('**/src/map/ArcgisMap.tsx*', (route) => route.abort())
-  await page.goto(origin)
+  // The prefilled sample; without ?sample the page waits for live updates.
+  await page.goto(`${origin}/?sample`)
   await page.getByRole('heading', { name: 'RouteRipple', exact: true }).waitFor()
 }
 

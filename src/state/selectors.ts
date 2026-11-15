@@ -11,7 +11,7 @@ import {
   getShipment,
   getShipmentAssessment,
   getShipmentSummary,
-  sampleIncident,
+  getActiveIncident,
   shipments,
 } from '../data/index.ts'
 import { getSegment } from '../data/index.ts'
@@ -118,7 +118,7 @@ export function buildCards(
         ? decision.status === 'pending_confirmation' ? 'awaiting_confirmation' : 'decision_recorded'
         : defaultColumn(summary, scenario),
       ...(summary.affected ? {
-        incidentSegmentId: sampleIncident.segment_id,
+        incidentSegmentId: getActiveIncident().segment_id,
         reopen_needed_by: assessment.reopen_needed_by,
         reroute_decide_by: assessment.reroute_decide_by,
         no_feasible_response: assessment.no_feasible_response,
@@ -190,5 +190,5 @@ export function buildHighlightedRoutes(
 
 /** The confirmed closure shown on the map panel, if the scenario has one. */
 export function incidentSegmentFor(scenario: Scenario): string | null {
-  return scenario === 'disrupted' ? sampleIncident.segment_id : null
+  return scenario === 'disrupted' ? getActiveIncident().segment_id : null
 }

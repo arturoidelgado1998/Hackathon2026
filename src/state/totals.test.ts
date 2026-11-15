@@ -31,17 +31,17 @@ afterEach(() => vi.restoreAllMocks())
 
 describe('getTotals', () => {
   it('sums the normal baseline, with no shipment at risk', () => {
-    expectTotals(normal, 0, 1027, 546.5)
+    expectTotals(normal, 0, 817, 522.7)
   })
 
   it('calculates current wait metrics for affected shipments and normal metrics for the rest', () => {
-    expectTotals(disrupted, 4, 1204, 546.5)
+    expectTotals(disrupted, 4, 976, 522.7)
   })
 
   it.each([
-    ['wait', 'S-01', 4, 1204, 546.5],
-    ['reroute', 'S-01', 3, 1202, 570],
-    ['reroute', 'S-03', 4, 1215, 570],
+    ['wait', 'S-01', 4, 976, 522.7],
+    ['reroute', 'S-01', 3, 970, 545.2],
+    ['reroute', 'S-03', 4, 982, 545.2],
   ] as const)('uses the recorded %s response for %s', (kind, id, atRisk, cost, co2Kg) => {
     expectTotals(withDecision(decision(kind, id)), atRisk, cost, co2Kg)
   })
@@ -53,7 +53,7 @@ describe('getTotals', () => {
         'S-01': decision('reroute'),
         'S-02': decision('reroute', 'S-02'),
       },
-    }, 3, 1210, 593.5)
+    }, 3, 973, 567.7)
   })
 
   it.each(['S-01', 'S-02'])(
@@ -61,7 +61,7 @@ describe('getTotals', () => {
     (shipmentId) => {
       expectTotals(
         withDecision(decision('request_slot', shipmentId, 'pending_confirmation')),
-        4, 1204, 546.5,
+        4, 976, 522.7,
       )
     },
   )
@@ -70,7 +70,7 @@ describe('getTotals', () => {
     expectTotals({
       ...disrupted,
       previewDecision: decision('reroute', 'S-01', 'previewed'),
-    }, 4, 1204, 546.5)
+    }, 4, 976, 522.7)
   })
 
   it.each([
@@ -80,21 +80,21 @@ describe('getTotals', () => {
     expectTotals({
       ...withDecision(decision('reroute')),
       previewDecision: decision(kind, shipmentId, 'previewed'),
-    }, 3, 1202, 570)
+    }, 3, 970, 545.2)
   })
 
   it('does not change current metrics when all responses are rejected', () => {
-    expectTotals({ ...disrupted, rejectedShipmentIds: ['S-01'] }, 4, 1204, 546.5)
+    expectTotals({ ...disrupted, rejectedShipmentIds: ['S-01'] }, 4, 976, 522.7)
   })
 
   it('counts engine UNKNOWN risk and keeps unknown wait cost null, including pending slots', () => {
     const reopen = data.sampleIncident.reported_reopen_time
     data.sampleIncident.reported_reopen_time = null
     try {
-      expect(getTotals(disrupted)).toEqual({ atRisk: 7, cost: null, co2Kg: 546.5 })
+      expect(getTotals(disrupted)).toEqual({ atRisk: 7, cost: null, co2Kg: 522.7 })
       expect(getTotals(withDecision(
         decision('request_slot', 'S-01', 'pending_confirmation'),
-      ))).toEqual({ atRisk: 7, cost: null, co2Kg: 546.5 })
+      ))).toEqual({ atRisk: 7, cost: null, co2Kg: 522.7 })
     } finally {
       data.sampleIncident.reported_reopen_time = reopen
     }

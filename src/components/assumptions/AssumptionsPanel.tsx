@@ -17,7 +17,6 @@ const DETAILS: Record<AssumptionKey, { label: string; unit: string }> = {
 const VALUE_TYPES = [
   ['Confirmed', 'Human-confirmed input; estimated outcomes remain estimates.'],
   ['Estimated', 'Scenario-based value, not a measured real-world outcome.'],
-  ['Simulated', 'Prototype data, not a real shipment or incident.'],
   ['Unknown', 'Not available or not yet confirmed; not zero.'],
 ] as const
 
@@ -28,7 +27,8 @@ export function AssumptionsPanel() {
     <div className="assumptions-panel">
       <h2>Assumptions &amp; sources</h2>
       <p className="assumptions-note">
-        Estimated values use the assumptions below. Placeholder values still need team verification.
+        Estimated values use the inputs below. Cost and CO2 inputs are published averages, cited in
+        the Source column. An input marked Team assumption has no published source.
       </p>
       <nav className="assumptions-nav" aria-label="Assumptions sections">
         <a href={`#${id}-inputs`}>Inputs &amp; sources</a>
@@ -53,12 +53,12 @@ export function AssumptionsPanel() {
                 <th scope="row">
                   {DETAILS[key].label}
                   {assumptionPlaceholders[key] && (
-                    <span className="assumptions-placeholder">Placeholder</span>
+                    <span className="assumptions-placeholder">Team assumption</span>
                   )}
                 </th>
                 <td
                   className="pp-num"
-                  title="Estimated assumption for simulated scenarios."
+                  title="Estimated input, used for every result."
                   data-label="Estimated value"
                 >
                   {assumptions[key]}
