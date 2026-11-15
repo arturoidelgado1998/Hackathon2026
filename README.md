@@ -1,7 +1,27 @@
-# PortPlan
+# RouteRipple
 
 AI-assisted disruption triage dashboard for port-to-warehouse deliveries.
 Stack: Vite + React + TypeScript, Vitest, ESLint, plain CSS.
+
+## Brand
+
+The approved **Route Node** mark and RouteRipple wordmark appear in the dashboard,
+the mobile driver notice at `/driver.html#S-01` and the truck simulation at
+`/simulation.html`. All three pages use the same
+[SVG logo](public/routeripple.svg), browser icon and
+[180px Apple touch icon](public/apple-touch-icon.png).
+The shared component is [`Brand`](src/components/brand/Brand.tsx).
+
+The original [three-concept comparison](logos/preview.html) is available at
+`http://localhost:5173/logos/preview.html` while the dev server runs.
+The project-scoped [SVG logo skill](.github/skills/svg-logo-skill/SKILL.md) comes
+from [longcipher/svg-logo-skill](https://github.com/longcipher/svg-logo-skill/tree/b86e71f093dc6b4d8f79dedd1a41445181c79c88),
+under its included Apache-2.0 license. Reload the coding tool if the new skill
+does not appear. It adds no application dependencies.
+
+RouteRipple was previously named PortPlan. Existing driver notice/reply storage
+keys, relay identifiers and ArcGIS service URLs intentionally retain their old
+names for compatibility. Historical changelog entries are preserved.
 
 ## Prerequisites
 

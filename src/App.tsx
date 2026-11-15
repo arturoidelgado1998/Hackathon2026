@@ -1,4 +1,4 @@
-import { useReducer } from 'react'
+import { useMemo, useReducer } from 'react'
 import { AssumptionsPanel } from './components/assumptions/AssumptionsPanel.tsx'
 import { TriageBoard } from './components/board/index.ts'
 import { ResponsePanel } from './components/responses/index.ts'
@@ -15,6 +15,9 @@ import { facilities, getSegment, routes, sampleIncident, segments } from './data
 import { clearDriverNotices } from './driver/desk.ts'
 import { DriverNoticeDesk } from './driver/DriverNoticeDesk.tsx'
 import { MapPanel } from './map/MapPanel.tsx'
+import { SimClock } from './sim/SimClock.tsx'
+import { simWindow, truckStateAt } from './sim/trucks.ts'
+import { useSimClock } from './sim/useSimClock.ts'
 import { isResponseOptionAvailable } from './state/options.ts'
 import { appReducer, initialState } from './state/reducer.ts'
 import {
@@ -24,6 +27,7 @@ import {
   incidentSegmentFor,
 } from './state/selectors.ts'
 import { getTotals } from './state/totals.ts'
+import { buildTruckPlans } from './state/trucks.ts'
 
 export interface AppProps {
   /** Sample/integration entry point only; this does not enable incident reporting. */
@@ -41,12 +45,28 @@ function App({ incidentInterpretationStatus = 'idle' }: AppProps) {
   const highlightedDecision = previewDecision ?? selectedDecision ?? null
   const totals = getTotals(state)
 
+  // Memoised so the clock's ticks do not redraw the routes or re-frame the map.
+  const highlightedRouteIds = useMemo(
+    () => buildHighlightedRoutes(selectedShipmentId, previewDecision, decisions),
+    [selectedShipmentId, previewDecision, decisions],
+  )
+
+  // Truck simulation: trips come from the engine; the clock only picks a moment.
+  const truckPlans = useMemo(() => buildTruckPlans(scenario, decisions), [scenario, decisions])
+  const simRange = useMemo(() => simWindow(truckPlans), [truckPlans])
+  const simClock = useSimClock(simRange.start, simRange.end)
+  const truckStates = useMemo(
+    () => truckPlans.map((plan) => truckStateAt(plan, simClock.time, segments)),
+    [truckPlans, simClock.time],
+  )
+
   return (
     <AppShell
       scenario={scenario}
       onScenarioChange={(next) => dispatch({ type: 'set_scenario', scenario: next })}
       onReset={() => {
         clearDriverNotices()
+        simClock.restart()
         dispatch({ type: 'reset' })
       }}
       status={
@@ -75,14 +95,22 @@ function App({ incidentInterpretationStatus = 'idle' }: AppProps) {
           segments={segments}
           routes={routes}
           selectedShipmentId={selectedShipmentId}
-          highlightedRouteIds={buildHighlightedRoutes(
-            selectedShipmentId,
-            previewDecision,
-            decisions,
-          )}
+          highlightedRouteIds={highlightedRouteIds}
           highlightedDecision={highlightedDecision}
           incidentSegmentId={incidentSegmentFor(scenario)}
           candidateSegmentId={null}
+          trucks={truckStates}
+          simClock={
+            <SimClock
+              clock={simClock}
+              start={simRange.start}
+              end={simRange.end}
+              plans={truckPlans}
+              states={truckStates}
+              segmentName={(id) => getSegment(id)?.name ?? id}
+              pageHref={`simulation.html?closure=${scenario === 'disrupted' ? 1 : 0}`}
+            />
+          }
         />
       }
       responses={

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="flow-lines-title">
+  <title id="flow-lines-title">RouteRipple: Flow Lines logo concept</title>
+  <g id="icon" fill="none" stroke="#1d4f91" stroke-width="48" stroke-linecap="round">
+    <path d="M64 96h96c96 0 96 112 192 112h96"/>
+    <path d="M64 208h96c96 0 96 112 192 112h96"/>
+    <path d="M64 320h96c96 0 96 112 192 112h96"/>
+  </g>
+</svg>

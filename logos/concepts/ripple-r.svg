@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="ripple-r-title">
+  <title id="ripple-r-title">RouteRipple: Ripple R logo concept</title>
+  <g id="icon" fill="none" stroke="#1d4f91" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M104 416V120h120c64 0 104 40 104 96s-40 96-104 96H104m128 0 120 104" stroke-width="56"/>
+    <path d="M240 56c114 0 192 88 192 200" stroke-width="36"/>
+  </g>
+</svg>

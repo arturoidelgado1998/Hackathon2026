@@ -47,9 +47,9 @@ export default defineConfig({
   server: { proxy: aiProxy },
   preview: { proxy: aiProxy },
   build: {
-    // Two pages: the dashboard and the driver notice page (issue #34).
+    // Three pages: the dashboard, the driver notice page (issue #34) and the simulation page.
     rolldownOptions: {
-      input: { main: 'index.html', driver: 'driver.html' },
+      input: { main: 'index.html', driver: 'driver.html', simulation: 'simulation.html' },
     },
   },
   test: {

@@ -8,7 +8,6 @@
 // Either way the key is read from the server's environment, sent only in a
 // request header, and never logged, returned or put in an error message.
 
-import { askClaude } from './anthropic.ts'
 
 export interface ModelConfig {
   provider: string
@@ -173,7 +172,11 @@ export async function askModel(
   request: ModelRequest,
   fetchImpl: typeof fetch = fetch,
 ): Promise<ModelAnswer> {
-  if (config.provider === ANTHROPIC) return askClaude(config, request, fetchImpl)
+  if (config.provider === ANTHROPIC) {
+    // Loaded only when Claude is chosen, so the Bolt path needs no installed package.
+    const { askClaude } = await import('./anthropic.ts')
+    return askClaude(config, request, fetchImpl)
+  }
 
   const body = chatCompletionsBody(request)
   let response: Response

@@ -122,12 +122,19 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 24
+          cache: npm
 
       - name: Skipped, no key
         if: env.HAS_KEY != 'true'
         run: echo "::notice::LLM_API_KEY is not available to this run, so the live AI check was skipped."
 
-      # Needs no install: the script uses Node only. It never prints the key.
+      # The Bolt path uses Node only, but the Claude path needs its SDK, so
+      # install either way. Lifecycle scripts are not needed here.
+      - name: Install dependencies
+        if: env.HAS_KEY == 'true'
+        run: npm ci --ignore-scripts
+
+      # The script never prints the key.
       - name: Ask the model
         if: env.HAS_KEY == 'true'
         env:

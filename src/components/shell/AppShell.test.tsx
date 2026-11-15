@@ -23,8 +23,10 @@ describe('AppShell', () => {
     renderShell({ assumptions: <span>assumptions-slot</span> })
 
     const banner = screen.getByRole('banner')
-    expect(banner).toHaveTextContent('PortPlan')
-    expect(screen.getByRole('heading', { level: 1, name: 'PortPlan' })).toBeInTheDocument()
+    expect(banner).toHaveTextContent('RouteRipple')
+    const title = screen.getByRole('heading', { level: 1, name: 'RouteRipple' })
+    expect(title).toBeInTheDocument()
+    expect(title.querySelector('img')).toHaveAttribute('alt', '')
     expect(screen.getByRole('main')).toBeInTheDocument()
 
     const regions: [string, string][] = [
