@@ -1,4 +1,4 @@
-/* PortPlan design tokens and base styles.
+/* RouteRipple design tokens and base styles.
    An operations tool: system sans, one accent, restrained colour.
    Colour is reserved for the primary action, the current selection and
    delivery risk. Risk always carries an icon and a text label as well. */
@@ -145,6 +145,11 @@ p {
   background: var(--pp-surface-muted);
   border-color: var(--pp-border);
   color: var(--pp-text-muted);
+}
+
+/* Switch pressed foreground/background colors together to preserve contrast. */
+.pp-button--primary[aria-pressed] {
+  transition-property: border-color;
 }
 
 .pp-button[aria-pressed='true'] {

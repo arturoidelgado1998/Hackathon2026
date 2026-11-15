@@ -11,9 +11,9 @@ const cardFor = (shipmentId: string) => {
 }
 
 describe('App', () => {
-  it('renders the PortPlan heading and the SIMULATED badge', () => {
+  it('renders the RouteRipple heading and the SIMULATED badge', () => {
     render(<App />)
-    expect(screen.getByRole('heading', { level: 1, name: 'PortPlan' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'RouteRipple' })).toBeInTheDocument()
     expect(screen.getByText('SIMULATED')).toBeInTheDocument()
   })
 

@@ -33,6 +33,8 @@ afterEach(() => vi.useRealTimers())
 describe('SimulationPage', () => {
   it('opens on the sample closure, paused, with every shipment listed', async () => {
     const map = await open()
+    const title = screen.getByRole('heading', { level: 1, name: 'RouteRipple simulation' })
+    expect(title.querySelector('img')).toHaveAttribute('alt', '')
     expect(screen.getByRole('heading', { name: 'NB-03 closed 10:00 to 11:10' })).toBeInTheDocument()
     expect(map).toHaveAttribute('data-incident', 'NB-03')
     expect(map).toHaveAttribute('data-trucks', '10')
