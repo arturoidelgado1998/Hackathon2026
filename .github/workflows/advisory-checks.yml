@@ -1,8 +1,13 @@
-# Advisory checks for the staging -> main flow.
+# Checks for the staging -> main flow.
 #
-# Branch protection is not available for this repository's plan, so nothing
-# here can block a merge or a direct push. These jobs only mark a pull request
-# or a commit red so the team can see a problem before it reaches main.
+# main and staging are protected: a pull request can only be merged once the
+# "Lint, typecheck, test and build" and "Sanity checks on the built app" jobs
+# pass, and main also needs the source-branch job. The workflow keeps its
+# original name so those required checks keep matching.
+#
+# Nothing here costs money by itself: the repository is public, and every job
+# runs on GitHub's standard runners. The one job that could, the live AI
+# check, calls a paid model and so only runs when someone starts it by hand.
 #
 # Flow: feature branch -> pull request into staging -> pull request from
 # staging into main.
@@ -13,7 +18,7 @@ on:
     branches: [main, staging]
   push:
     branches: [main, staging]
-  # Lets the live AI check be rerun by hand from the Actions tab.
+  # The only way the live AI check runs: Actions tab, "Run workflow".
   workflow_dispatch:
 
 permissions:
@@ -108,10 +113,15 @@ jobs:
   # they run without a key. This job asks the real model the five SYNTHETIC
   # test reports and compares its readings with what is expected, then asks it
   # for a suggestion on three simulated shipments and checks each one.
-  # The key is the repository secret LLM_API_KEY; the address and model are
-  # repository variables. Pull requests from forks get no secret and skip.
+  # The key and the address are the repository secrets LLM_API_KEY and
+  # LLM_BASE_URL; the model and provider are repository variables.
+  #
+  # Every run asks the model eight questions on the key in LLM_API_KEY, and
+  # whoever owns that key may be charged for them. So this job never runs on a
+  # push or a pull request: only when someone starts the workflow by hand.
   ai-live:
     name: Live AI check on the test reports and suggestions
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
