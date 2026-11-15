@@ -1,4 +1,5 @@
 import { AlertIcon, CheckIcon } from '../components/icons.tsx'
+import { keyedLink } from '../relayKey.ts'
 import { NoticeBody } from './NoticeBody.tsx'
 import type { RelayStatus } from './relayChannel.ts'
 import {
@@ -89,7 +90,7 @@ function PhoneDelivery({ phone, shipmentId }: { phone: RelayStatus; shipmentId: 
         <span key={url}>
           {index > 0 && ' or '}
           <code className="driver-panel__url">
-            {url}/driver.html#{encodeURIComponent(shipmentId)}
+            {keyedLink(`${url}/driver.html`, '', encodeURIComponent(shipmentId), phone.key ?? null)}
           </code>
         </span>
       ))}

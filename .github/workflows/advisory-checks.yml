@@ -139,7 +139,9 @@ jobs:
         if: env.HAS_KEY == 'true'
         env:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
-          LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
+          # A secret, not a variable: variables are printed in the log, and the
+          # log is public once the repository is.
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
           LLM_MODEL: ${{ vars.LLM_MODEL }}
           LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
         run: npm run ai:tests -- --check

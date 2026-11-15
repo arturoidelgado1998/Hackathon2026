@@ -114,6 +114,50 @@ describe('POST /incident/interpret', () => {
   })
 })
 
+describe('the cap on model calls', () => {
+  it('refuses the call past the limit in a minute, without asking the model, and recovers', async () => {
+    let clock = 1_000_000
+    let asked = 0
+    const counting = (async (...args: Parameters<typeof fetch>) => {
+      asked += 1
+      return modelAnswers(reading)(...args)
+    }) as typeof fetch
+    const { origin, post, lines } = await start({ maxPerMinute: 3, now: () => clock, fetchImpl: counting })
+    for (let i = 0; i < 3; i++) expect((await post(JSON.stringify({ report: REPORT }))).status).toBe(200)
+
+    // The fourth in the same minute, on either route, is refused and costs nothing.
+    const refused = await post(JSON.stringify({ report: REPORT }))
+    expect(refused.status).toBe(429)
+    expect(refused.headers.get('retry-after')).toBe('60')
+    expect(await refused.json()).toMatchObject({ error: 'rate_limited', message: 'Too many AI requests in a minute. Try again in 60 seconds.' })
+    const other = await fetch(`${origin}/shipment/suggest`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+    expect(other.status).toBe(429)
+    expect(asked).toBe(3)
+    expect(lines.filter((line) => line.includes('rate_limited'))).toHaveLength(2)
+
+    // Health is never limited, and the cap lifts as the minute passes.
+    expect((await fetch(`${origin}/health`)).status).toBe(200)
+    clock += 59_000
+    expect((await post(JSON.stringify({ report: REPORT }))).status).toBe(429)
+    clock += 1_000
+    expect((await post(JSON.stringify({ report: REPORT }))).status).toBe(200)
+    expect(asked).toBe(4)
+  })
+
+  it('counts refused and malformed requests too, so they cannot be used to hammer the server', async () => {
+    const { post } = await start({ maxPerMinute: 2, now: () => 5 })
+    expect((await post('not json')).status).toBe(400)
+    expect((await post('not json')).status).toBe(400)
+    expect((await post(JSON.stringify({ report: REPORT }))).status).toBe(429)
+  })
+
+  it('allows 30 a minute unless told otherwise', async () => {
+    const { post } = await start({ now: () => 5 })
+    for (let i = 0; i < 30; i++) expect((await post(JSON.stringify({ report: REPORT }))).status).toBe(200)
+    expect((await post(JSON.stringify({ report: REPORT }))).status).toBe(429)
+  })
+})
+
 describe('GET /health', () => {
   it('says whether the AI is set up and which model it uses, without the key', async () => {
     const { origin } = await start()

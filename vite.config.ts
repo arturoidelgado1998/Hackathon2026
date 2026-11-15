@@ -2,8 +2,14 @@ import { readFileSync } from 'node:fs'
 import react from '@vitejs/plugin-react'
 import type { Plugin } from 'vite'
 import { defineConfig } from 'vitest/config'
+import { createAccess, createLocalOnlyGuard } from './server/access.ts'
 import { createDriverNoticeRelay } from './server/driverNotices.ts'
 import { createSimRelay } from './server/simRelay.ts'
+
+// One gate for everything this server offers other devices. A request from
+// this computer is always allowed; another device needs the key, which is new
+// each time the server starts unless RELAY_KEY sets it.
+const access = createAccess({ key: process.env.RELAY_KEY })
 
 /**
  * Serves the driver notice relay (issue #35) from the dev and the preview
@@ -22,6 +28,7 @@ function driverNoticeRelay(): Plugin {
       const relay = createDriverNoticeRelay({
         isKnownShipment,
         listening: () => server.httpServer?.address() ?? null,
+        access,
       })
       server.middlewares.use(relay)
       server.httpServer?.once('close', relay.close)
@@ -30,6 +37,7 @@ function driverNoticeRelay(): Plugin {
       const relay = createDriverNoticeRelay({
         isKnownShipment,
         listening: () => server.httpServer.address(),
+        access,
       })
       server.middlewares.use(relay)
       server.httpServer.once('close', relay.close)
@@ -46,12 +54,12 @@ function simRelay(): Plugin {
   return {
     name: 'routeripple-sim-relay',
     configureServer(server) {
-      const relay = createSimRelay({ listening: () => server.httpServer?.address() ?? null })
+      const relay = createSimRelay({ listening: () => server.httpServer?.address() ?? null, access })
       server.middlewares.use(relay)
       server.httpServer?.once('close', relay.close)
     },
     configurePreviewServer(server) {
-      const relay = createSimRelay({ listening: () => server.httpServer.address() })
+      const relay = createSimRelay({ listening: () => server.httpServer.address(), access })
       server.middlewares.use(relay)
       server.httpServer.once('close', relay.close)
     },
@@ -63,9 +71,28 @@ function simRelay(): Plugin {
 const aiServer = { target: 'http://127.0.0.1:8787', changeOrigin: false }
 const aiProxy = { '/incident': aiServer, '/shipment': aiServer }
 
+/**
+ * Keeps the AI on this computer. The proxy below would otherwise hand the AI
+ * endpoints to every device that can reach a server started with `--host`,
+ * and each call spends the model key. Other devices get the pages and the
+ * relays; only the dispatcher's own browser gets the AI. No key opens this.
+ */
+function aiLocalOnly(): Plugin {
+  const guard = createLocalOnlyGuard(Object.keys(aiProxy))
+  return {
+    name: 'routeripple-ai-local-only',
+    configureServer(server) {
+      server.middlewares.use(guard)
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(guard)
+    },
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), driverNoticeRelay(), simRelay()],
+  plugins: [react(), aiLocalOnly(), driverNoticeRelay(), simRelay()],
   server: { proxy: aiProxy },
   preview: { proxy: aiProxy },
   build: {

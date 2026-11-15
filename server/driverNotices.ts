@@ -6,12 +6,14 @@
 // It keeps the latest notice per shipment in memory only: nothing is
 // written to disk or logged, and a restart forgets everything.
 //
-// DEMO ONLY. There is no sign-in: anyone who can reach the server can read
-// or post a notice. Notices carry synthetic data and no personal data.
+// DEMO ONLY. There is no sign-in. A request from another device must carry
+// the server's access key (see access.ts); this computer needs none. Notices
+// carry synthetic data and no personal data.
 
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { networkInterfaces } from 'node:os'
+import { ACCESS_REFUSED, type Access } from './access.ts'
 import {
   isDriverNotice,
   isDriverReply,
@@ -30,6 +32,8 @@ export interface RelayOptions {
   listening?: () => AddressInfo | string | null
   /** Keep-alive interval for open streams. */
   heartbeatMs?: number
+  /** The gate for requests from other devices. Without it every request is allowed. */
+  access?: Access
 }
 
 export interface RelayHandler {
@@ -185,6 +189,7 @@ export function createDriverNoticeRelay(options: RelayOptions): RelayHandler {
   const handler = ((req, res, next) => {
     const { pathname } = new URL(req.url ?? '/', 'http://relay.invalid')
     if (pathname !== RELAY_PATH && !pathname.startsWith(`${RELAY_PATH}/`)) return next()
+    if (options.access && !options.access.allows(req)) return sendJson(res, 401, ACCESS_REFUSED)
 
     const parts = pathname
       .slice(RELAY_PATH.length)
@@ -209,6 +214,8 @@ export function createDriverNoticeRelay(options: RelayOptions): RelayHandler {
             [...streams].filter(([, set]) => set.size > 0).map(([id, set]) => [id, set.size]),
           ),
           lan_urls: lanUrls(options.listening?.() ?? null),
+          // For the link a phone opens. Only an allowed caller gets this far.
+          ...(options.access ? { key: options.access.key } : {}),
         })
       }
       if (method === 'DELETE') {

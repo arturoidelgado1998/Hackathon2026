@@ -4,12 +4,14 @@
 // Same shape as the driver notice relay: a plain Node handler mounted on the
 // Vite dev and preview servers. It keeps only the latest state, in memory.
 //
-// DEMO ONLY. There is no sign-in: anyone who can reach the server can read or
-// set the simulation. The state is synthetic settings and a clock, nothing else.
+// DEMO ONLY. There is no sign-in. A request from another device must carry the
+// server's access key (see access.ts); this computer needs none. The state is
+// synthetic settings and a clock, nothing else.
 
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { isSimBroadcast, SIM_RELAY_PATH, takesControl, type SimBroadcast } from '../src/sim/live.ts'
+import { ACCESS_REFUSED, type Access } from './access.ts'
 import { lanUrls } from './driverNotices.ts'
 
 export const SIM_MAX_BODY_BYTES = 2 * 1024
@@ -18,6 +20,8 @@ export interface SimRelayOptions {
   /** Where the server listens, to tell the page what a teammate should open. */
   listening?: () => AddressInfo | string | null
   heartbeatMs?: number
+  /** The gate for requests from other devices. Without it every request is allowed. */
+  access?: Access
 }
 
 export interface SimRelayHandler {
@@ -82,9 +86,16 @@ export function createSimRelay(options: SimRelayOptions = {}): SimRelayHandler {
   const handler = ((req, res, next) => {
     const { pathname } = new URL(req.url ?? '/', 'http://relay.invalid')
     const method = req.method ?? 'GET'
+    if (pathname !== SIM_RELAY_PATH && pathname !== `${SIM_RELAY_PATH}/stream`) return next()
+    if (options.access && !options.access.allows(req)) return sendJson(res, 401, ACCESS_REFUSED)
     if (pathname === SIM_RELAY_PATH) {
       if (method === 'GET') {
-        return sendJson(res, 200, { state, lan_urls: lanUrls(options.listening?.() ?? null) })
+        return sendJson(res, 200, {
+          state,
+          lan_urls: lanUrls(options.listening?.() ?? null),
+          // For the links a teammate opens. Only an allowed caller gets this far.
+          ...(options.access ? { key: options.access.key } : {}),
+        })
       }
       if (method === 'PUT') {
         put(req, res).catch(() => {
