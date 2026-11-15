@@ -1,5 +1,6 @@
 import { useId, useRef, useState, type ReactNode } from 'react'
 import type { Scenario } from '../../viewModels.ts'
+import { Brand } from '../brand/Brand.tsx'
 import { QuestionIcon } from '../icons.tsx'
 import './AppShell.css'
 
@@ -53,7 +54,7 @@ export function AppShell({
     <div className="pp-shell">
       <header className="pp-shell__header">
         <div className="pp-shell__topbar">
-          <h1 className="pp-shell__title">PortPlan</h1>
+          <h1 className="pp-shell__title"><Brand /></h1>
           <div className="pp-shell__controls">
             <div className="pp-shell__scenario">
               <span className="pp-shell__scenario-label" id="pp-scenario-label">

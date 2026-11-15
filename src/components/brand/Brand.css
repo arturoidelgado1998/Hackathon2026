@@ -1,0 +1,17 @@
+.pp-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pp-space-2);
+  vertical-align: middle;
+  color: var(--pp-text);
+  white-space: nowrap;
+}
+
+.pp-brand__mark {
+  display: block;
+  flex: none;
+}
+
+.pp-brand__accent {
+  color: var(--pp-accent);
+}

@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "project": "PortPlan",
+    "project": "RouteRipple",
     "repository": "arturoidelgado1998/Hackathon2026",
     "tracker_issue": 1,
     "purpose": "One entry per GitHub issue: what changed, where, how it was checked and what is left. Read this before starting an issue; update it in the same pull request that does the work.",
-    "last_updated": "2026-11-14",
+    "last_updated": "2026-11-15",
     "status_values": {
       "not_started": "No work yet",
       "in_progress": "Someone is working on it; assignee and branch are set",
@@ -91,7 +91,7 @@
       21
     ],
     "data_source": "ArcGIS feature service, imported by scripts/import_map_data.py",
-    "sanity_checks": "npm run sanity: 47 checks in sanity/, also run by the pipeline's sanity job",
+    "sanity_checks": "npm run sanity: 50 checks in sanity/, also run by the pipeline's sanity job",
     "delivery_checklist": [
       {
         "task": "Update main and create Nicole's branch",
@@ -1210,6 +1210,25 @@
   ],
   "other_changes": [
     {
+      "id": "routeripple-branding",
+      "title": "RouteRipple name and approved Route Node identity",
+      "related_issues": [],
+      "branch": "nicole/routeripple-branding",
+      "pull_request": null,
+      "commit": null,
+      "changes": [
+        "Shared accessible logo and readable RouteRipple wordmark on the dashboard, mobile driver page and simulation page, using the user-approved Route Node SVG.",
+        "All three HTML entry points have updated titles, the SVG favicon, a 180px Apple touch icon and the deep-blue browser theme color.",
+        "Updated current project metadata, documentation and map labels without changing driver storage/relay identifiers, source GIS URLs or historical changelog entries.",
+        "Installed the Apache-2.0 SVG logo skill at a pinned upstream revision and retained the three original concepts and responsive comparison page.",
+        "Fixed a real pressed-button contrast transition; kept the contrast threshold unchanged and made axe's sticky-table measurement use the existing tall-viewport approach."
+      ],
+      "verification": [
+        "All 445 unit/integration tests in 32 files and all 50 sanity checks in six files pass under Node 24/npm 11 after integrating staging 27d2fb7.",
+        "Typecheck, ESLint and production build pass; live desktop/mobile dashboard and driver-page checks pass."
+      ]
+    },
+    {
       "id": "shared-contract",
       "title": "Shared dashboard view-model types",
       "related_issues": [
@@ -1505,6 +1524,91 @@
     }
   ],
   "entries": [
+    {
+      "id": "2026-11-15-routeripple-branding",
+      "date": "2026-11-15",
+      "title": "RouteRipple branding with the approved Route Node logo",
+      "summary": "Pulled staging before creating Nicole's branding branch, presented three original deep-blue SVG concepts, and integrated the user's chosen Route Node identity into the desktop/mobile dashboard, dedicated driver page and browser icons. The user approved the rendered result. Then fast-forwarded to the latest staging, preserving its truck simulation and extending branding to that new page without conflicts.",
+      "branch": "nicole/routeripple-branding",
+      "branch_created_from": "3a4159700302e2c9fea70b07b8f91c845cd0be0d",
+      "source_staging_commit": "27d2fb71d6afba94e333a61f628d59617949fb25",
+      "logo": {
+        "approved_concept": "Route Node",
+        "asset": "public/routeripple.svg",
+        "touch_icon": "public/apple-touch-icon.png",
+        "skill_source": "https://github.com/longcipher/svg-logo-skill",
+        "skill_revision": "b86e71f093dc6b4d8f79dedd1a41445181c79c88",
+        "skill_license": "Apache-2.0"
+      },
+      "files": {
+        "added": [
+          ".github/skills/svg-logo-skill/LICENSE",
+          ".github/skills/svg-logo-skill/README.md",
+          ".github/skills/svg-logo-skill/SKILL.md",
+          ".github/skills/svg-logo-skill/package.json",
+          ".github/skills/svg-logo-skill/references/EXPORT-SIZES.md",
+          ".github/skills/svg-logo-skill/references/PREVIEW-TEMPLATE.md",
+          ".github/skills/svg-logo-skill/references/SVG-CONVENTIONS.md",
+          ".github/skills/svg-logo-skill/scripts/export.js",
+          ".github/skills/svg-logo-skill/scripts/generate-preview.js",
+          "logos/concepts/flow-lines.svg",
+          "logos/concepts/ripple-r.svg",
+          "logos/concepts/route-node.svg",
+          "logos/preview.html",
+          "public/apple-touch-icon.png",
+          "public/routeripple.svg",
+          "src/components/brand/Brand.css",
+          "src/components/brand/Brand.tsx"
+        ],
+        "modified": [
+          "README.md",
+          "docs/changelog.json",
+          "driver.html",
+          "index.html",
+          "package-lock.json",
+          "package.json",
+          "sanity/accessibility.sanity.test.ts",
+          "sanity/app.sanity.test.ts",
+          "sanity/build.sanity.test.ts",
+          "simulation.html",
+          "src/App.test.tsx",
+          "src/components/shell/AppShell.test.tsx",
+          "src/components/shell/AppShell.tsx",
+          "src/driver/DriverPage.tsx",
+          "src/driver/driver.css",
+          "src/driver/driverNotice.flow.test.tsx",
+          "src/index.css",
+          "src/map/ArcgisMap.tsx",
+          "src/sim/SimulationPage.test.tsx",
+          "src/sim/SimulationPage.tsx",
+          "src/types.ts"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "Node 24/npm 11: all 445 unit/integration tests in 32 files and all 50 sanity checks in six files pass after updating from staging.",
+        "npm run typecheck, npm run lint and npm run build pass.",
+        "Chromium checks cover all three headers at 320, 390, 760 and 1440px with no overflow, a decoded 32px logo and readable RouteRipple text.",
+        "Live desktop/mobile dashboard, driver and simulation captures confirm the approved logo; both icons return HTTP 200 on all three entry points. The dashboard/driver checks found no uncaught browser errors.",
+        "The production logo's geometry matches the approved Route Node concept exactly. Build checks verify both icon links and the actual PNG signature and 180x180 dimensions.",
+        "The failing contrast check exposed a blue-on-blue intermediate pressed state. Primary toggle buttons now change foreground/background atomically while retaining the border transition.",
+        "The remaining axe incomplete result was a sticky-table overlap artifact: nine button hit tests passed, and the same contrast audit completed at 2000px height. Only the contrast measurement uses that existing approach; keyboard navigation remains at 1000px and the 4.5:1 threshold is unchanged."
+      ],
+      "compatibility": [
+        "Preserved legacy driver storage keys, relay/broadcast identifiers and the relay health contract so existing notices and replies remain compatible.",
+        "Preserved real ArcGIS service URLs, generated-data provenance, all prior dated changelog records and issue histories.",
+        "No dependency changes, routing calculations, scenario defaults, shipment ordering or driver-message behavior changed."
+      ],
+      "outside_repo_changes": [
+        "Started a persistent preview at http://127.0.0.1:5174/ with a separate Vite cache to avoid stale optimized dependencies from concurrent test servers."
+      ],
+      "limitations": [
+        "Mobile checks use Chromium viewports, not physical-device or screen-reader testing.",
+        "The new skill's files and license are installed; coding-tool reload may be required for automatic skill discovery.",
+        "Existing jsdom canvas and large ArcGIS chunk warnings remain; all checks pass.",
+        "No merge into staging/main or native app/PWA is included in this delivery."
+      ]
+    },
     {
       "id": "2026-11-14-merge-staging-into-nicole-engine",
       "date": "2026-11-14",

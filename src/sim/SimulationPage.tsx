@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { RiskBadge } from '../components/board/RiskBadge.tsx'
+import { Brand } from '../components/brand/Brand.tsx'
 import { facilities, getSegment, routes, segments } from '../data/index.ts'
 import { formatTime } from '../engine/time.ts'
 import { MapBoundary } from '../map/MapPanel.tsx'
@@ -86,7 +87,7 @@ export function SimulationPage() {
     <div className="sim-page">
       <header className="sim-page__header">
         <div>
-          <h1 className="sim-page__title">PortPlan simulation</h1>
+          <h1 className="sim-page__title"><Brand /> simulation</h1>
           <p className="sim-page__lede">
             Set up a day, press Start, and watch where each truck is. Every time comes from the
             same engine as the dashboard.

@@ -1,4 +1,4 @@
-// Shared PortPlan entities. Every later issue imports from here.
+// Shared RouteRipple entities. Every later issue imports from here.
 // Field names are fixed by issue #2 (D1); do not rename them.
 
 /** 24-hour "HH:MM" clock time on the single demo day, e.g. "07:45". */

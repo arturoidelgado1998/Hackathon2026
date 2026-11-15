@@ -138,7 +138,7 @@ async function openApp({ realMap = false } = {}) {
   })
   if (!realMap) await page.route('**/assets/ArcgisMap-*.js', (route) => route.abort())
   await page.goto(origin)
-  await page.getByRole('heading', { level: 1, name: 'PortPlan' }).waitFor()
+  await page.getByRole('heading', { level: 1, name: 'RouteRipple' }).waitFor()
 }
 
 afterEach(async () => {
@@ -150,7 +150,7 @@ describe('built app in a browser', () => {
     await openApp()
 
     await page.getByText('SIMULATED').first().waitFor()
-    await expect(page.title()).resolves.toBe('PortPlan')
+    await expect(page.title()).resolves.toBe('RouteRipple')
     expect(await page.locator('[data-shipment-id]').count()).toBe(shipmentIds.length)
     for (const id of shipmentIds) expect(await card(id).count(), id).toBe(1)
 
@@ -227,7 +227,7 @@ describe('built app in a browser', () => {
         expect(hasTable, `${id} ${scenario} comparison table`).toBe(expectTable)
       }
     }
-    await page.getByRole('heading', { level: 1, name: 'PortPlan' }).waitFor()
+    await page.getByRole('heading', { level: 1, name: 'RouteRipple' }).waitFor()
     expect(pageErrors).toEqual([])
   })
 
@@ -353,7 +353,7 @@ describe('built app in a browser', () => {
         const map = document.querySelector('arcgis-map') as
           | { ready?: boolean; map?: { layers: { find: (test: (l: Drawing) => boolean) => Drawing | undefined } } }
           | null
-        const layer = map?.ready ? map.map?.layers.find((l) => l.title === 'PortPlan routes') : undefined
+        const layer = map?.ready ? map.map?.layers.find((l) => l.title === 'RouteRipple routes') : undefined
         if (!layer) return null
         const count = (key: string) => layer.graphics.filter((g) => g.attributes?.[key] !== undefined).length
         return { schools: count('schoolId'), tracts: count('tractId') }
