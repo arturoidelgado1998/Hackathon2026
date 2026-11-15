@@ -264,6 +264,11 @@ describe('the dashboard follows the clock', () => {
     expect(within(card('S-01')).queryByText(/Reroute|reopens by/)).toBeNull()
     // The panel has no comparison and no way to choose anything.
     expect(screen.getByText(/Nothing is left to decide for S-01\./)).toBeInTheDocument()
+    // Its heading states the outcome once, as an outcome rather than a risk estimate.
+    const heading = document.querySelector('.responses-header') as HTMLElement
+    expect(within(heading).getByText('DELIVERED LATE')).toBeInTheDocument()
+    expect(within(heading).queryByText('LATE')).toBeNull()
+    expect(within(heading).queryByText(/Delivered at 12:12/)).toBeNull()
     for (const name of ['Use reroute', 'Choose wait', 'Request slot', 'Preview Reroute']) {
       expect(screen.queryByRole('button', { name })).toBeNull()
     }

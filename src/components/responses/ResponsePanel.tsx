@@ -288,7 +288,13 @@ function ShipmentResponses({
             {shipment.appt_start}–{shipment.appt_end}
           </strong>
         </span>
-        {summary && (
+        {summary && view.closedNote && (
+          <RiskBadge
+            risk={summary.risk}
+            label={summary.risk === 'LATE' ? 'DELIVERED LATE' : 'DELIVERED ON TIME'}
+          />
+        )}
+        {summary && !view.closedNote && (
           <>
             <RiskBadge risk={summary.risk} />
             <span
