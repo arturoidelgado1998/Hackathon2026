@@ -141,7 +141,7 @@ export default function ArcgisMap({
     const layer = new GraphicsLayer({ title: 'RouteRipple routes' })
     layerRef.current = layer
     // Trucks sit on their own layer so the clock can move them without redrawing the routes.
-    const truckLayer = new GraphicsLayer({ title: 'PortPlan trucks' })
+    const truckLayer = new GraphicsLayer({ title: 'RouteRipple trucks' })
     truckLayerRef.current = truckLayer
 
     const onClick = async (event: Event) => {

@@ -44,7 +44,7 @@ function driverNoticeRelay(): Plugin {
  */
 function simRelay(): Plugin {
   return {
-    name: 'portplan-sim-relay',
+    name: 'routeripple-sim-relay',
     configureServer(server) {
       const relay = createSimRelay({ listening: () => server.httpServer?.address() ?? null })
       server.middlewares.use(relay)

@@ -1210,6 +1210,117 @@
   ],
   "other_changes": [
     {
+      "id": "live-truck-simulation",
+      "title": "Truck simulation page that drives the dashboard live",
+      "related_issues": [],
+      "branch": "sim/live-dashboard",
+      "pull_request": null,
+      "earlier_pull_requests": [
+        42
+      ],
+      "commit": {
+        "hash": "565d6e8",
+        "date": "2026-11-14T16:52:00-08:00",
+        "message": "Drive the dashboard live from the simulation page",
+        "files": {
+          "added": [
+            "server/simRelay.test.ts",
+            "server/simRelay.ts",
+            "src/components/board/ScheduleBoard.tsx",
+            "src/sim/LiveUpdates.css",
+            "src/sim/LiveUpdates.tsx",
+            "src/sim/events.ts",
+            "src/sim/live.test.tsx",
+            "src/sim/live.ts",
+            "src/sim/liveChannel.ts",
+            "src/sim/useLiveSim.ts"
+          ],
+          "modified": [
+            "sanity/accessibility.sanity.test.ts",
+            "sanity/app.sanity.test.ts",
+            "server/driverNotices.ts",
+            "src/App.tsx",
+            "src/components/board/ShipmentCard.tsx",
+            "src/components/board/board.css",
+            "src/components/board/index.ts",
+            "src/components/shell/AppShell.tsx",
+            "src/components/shell/IncidentBanner.tsx",
+            "src/data/demoIncident.ts",
+            "src/data/index.ts",
+            "src/main.tsx",
+            "src/map/ArcgisMap.tsx",
+            "src/map/MapPanel.css",
+            "src/map/MapPanel.tsx",
+            "src/sim/SimClock.css",
+            "src/sim/SimClock.test.tsx",
+            "src/sim/SimClock.tsx",
+            "src/sim/SimulationPage.test.tsx",
+            "src/sim/SimulationPage.tsx",
+            "src/sim/trucks.test.ts",
+            "src/sim/trucks.ts",
+            "src/sim/useSimClock.ts",
+            "src/state/selectors.ts",
+            "src/state/totals.ts",
+            "src/state/trucks.ts",
+            "src/viewModels.ts",
+            "vite.config.ts"
+          ],
+          "deleted": []
+        }
+      },
+      "earlier_commit": {
+        "hash": "f3d73d8",
+        "date": "2026-11-14T16:05:19-08:00",
+        "message": "Add a truck simulation: clock on the dashboard and a simulation page",
+        "pull_request": 42,
+        "files": {
+          "added": [
+            "simulation.html",
+            "src/sim/SimClock.css",
+            "src/sim/SimClock.test.tsx",
+            "src/sim/SimClock.tsx",
+            "src/sim/SimulationPage.css",
+            "src/sim/SimulationPage.test.tsx",
+            "src/sim/SimulationPage.tsx",
+            "src/sim/main.tsx",
+            "src/sim/settings.test.ts",
+            "src/sim/settings.ts",
+            "src/sim/trucks.test.ts",
+            "src/sim/trucks.ts",
+            "src/sim/useSimClock.ts",
+            "src/state/simulation.ts",
+            "src/state/trucks.ts"
+          ],
+          "modified": [
+            "src/App.tsx",
+            "src/map/ArcgisMap.tsx",
+            "src/map/MapPanel.css",
+            "src/map/MapPanel.tsx",
+            "vite.config.ts"
+          ],
+          "deleted": []
+        }
+      },
+      "why": "Let the team run a live demo: one person sets up and starts a run on a separate page, and the dashboard fills in as a dispatcher would see it, with nothing prefilled.",
+      "changes": [
+        "src/sim/trucks.ts: a timed trip per shipment and the truck's place on its route at any minute. Every time comes from the engine's routeTiming; nothing here calculates travel.",
+        "simulation.html and src/sim/SimulationPage.tsx: settings (normal day or closure, segment, times, wait or reroute for every delayed truck, slow or fast end of the range), Start, a clock (play, pause, restart, slider, speed), a map, an outcome table and a link that restores the same setup.",
+        "server/simRelay.ts and src/sim/liveChannel.ts: the simulation page's setup and clock reach every open dashboard through a relay on the dev and preview servers (/api/sim-state) and a BroadcastChannel for tabs in the same browser.",
+        "The dashboard at / is fed live and has no simulation controls or wording. Before a run starts it shows only the day's schedule; the Normal/Disrupted switch is not shown there. The prefilled sample is still at /?sample, which the browser sanity checks now open.",
+        "Once a run starts, a closure is reported when its start time is reached. Each shipment card carries a note on where its truck is, and a Live updates log under the map lists what has happened. The dispatcher still makes every choice.",
+        "A truck that is not yet on the road when a closure starts is held at the port and leaves in time to reach the segment as it reopens; a truck already on the road queues at the closed segment. The engine's arrivals, cost and CO2 are unchanged.",
+        "A closed segment is drawn closed only between its closing and reopening times, and the incident banner says when it has reopened.",
+        "src/data/demoIncident.ts: the closure the dashboard works with can be replaced by the one set on the simulation page; it is the sample incident otherwise.",
+        "Opening the simulation page sends nothing. The dashboards follow one page at a time: a change made by a person on any page takes control, and another running page's once-a-second repeats do not.",
+        "Pull request 42 put a clock with play and pause on the dashboard itself. That clock was removed again here: the dashboard only follows."
+      ],
+      "verification": [
+        "Node 24/npm 11: all 469 unit and integration tests in 34 files pass, including axe checks on the live dashboard and the simulation page.",
+        "npm run typecheck, npm run lint and npm run build pass; all 50 sanity checks in six files pass after merging staging eaaf869.",
+        "Browser, two tabs on the dev server: before Start the dashboard listed the 10 scheduled shipments with no risk badges and blank totals; at 10:30 no truck was on the map and S-01 read \"Held at the port: NB-03 is closed. Leaves 10:58.\"; at 11:30 the banner said NB-03 had reopened and the six held trucks were moving. The dashboard never showed the word \"simulation\"."
+      ]
+    },
+    {
       "id": "routeripple-branding",
       "title": "RouteRipple name and approved Route Node identity",
       "related_issues": [],
@@ -1524,6 +1635,96 @@
     }
   ],
   "entries": [
+    {
+      "id": "2026-11-15-live-truck-simulation",
+      "date": "2026-11-15",
+      "title": "Truck simulation: a separate page that drives the dashboard live",
+      "summary": "Added a truck simulation built on the engine's own times, then moved its controls off the dashboard onto a separate simulation page that drives every open dashboard live. The dashboard now starts with only the day's schedule and fills in once a run starts. Merged staging eaaf869 (pull request 42 and the RouteRipple rebrand) before opening the pull request. Dated in UTC like the entry below; the commits were made on 2026-11-14 Pacific time.",
+      "branch": "sim/live-dashboard",
+      "earlier_branch": "sim/truck-animation, merged into staging by pull request 42 (27d2fb7)",
+      "source_staging_commit": "eaaf869",
+      "conflicts_resolved": [
+        "sanity/accessibility.sanity.test.ts and sanity/app.sanity.test.ts: kept staging's RouteRipple heading and this branch's /?sample address."
+      ],
+      "integration_changes": [
+        "The new truck layer, broadcast channel and Vite plugin use the RouteRipple name. Existing driver relay identifiers are untouched.",
+        "README: new section on the live dashboard and simulation page; the sample workflow section now says it is at /?sample."
+      ],
+      "behaviour_changes": [
+        "The page at / no longer opens on the prefilled Disrupted sample. It waits for a run to start on /simulation.html. Open /?sample for the prefilled sample.",
+        "On a static copy of the build there is no relay, so the dashboard only follows a simulation page open in the same browser."
+      ],
+      "files": {
+        "added": [
+          "server/simRelay.test.ts",
+          "server/simRelay.ts",
+          "simulation.html",
+          "src/components/board/ScheduleBoard.tsx",
+          "src/sim/LiveUpdates.css",
+          "src/sim/LiveUpdates.tsx",
+          "src/sim/SimClock.css",
+          "src/sim/SimClock.test.tsx",
+          "src/sim/SimClock.tsx",
+          "src/sim/SimulationPage.css",
+          "src/sim/SimulationPage.test.tsx",
+          "src/sim/SimulationPage.tsx",
+          "src/sim/events.ts",
+          "src/sim/live.test.tsx",
+          "src/sim/live.ts",
+          "src/sim/liveChannel.ts",
+          "src/sim/main.tsx",
+          "src/sim/settings.test.ts",
+          "src/sim/settings.ts",
+          "src/sim/trucks.test.ts",
+          "src/sim/trucks.ts",
+          "src/sim/useLiveSim.ts",
+          "src/sim/useSimClock.ts",
+          "src/state/simulation.ts",
+          "src/state/trucks.ts"
+        ],
+        "modified": [
+          "README.md",
+          "docs/changelog.json",
+          "sanity/accessibility.sanity.test.ts",
+          "sanity/app.sanity.test.ts",
+          "server/driverNotices.ts",
+          "src/App.tsx",
+          "src/components/board/ShipmentCard.tsx",
+          "src/components/board/board.css",
+          "src/components/board/index.ts",
+          "src/components/shell/AppShell.tsx",
+          "src/components/shell/IncidentBanner.tsx",
+          "src/data/demoIncident.ts",
+          "src/data/index.ts",
+          "src/main.tsx",
+          "src/map/ArcgisMap.tsx",
+          "src/map/MapPanel.css",
+          "src/map/MapPanel.tsx",
+          "src/state/selectors.ts",
+          "src/state/totals.ts",
+          "src/viewModels.ts",
+          "vite.config.ts"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "Node 24/npm 11: all 469 unit and integration tests in 34 files pass, including axe checks on the live dashboard and the simulation page.",
+        "npm run typecheck, npm run lint and npm run build pass; all 50 sanity checks in six files pass after merging staging eaaf869.",
+        "Browser, two tabs on the dev server: before Start the dashboard listed the 10 scheduled shipments with no risk badges and blank totals; at 10:30 no truck was on the map and S-01 read \"Held at the port: NB-03 is closed. Leaves 10:58.\"; at 11:30 the banner said NB-03 had reopened and the six held trucks were moving. The dashboard never showed the word \"simulation\"."
+      ],
+      "outside_repo_changes": [
+        "Added a portplan-sim entry to the shared, untracked .claude/launch.json, and ran the dev server with --host on port 5199 from this branch's worktree."
+      ],
+      "limitations": [
+        "Trucks follow the schematic segment lines, not real roads. Real-road routing with ArcGIS needs an API key with routing and is not built.",
+        "DEMO ONLY: the relay has no sign-in. Anyone who can reach the server can open the simulation page and take the dashboards over by changing something on it.",
+        "Not tested on a second physical device; the cross-device path was exercised only through the relay's HTTP tests and two tabs on one computer.",
+        "Choosing a response during a live run is covered by a unit test, not by a browser run.",
+        "Deadlines on cards are not clock-aware: a card can show a reroute deadline that the run's clock has already passed.",
+        "Decisions are cleared when a closure is reported or withdrawn, including when the simulation clock is moved back before the closure.",
+        "Still the 10-shipment data. The feature service has since grown to 16 shipments and scripts/import_map_data.py stops on it."
+      ]
+    },
     {
       "id": "2026-11-15-routeripple-branding",
       "date": "2026-11-15",
