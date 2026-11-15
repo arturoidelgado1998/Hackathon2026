@@ -1814,6 +1814,65 @@
   ],
   "entries": [
     {
+      "id": "2026-11-15-network-gate-and-ai-limits",
+      "date": "2026-11-15",
+      "title": "A gate for other devices, the AI kept local, and the model address out of pipeline logs",
+      "summary": "Three security concerns found before making the repository public, fixed: the relays had no gate when the server ran with --host; the AI could be called by any device that could reach the dev server; and the pipeline printed the model service's address in its log.",
+      "branch": "security/local-ai-and-relay-key",
+      "related_issues": [
+        15
+      ],
+      "behaviour_changes": [
+        "Relays (/api/driver-notices and /api/sim-state): a request from another device must carry the server's access key, in the link (?k=) or the x-routeripple-key header; without it the answer is 401. This computer needs no key. A new 12-character key is made at each start unless RELAY_KEY is set.",
+        "The links the pages show already carry the key: the simulation page's Link to this setup and the dashboard's driver address. The pages read the key once on load, keep it for the tab, and add it to every relay request.",
+        "AI endpoints (/incident, /shipment): the dev and preview servers refuse every device but this computer with 403, whatever key is sent.",
+        "AI server: at most 30 model calls in any 60 seconds across both routes (AI_MAX_PER_MINUTE), then 429 with Retry-After. Refused and malformed requests count too.",
+        "Pipeline: the live AI check reads LLM_BASE_URL from a repository secret instead of a variable, so the address is masked in the log."
+      ],
+      "files": {
+        "added": [
+          "server/access.test.ts",
+          "server/access.ts",
+          "src/relayKey.test.ts",
+          "src/relayKey.ts"
+        ],
+        "modified": [
+          ".env.example",
+          ".github/workflows/advisory-checks.yml",
+          "README.md",
+          "docs/changelog.json",
+          "docs/driver-notice.md",
+          "server/app.test.ts",
+          "server/app.ts",
+          "server/driverNotices.ts",
+          "server/index.ts",
+          "server/simRelay.ts",
+          "src/driver/DriverNoticePanel.test.tsx",
+          "src/driver/DriverNoticePanel.tsx",
+          "src/driver/relayChannel.ts",
+          "src/sim/SimulationPage.tsx",
+          "src/sim/liveChannel.ts",
+          "vite.config.ts"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "npm run typecheck and lint pass; npm test passes (650 tests in 45 files, 19 of them new: the gate on every relay address and method, the AI guard, the rate limit and the browser-side key); npm run sanity passes (57 of 57).",
+        "Against the running dev server started with --host, from this computer's own network address: the pages answered 200; every relay address and method answered 401 without the key and with a wrong key, and 200 with it; /shipment/suggest and /incident/interpret answered 403 with and without the key; from localhost the relays answered 200 and the AI server was reached.",
+        "In a real browser, three separate profiles: the dispatcher on localhost chose a reroute and sent it; a phone that opened the keyed address received the notice and its Received reply reached the dispatcher; a device that opened the address without the key received nothing; a teammate's simulation page opened from the keyed link drove the dashboard, and its address bar no longer showed the key; a suggestion requested from the phone was refused."
+      ],
+      "outside_repo_changes": [
+        "Created the repository secret LLM_BASE_URL with the value of the variable of the same name. The variable is still there, for the workflow on main until this is merged; delete it after.",
+        "Workflow runs made before this change still show the address in their logs until those logs are deleted."
+      ],
+      "limitations": [
+        "The access key is a shared passcode in a link, sent over plain HTTP. Anyone who sees the link, or the traffic, has the same access. It is not a sign-in.",
+        "A device without the key still gets the pages; it only cannot read or change anything through the relays.",
+        "The rate limit is per server process and in memory, and counts all callers together.",
+        "The AI gate is in the dev and preview servers. The AI server itself has no gate beyond listening only on this computer."
+      ]
+    },
+    {
       "id": "2026-11-15-ai-and-live-dashboard-integration",
       "date": "2026-11-15",
       "title": "AI suggestion and clock-aware live dashboard, integrated",

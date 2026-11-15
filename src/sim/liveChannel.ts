@@ -2,6 +2,7 @@
 // relay on the app's own server (other devices) and a BroadcastChannel (other
 // tabs in this browser, even when the relay is not there).
 
+import { withRelayKey } from '../relayKey.ts'
 import { isSimBroadcast, SIM_CHANNEL, SIM_RELAY_PATH, takesControl, type SimBroadcast } from './live.ts'
 
 function openChannel(): BroadcastChannel | null {
@@ -27,7 +28,7 @@ export function publishSim(state: SimBroadcast): void {
   }
   if (typeof fetch !== 'function') return
   try {
-    void fetch(SIM_RELAY_PATH, {
+    void fetch(withRelayKey(SIM_RELAY_PATH), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(state),
@@ -65,7 +66,7 @@ export function subscribeSim(onState: (state: SimBroadcast) => void): () => void
         // Ignore a malformed event.
       }
     }
-    source = new EventSource(`${SIM_RELAY_PATH}/stream`)
+    source = new EventSource(withRelayKey(`${SIM_RELAY_PATH}/stream`))
     source.addEventListener('snapshot', onEvent)
     source.addEventListener('state', onEvent)
   }
@@ -77,14 +78,22 @@ export function subscribeSim(onState: (state: SimBroadcast) => void): () => void
   }
 }
 
+/** Addresses a teammate on the same network can open, and the key their link needs. */
+export async function fetchLan(): Promise<{ urls: string[]; key: string | null }> {
+  try {
+    const response = await fetch(withRelayKey(SIM_RELAY_PATH), { headers: { Accept: 'application/json' } })
+    if (!response.ok) return { urls: [], key: null }
+    const body = (await response.json()) as { lan_urls?: unknown; key?: unknown }
+    return {
+      urls: Array.isArray(body.lan_urls) ? body.lan_urls.filter((u): u is string => typeof u === 'string') : [],
+      key: typeof body.key === 'string' ? body.key : null,
+    }
+  } catch {
+    return { urls: [], key: null }
+  }
+}
+
 /** Addresses a teammate on the same network can open; [] when the server is local-only. */
 export async function fetchLanUrls(): Promise<string[]> {
-  try {
-    const response = await fetch(SIM_RELAY_PATH, { headers: { Accept: 'application/json' } })
-    if (!response.ok) return []
-    const body = (await response.json()) as { lan_urls?: unknown }
-    return Array.isArray(body.lan_urls) ? body.lan_urls.filter((u): u is string => typeof u === 'string') : []
-  } catch {
-    return []
-  }
+  return (await fetchLan()).urls
 }

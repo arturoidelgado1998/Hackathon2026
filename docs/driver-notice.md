@@ -105,8 +105,8 @@ Test this once before the presentation.
 
 ## Limits
 
-- **No sign-in.** Anyone on the same network can read or post a notice. This is for the demo
-  only, and notices carry synthetic data and no personal data.
+- **No sign-in.** This computer needs nothing; another device must open the address the dashboard shows, which carries the server's access key (`?k=…`). Without the key the relay answers 401. The key is a shared passcode sent over plain HTTP, new at each server start; it is for the demo, not for real use.
+  Notices carry synthetic data and no personal data.
 - **`--host` exposes the whole dev server** to the network, not only the relay. Stop it after
   the demo.
 - **Memory only.** Restarting the server forgets every notice. A phone then shows "No notice"

@@ -3,6 +3,7 @@
 // server/driverNotices.ts; a driver page also follows the relay's stream.
 // The same-browser path keeps working when the relay is not there.
 
+import { withRelayKey } from '../relayKey.ts'
 import type { NoticeChannel, NoticeListener, ReplyListener } from './channel.ts'
 import { isDriverNotice, isDriverReply, type DriverNotice, type DriverReply } from './types.ts'
 
@@ -23,6 +24,8 @@ export interface RelayStatus {
   lostAt: string | null
   /** Addresses a phone on the same network can open; [] when local only. */
   lanUrls: string[]
+  /** The access key a phone's link must carry; null or absent when none is needed. */
+  key?: string | null
 }
 
 export interface RelayStatusSource {
@@ -91,10 +94,16 @@ export function createRelayedChannel(
     statusSubscribers.forEach((onChange) => onChange())
   }
 
-  function markLive(lanUrls?: string[]): void {
+  function markLive(lanUrls?: string[], key?: string | null): void {
     const wasLost = status.state === 'lost'
     if (status.state !== 'live' || lanUrls) {
-      setStatus({ state: 'live', lostAt: null, lanUrls: lanUrls ?? status.lanUrls })
+      const known = key ?? status.key ?? null
+      setStatus({
+        state: 'live',
+        lostAt: null,
+        lanUrls: lanUrls ?? status.lanUrls,
+        ...(known === null ? {} : { key: known }),
+      })
     }
     // Whatever was sent during the outage reached this browser only.
     if (wasLost && hasPublished) local.all().forEach(put)
@@ -111,7 +120,7 @@ export function createRelayedChannel(
   }
 
   function request(path: string, init?: RequestInit): Promise<Response | null> {
-    return doFetch(RELAY_PATH + path, init).then(
+    return doFetch(withRelayKey(RELAY_PATH + path), init).then(
       (response) => {
         if (response.ok) return response
         markFailed()
@@ -135,7 +144,7 @@ export function createRelayedChannel(
   }
 
   function putReply(reply: DriverReply): void {
-    void doFetch(`${RELAY_PATH}/${encodeURIComponent(reply.shipment_id)}/reply`, {
+    void doFetch(withRelayKey(`${RELAY_PATH}/${encodeURIComponent(reply.shipment_id)}/reply`), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(reply),
@@ -163,7 +172,7 @@ export function createRelayedChannel(
     const open = openStream
     afterPageLoad(() => withRelay(() => {
       if (!wantsReplies) return
-      const source = open(`${RELAY_PATH}/stream`)
+      const source = open(withRelayKey(`${RELAY_PATH}/stream`))
       const deliver = (value: unknown) => {
         if (isDriverReply(value)) replyListeners.forEach((listener) => listener(value))
       }
@@ -186,6 +195,7 @@ export function createRelayedChannel(
     const info = (await response.json().catch(() => null)) as {
       relay?: unknown
       lan_urls?: unknown
+      key?: unknown
     } | null
     if (info?.relay !== RELAY_NAME) {
       markFailed()
@@ -194,7 +204,7 @@ export function createRelayedChannel(
     const lanUrls = Array.isArray(info.lan_urls)
       ? info.lan_urls.filter((url): url is string => typeof url === 'string')
       : []
-    markLive(lanUrls)
+    markLive(lanUrls, typeof info.key === 'string' ? info.key : null)
     return true
   })
 
@@ -239,7 +249,7 @@ export function createRelayedChannel(
     stream: Stream,
     open: NonNullable<RelayDeps['openStream']>,
   ): StreamLike {
-    const source = open(`${RELAY_PATH}/${encodeURIComponent(shipmentId)}/stream`)
+    const source = open(withRelayKey(`${RELAY_PATH}/${encodeURIComponent(shipmentId)}/stream`))
     const deliver = (notice: DriverNotice | null) =>
       stream.listeners.forEach((listener) => listener(notice))
 
