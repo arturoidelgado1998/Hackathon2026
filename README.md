@@ -120,6 +120,21 @@ for a live data feed.
   DEMO ONLY: there is no sign-in. Opening the simulation page sends nothing; the
   dashboards follow whichever page last had something changed on it, and a second
   running page cannot pull them away.
+- **Who can reach it.** Started with `--host`, the server is on the network, so
+  it has a gate (`server/access.ts`):
+  - This computer needs nothing.
+  - Another device must send the server's access key. A new key is made each
+    time the server starts, and it is already in the links the pages show: the
+    simulation page's **Link to this setup** and the dashboard's driver address
+    (`…/driver.html?k=…#S-01`). Without it the relays answer 401; the pages
+    themselves still load. Set `RELAY_KEY` in `.env` to keep one key across restarts.
+  - The AI never leaves this computer. `/incident` and `/shipment` are refused
+    (403) for every other device, with or without the key, because each call
+    spends the model key. The AI server also makes at most 30 model calls a
+    minute (`AI_MAX_PER_MINUTE`) and answers 429 past that.
+
+  The key is a shared passcode in a link. It keeps a stranger on the same
+  Wi-Fi out; it is not a sign-in, and it travels over plain HTTP.
 - **The prefilled sample** described below is still available at `/?sample`. The
   browser sanity checks use it.
 
@@ -235,7 +250,8 @@ The dispatcher pastes an incident report; the AI reads it and returns which segm
   - The two sets of variables are separate, so both can sit in `.env` and switching is one line. The Bolt key is never sent to Claude, or the other way round.
 - **Setup:** copy `.env.example` to `.env` and fill it in. Edit the file in an editor; do not put a key on a command line.
 - **Comparing models:** `npm run ai:tests -- --check --models=claude-opus-5-5,claude-sonnet-5-5,claude-haiku-5-5` asks each model the same eight questions and prints how many it got right, how long it took and an estimated cost.
-- **Run:** `npm run server` in one terminal and `npm run dev` in another. The dev server forwards `/incident` to the incident server, so the browser never talks to the model and never sees the key.
+- **Run:** `npm run server` in one terminal and `npm run dev` in another. The dev server forwards `/incident` to the incident server, so the browser never talks to the model and never sees the key. Only this computer's browser is forwarded: started with `--host`, other devices get the pages but not the AI.
+- **Pipeline:** the live AI check reads `LLM_API_KEY` and `LLM_BASE_URL` from repository secrets, so both are masked in the run's log; `LLM_MODEL` and `LLM_PROVIDER` are plain variables.
 - **Without a key, or without a route to the model**, the server still starts and answers with a clear error. The manual-entry path (A2) is for exactly that.
 
 `POST /incident/interpret` takes `{ "report": "..." }` (up to 2,000 characters) and answers:

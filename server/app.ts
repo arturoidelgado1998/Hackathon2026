@@ -17,9 +17,16 @@ const STATUS: Record<InterpretFailure['code'], number> = {
   invalid_model_response: 422,
 }
 
+/** Every model call spends the key, so the server caps how many it makes. */
+export const DEFAULT_MAX_PER_MINUTE = 30
+
 export interface AppDeps extends InterpretDeps {
   /** One line per request: the outcome and how long it took. Never the report, never the key. */
   log?: (line: string) => void
+  /** Most model calls in any 60 seconds, across both routes. Defaults to 30. */
+  maxPerMinute?: number
+  /** The clock, for tests. */
+  now?: () => number
 }
 
 function send(response: ServerResponse, status: number, body: object, headers: Record<string, string> = {}) {
@@ -49,6 +56,10 @@ function readBody(request: IncomingMessage): Promise<{ ok: true; text: string } 
 /** The request handler for `http.createServer`. */
 export function createApp(deps: AppDeps) {
   const log = deps.log ?? (() => {})
+  const limit = deps.maxPerMinute ?? DEFAULT_MAX_PER_MINUTE
+  const now = deps.now ?? Date.now
+  /** When each recent model call was let through. */
+  let recent: number[] = []
 
   return async function handle(request: IncomingMessage, response: ServerResponse): Promise<void> {
     const path = new URL(request.url ?? '/', 'http://localhost').pathname
@@ -68,6 +79,22 @@ export function createApp(deps: AppDeps) {
     if (request.method !== 'POST') {
       return send(response, 405, { error: 'method_not_allowed', message: 'Use POST.' }, { Allow: 'POST' })
     }
+
+    // A runaway page or script must not be able to run up the model bill.
+    const at = now()
+    recent = recent.filter((time) => at - time < 60_000)
+    if (recent.length >= limit) {
+      const wait = Math.max(1, Math.ceil((60_000 - (at - recent[0])) / 1000))
+      log(`${route} rate_limited`)
+      request.resume()
+      return send(
+        response,
+        429,
+        { error: 'rate_limited', message: `Too many AI requests in a minute. Try again in ${wait} seconds.` },
+        { 'Retry-After': String(wait) },
+      )
+    }
+    recent.push(at)
 
     const started = Date.now()
     const body = await readBody(request)

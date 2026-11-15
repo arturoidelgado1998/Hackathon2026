@@ -7,7 +7,8 @@ import { MapBoundary } from '../map/MapPanel.tsx'
 import { runSimulation, type SimRow } from '../state/simulation.ts'
 import { SimClock } from './SimClock.tsx'
 import type { SimBroadcast } from './live.ts'
-import { fetchLanUrls, publishSim } from './liveChannel.ts'
+import { keyedLink } from '../relayKey.ts'
+import { fetchLan, publishSim } from './liveChannel.ts'
 import {
   parseSettings,
   serializeSettings,
@@ -69,10 +70,14 @@ export function SimulationPage() {
   // A teammate cannot open "localhost", so the link uses this computer's
   // network address when the server is reachable from other devices.
   const [lanUrl, setLanUrl] = useState<string | null>(null)
+  // Another device needs the server's access key, so the link carries it.
+  const [lanKey, setLanKey] = useState<string | null>(null)
   useEffect(() => {
     let cancelled = false
-    void fetchLanUrls().then((urls) => {
-      if (!cancelled && urls.length > 0) setLanUrl(urls[0])
+    void fetchLan().then(({ urls, key }) => {
+      if (cancelled) return
+      if (urls.length > 0) setLanUrl(urls[0])
+      setLanKey(key)
     })
     return () => {
       cancelled = true
@@ -80,7 +85,7 @@ export function SimulationPage() {
   }, [])
   const local = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname)
   const origin = local && lanUrl ? lanUrl : window.location.origin
-  const link = `${origin}${window.location.pathname}?${query}`
+  const link = keyedLink(`${origin}${window.location.pathname}`, query, '', origin === lanUrl || !local ? lanKey : null)
 
   // Broadcast the setup and the clock so the dashboards follow this page: at
   // once when something is changed here, and once a second while the clock runs.

@@ -19,6 +19,7 @@ const server = createServer(
     config: settings.ok ? settings.config : null,
     configProblem: settings.ok ? undefined : settings.message,
     segments,
+    maxPerMinute: Number(process.env.AI_MAX_PER_MINUTE) > 0 ? Number(process.env.AI_MAX_PER_MINUTE) : undefined,
     log: (line) => console.log(`${new Date().toISOString()} ${line}`),
   }),
 )

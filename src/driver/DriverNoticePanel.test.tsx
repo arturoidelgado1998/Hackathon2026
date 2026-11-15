@@ -14,6 +14,13 @@ describe('DriverNoticePanel phone delivery line', () => {
     )
   })
 
+  it('puts the server’s access key in the address, so the phone is let in', () => {
+    show({ state: 'live', lostAt: null, lanUrls: ['http://192.168.1.20:5195'], key: 'TeamDemo2026' })
+    expect(screen.getByTestId('phone-delivery')).toHaveTextContent(
+      'open http://192.168.1.20:5195/driver.html?k=TeamDemo2026#S-01',
+    )
+  })
+
   it('says the server is local only when it was not started with --host', () => {
     show({ state: 'live', lostAt: null, lanUrls: [] })
     expect(screen.getByTestId('phone-delivery')).toHaveTextContent('this computer only')
