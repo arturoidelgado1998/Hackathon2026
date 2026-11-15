@@ -1,41 +1,75 @@
 # RouteRipple
 
-AI-assisted disruption triage dashboard for port-to-warehouse deliveries.
-Stack: Vite + React + TypeScript, Vitest, ESLint, plain CSS.
-
-## Demo
-
-The full demo, 3 minutes, no audio:
-
-https://github.com/user-attachments/assets/972f40e1-bc4e-4814-988a-7aca2efdd278
-
-If the player does not load, [download the video](https://github.com/arturoidelgado1998/Hackathon2026/releases/download/demo-video/RouteRipple-demo-3min.mp4) (MP4, 11 MB).
-
-A 22-second cut of it:
-
-![RouteRipple demo: a road closes, the dispatcher compares responses, asks the AI, tells the driver, and the loads are delivered](docs/media/demo-preview.gif)
+**AI-assisted disruption triage for port-to-warehouse deliveries.**
 
 A road out of the Port of Long Beach closes at 10:00. RouteRipple shows the
 dispatcher which shipments it delays, what each response would cost, and who
 else it affects. The dispatcher decides, the driver is told, and the dashboard
 follows the day until every load is delivered.
 
-| | |
-|---|---|
-| ![The comparison table for shipment S-01 beside the map, with the closed road in red and the alternative route dashed](docs/media/compare-responses.png) | ![The AI suggestion panel listing its reasons and what the suggested option gives up](docs/media/ai-suggestion.png) |
-| **Compare responses side by side.** Wait, reroute or request a later slot, with arrival, cost, driver time, CO2, and the schools and disadvantaged neighbourhoods each route passes. Nothing is ranked. | **Ask the AI for a suggestion.** It sees only the figures in the table. The dashboard checks every reason it gives against those figures and lists what the suggestion gives up. It selects nothing. |
-| ![The dispatcher's driver notice panel showing the driver's reply, beside the driver's page](docs/media/driver-notice.png) | ![A shipment after the road has reopened, with the reroute and wait options closed and the reason shown](docs/media/road-reopened.png) |
-| **Tell the driver, and hear back.** Nothing reaches the driver until Send. The driver can acknowledge or flag a concern; the decision stays with dispatch. (The phone frame was added for the video; the page inside it is the real driver page.) | **The dashboard follows the clock.** Once the road reopens or a truck has passed the turn-off, the responses that no longer apply are closed and say why. |
-| ![The board at the end of the day with every load under Delivered](docs/media/delivered.png) | |
-| **Delivered loads ask for nothing more.** Each card says when it arrived and whether it met its appointment. | |
+https://github.com/user-attachments/assets/972f40e1-bc4e-4814-988a-7aca2efdd278
 
-What is real and what is not: the shipments, routes, travel times and the
-closure are simulated. The schools and disadvantaged-community tracts along
-each route are real public data, and the cost and CO2 inputs are published
-trucking figures; see the **Assumptions & sources** panel in the app and
-[`src/data/README.md`](src/data/README.md).
+The full demo: 3 minutes, no audio. If the player does not load,
+[download the video](https://github.com/arturoidelgado1998/Hackathon2026/releases/download/demo-video/RouteRipple-demo-3min.mp4) (MP4, 11 MB).
 
-What is underneath:
+## What it does
+
+### Compare responses side by side
+
+Wait, reroute or request a later slot, with arrival, cost, driver time, CO2,
+and the schools and disadvantaged neighbourhoods each route passes. Options
+are shown in a fixed order and nothing is ranked.
+
+![The comparison table for shipment S-01: waiting is 30 to 42 minutes late, rerouting meets the appointment window](docs/media/compare-responses.png)
+
+### See it on the map
+
+<table>
+  <tr>
+    <td width="470"><img src="docs/media/route-map.png" width="448" alt="The map with the closed road in red, the chosen alternative route in blue, and schools and disadvantaged tracts marked along it"></td>
+    <td>The closed road, the route a truck was assigned and the alternative it could take, drawn on an ArcGIS map.<br><br>Schools and disadvantaged-community tracts within 150 m of the route are real public data, so the dispatcher can see who a reroute moves the traffic past.<br><br>Trucks move along the routes as the day runs.</td>
+  </tr>
+</table>
+
+### Ask the AI for a suggestion
+
+The AI sees only the figures in the table. The dashboard checks every reason
+it gives against those figures, lists what the suggested option gives up, and
+selects nothing.
+
+![The AI suggestion panel: it leans towards Reroute, with its reasons checked against the table and a list of what that gives up](docs/media/ai-suggestion.png)
+
+### Tell the driver, and hear back
+
+Nothing reaches the driver until Send. The driver can acknowledge or flag a
+concern, and the decision stays with dispatch. The phone frame was added for
+the video; the page inside it is the real driver page.
+
+![The dispatcher's driver notice panel showing "Driver replied Received", beside the driver's page on a phone](docs/media/driver-notice.png)
+
+### The dashboard follows the clock
+
+Once the road reopens, or a truck has passed the turn-off, the responses that
+no longer apply are closed and say why. A reroute chosen late is timed from
+where the truck is, not from when it could have left.
+
+![A shipment after the road has reopened: Reroute reads "No longer possible: NB-03 reopened at 11:10, so there is no closure left to avoid"](docs/media/road-reopened.png)
+
+### Delivered loads ask for nothing more
+
+Each card says when the load arrived and whether it met its appointment.
+
+![The board at the end of the day with every load under Delivered, and S-01 delivered on time](docs/media/delivered.png)
+
+## What is real and what is simulated
+
+The shipments, routes, travel times and the closure are simulated. The schools
+and disadvantaged-community tracts along each route are real public data, and
+the cost and CO2 inputs are published trucking figures. The **Assumptions &
+sources** panel in the app and [`src/data/README.md`](src/data/README.md) list
+every input and where it comes from.
+
+## How it is built
 
 - **One engine** computes every arrival, lateness, cost and CO2 figure. The
   interface and the AI never recompute them.
@@ -43,26 +77,16 @@ What is underneath:
   gives is true in the figures, and its key stays on the server.
 - **650 unit tests and 57 browser checks** run on every pull request, along
   with a live check of the AI on its test reports.
+- **Stack:** React and TypeScript on Vite, the ArcGIS Maps SDK for the map, a
+  small Node server for the AI, Python for the data scripts, and Vitest and
+  Playwright for the tests.
 
-## Brand
+---
 
-The approved **Route Node** mark and RouteRipple wordmark appear in the dashboard,
-the mobile driver notice at `/driver.html#S-01` and the truck simulation at
-`/simulation.html`. All three pages use the same
-[SVG logo](public/routeripple.svg), browser icon and
-[180px Apple touch icon](public/apple-touch-icon.png).
-The shared component is [`Brand`](src/components/brand/Brand.tsx).
+## For developers
 
-The original [three-concept comparison](logos/preview.html) is available at
-`http://localhost:5173/logos/preview.html` while the dev server runs.
-The project-scoped [SVG logo skill](.github/skills/svg-logo-skill/SKILL.md) comes
-from [longcipher/svg-logo-skill](https://github.com/longcipher/svg-logo-skill/tree/b86e71f093dc6b4d8f79dedd1a41445181c79c88),
-under its included Apache-2.0 license. Reload the coding tool if the new skill
-does not appear. It adds no application dependencies.
-
-RouteRipple was previously named PortPlan. Existing driver notice/reply storage
-keys, relay identifiers and ArcGIS service URLs intentionally retain their old
-names for compatibility. Historical changelog entries are preserved.
+The rest of this page is reference for working on the code: how to run it, how
+each part behaves, and where things live.
 
 ## Prerequisites
 
@@ -259,6 +283,26 @@ shape; CSV flattens the three scenario values and includes simulation metadata
 The evaluation-only rule chooses an available ON_TRACK driving response with the
 fewest added miles (Wait wins ties), or requests a later slot while retaining
 current Wait metrics. It never auto-selects or ranks responses in the app.
+
+## Brand
+
+The approved **Route Node** mark and RouteRipple wordmark appear in the dashboard,
+the mobile driver notice at `/driver.html#S-01` and the truck simulation at
+`/simulation.html`. All three pages use the same
+[SVG logo](public/routeripple.svg), browser icon and
+[180px Apple touch icon](public/apple-touch-icon.png).
+The shared component is [`Brand`](src/components/brand/Brand.tsx).
+
+The original [three-concept comparison](logos/preview.html) is available at
+`http://localhost:5173/logos/preview.html` while the dev server runs.
+The project-scoped [SVG logo skill](.github/skills/svg-logo-skill/SKILL.md) comes
+from [longcipher/svg-logo-skill](https://github.com/longcipher/svg-logo-skill/tree/b86e71f093dc6b4d8f79dedd1a41445181c79c88),
+under its included Apache-2.0 license. Reload the coding tool if the new skill
+does not appear. It adds no application dependencies.
+
+RouteRipple was previously named PortPlan. Existing driver notice/reply storage
+keys, relay identifiers and ArcGIS service URLs intentionally retain their old
+names for compatibility. Historical changelog entries are preserved.
 
 ## Impeccable design skill
 
