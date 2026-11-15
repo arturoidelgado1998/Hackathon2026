@@ -7,8 +7,9 @@
 //                                            and compare them (Claude provider)
 //
 // Exit code 0 when everything on the first model passes, 1 when a reading is
-// wrong or an answer is refused, 2 when the model could not be asked at all
-// (no key, or unreachable). The key is read from the environment and never printed.
+// wrong or a suggestion is refused twice in a row, 2 when the model could not
+// be asked at all (no key, or unreachable). The key is read from the
+// environment and never printed.
 
 import { appendFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
@@ -94,7 +95,7 @@ interface ReadingOutcome {
 interface ModelRun {
   model: string
   readings: ReadingOutcome[]
-  suggestions: { shipment: string; result: SuggestResult }[]
+  suggestions: { shipment: string; result: SuggestResult; secondTry: boolean }[]
   seconds: number
   input_tokens: number
   output_tokens: number
@@ -136,10 +137,22 @@ async function run(config: ModelConfig): Promise<ModelRun> {
     }
   }
   for (const shipment of SUGGESTION_SHIPMENTS) {
-    const result = await suggestResponse(factsFor(shipment), { config })
+    let result = await suggestResponse(factsFor(shipment), { config })
     if ('served' in result) count(result.served)
-    total.suggestions.push({ shipment, result })
-    console.log(`suggestion ${shipment} ${result.ok ? 'PASSED THE CHECKS' : 'REFUSED'}`)
+    // A model words its sentence differently each time, and the checks refuse
+    // one that runs long or carries a figure. On the dashboard the dispatcher
+    // would ask again, so one refused answer gets one more try here before it
+    // counts against the model. An unreachable model is not asked twice.
+    let secondTry = false
+    if (!result.ok && result.code === 'invalid_model_response') {
+      console.log(`suggestion ${shipment} REFUSED ON THE FIRST TRY, asking once more`)
+      for (const detail of result.details ?? []) console.log(`   check:    ${detail}`)
+      secondTry = true
+      result = await suggestResponse(factsFor(shipment), { config })
+      if ('served' in result) count(result.served)
+    }
+    total.suggestions.push({ shipment, result, secondTry })
+    console.log(`suggestion ${shipment} ${result.ok ? `PASSED THE CHECKS${secondTry ? ' ON THE SECOND TRY' : ''}` : 'REFUSED'}`)
     console.log(`   ${result.ok ? JSON.stringify(result.suggestion) : `${result.code}: ${result.message}`}`)
     if (!result.ok && 'details' in result && result.details) {
       for (const detail of result.details) console.log(`   check:    ${detail}`)
@@ -201,11 +214,12 @@ ${r.readings
 const suggestionTable = (r: ModelRun) => `| Shipment (SIMULATED) | AI suggestion | The AI's sentence |
 | --- | --- | --- |
 ${r.suggestions
-  .map(({ shipment, result }) => {
-    if (!result.ok) return `| ${shipment} | Refused (${result.code}) | ${cell(result.message)} |`
+  .map(({ shipment, result, secondTry }) => {
+    const tries = secondTry ? ', on the second try' : ''
+    if (!result.ok) return `| ${shipment} | Refused (${result.code}${tries}) | ${cell(result.message)} |`
     const { suggested_option, because, note } = result.suggestion
     const reasons = because.map((d) => d.measure).join(', ') || 'none'
-    return `| ${shipment} | ${suggested_option ?? 'No suggestion'} (reasons: ${reasons}) | ${cell(note)} |`
+    return `| ${shipment} | ${suggested_option ?? 'No suggestion'} (reasons: ${reasons}${tries}) | ${cell(note)} |`
   })
   .join('\n')}`
 

@@ -1814,6 +1814,46 @@
   ],
   "entries": [
     {
+      "id": "2026-11-15-public-repo-hardening",
+      "date": "2026-11-15",
+      "title": "After going public: dependency advisories cleared, a security policy, update pull requests, a steadier live AI check and the team in the README",
+      "summary": "The repository was made public. Cleared the seven dependency advisories, added a security policy and weekly dependency updates, and gave the live AI check one more try when the model's suggestion is refused, after a run on main failed because Bolt wrote a sentence longer than the checks allow.",
+      "branch": "security/public-repo-hardening",
+      "changes": [
+        "package.json: an override pins minimatch under @typescript-eslint/typescript-estree to ^11.0.8, the patched line. npm audit reported seven moderate advisories, all the same minimatch issue reached through the lint tooling; its own fix was to downgrade typescript-eslint, which is not a fix. npm audit now reports none.",
+        "SECURITY.md: how to report a problem privately, what a demo deliberately does not protect, and the rules for contributors.",
+        ".github/dependabot.yml: weekly update pull requests for npm packages and GitHub Actions, into staging, with routine bumps grouped into one.",
+        "server/ai-tests.ts: a suggestion the checks refuse is asked for once more before it counts against the model, and the record says when a second try was needed. A wrong reading and an unreachable model are not retried.",
+        "README.md: a Team section naming the three people who built it, and a line pointing to the security policy."
+      ],
+      "files": {
+        "added": [
+          ".github/dependabot.yml",
+          "SECURITY.md"
+        ],
+        "modified": [
+          "README.md",
+          "docs/changelog.json",
+          "package-lock.json",
+          "package.json",
+          "server/ai-tests.ts"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "npm audit reports no advisories. npm run typecheck and lint pass on the patched package; npm test passes (650 tests in 45 files); npm run sanity passes (57 of 57).",
+        "As an anonymous visitor after the repository went public: the page, every README image and the release video answered; the README's video player address returned the full 9.6 MB file."
+      ],
+      "outside_repo_changes": [
+        "GitHub settings changed for the public repository are listed in the pull request that carries this entry."
+      ],
+      "limitations": [
+        "The live AI check still depends on an outside model and can fail for reasons no change here causes. It is not one of the checks a merge requires.",
+        "The second try was not exercised against a real refusal; it was type-checked only.",
+        "The override must be removed once typescript-eslint depends on a patched minimatch itself."
+      ]
+    },
+    {
       "id": "2026-11-15-readme-polish",
       "date": "2026-11-15",
       "title": "README: the pitch first, readable screenshots, and developer notes below a divider",
