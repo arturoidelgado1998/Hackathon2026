@@ -1814,6 +1814,37 @@
   ],
   "entries": [
     {
+      "id": "2026-11-15-mit-licence",
+      "date": "2026-11-15",
+      "title": "MIT licence",
+      "summary": "The repository is public and had no licence, which leaves all rights reserved by default. Added the MIT licence at the project owner's choice.",
+      "branch": "chore/mit-licence",
+      "changes": [
+        "LICENSE: the MIT licence, copyright 2026 Aaron Cobian, Arturo Delgado and Nicole Traboulsi.",
+        "package.json: the license field says MIT. The package stays private, so it cannot be published to npm by accident.",
+        "README.md: a Licence section, which also says the two bundled design skills keep their own licences and where the public datasets are listed."
+      ],
+      "files": {
+        "added": [
+          "LICENSE"
+        ],
+        "modified": [
+          "README.md",
+          "docs/changelog.json",
+          "package-lock.json",
+          "package.json"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "npm run typecheck and lint pass; npm test passes (650 tests); npm run sanity passes (57 of 57).",
+        "This is the first change made after main and staging were protected, so it could only be merged once the pipeline's required checks had passed."
+      ],
+      "limitations": [
+        "The licence covers the team's own code. The bundled skills under .github/skills and the third-party packages have their own licences, and the public datasets have their publishers' terms."
+      ]
+    },
+    {
       "id": "2026-11-15-public-repo-hardening",
       "date": "2026-11-15",
       "title": "After going public: dependency advisories cleared, a security policy, update pull requests, a steadier live AI check and the team in the README",
