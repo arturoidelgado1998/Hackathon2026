@@ -126,7 +126,7 @@ describe('the live dashboard', () => {
     // Trucks not yet sent when the road closed are held at the port, not sent to queue.
     expect(await trucks()).toBe('8 at port, 1 moving, 0 waiting, 1 arrived')
     expect(within(card('S-01')).getByText('Held at the port: NB-03 is closed. Leaves 10:58.')).toBeInTheDocument()
-    expect(within(card('S-08')).getByText('Arrived 09:35.')).toBeInTheDocument()
+    expect(within(card('S-08')).getByText('Delivered at 09:35, inside the appointment window.')).toBeInTheDocument()
     expect(within(updates()).getByText(/Closure reported on NB-03/)).toBeInTheDocument()
     expect(within(updates()).getByText('S-01 is held at the port: NB-03 is closed.')).toBeInTheDocument()
   })
@@ -149,7 +149,8 @@ describe('the live dashboard', () => {
     fireEvent.click(card('S-01'))
     fireEvent.click(screen.getByRole('button', { name: 'Use reroute' }))
     expect(await trucks()).toBe('7 at port, 2 moving, 0 waiting, 1 arrived')
-    expect(within(card('S-01')).getByText(/^Left 10:00\. On /)).toBeInTheDocument()
+    // It was held at the port until the choice was made, so it leaves now, not at its ready time.
+    expect(within(card('S-01')).getByText(/^Left 10:45\. On /)).toBeInTheDocument()
     // The next update keeps the choice.
     await broadcast({}, { time: 650 })
     expect(screen.getByTestId('count-decision_recorded')).toHaveTextContent('1')
@@ -215,6 +216,223 @@ describe('the live dashboard', () => {
   })
 })
 
+describe('the dashboard follows the clock', () => {
+  const button = (name: string) => screen.getByRole('button', { name })
+  const count = (column: string) => screen.getByTestId(`count-${column}`).textContent
+  const groupOf = (id: string) => card(id).closest('[data-column]')?.getAttribute('data-column')
+  const atRisk = () =>
+    within(screen.getByRole('region', { name: 'Indicators' })).getByText('At risk').nextElementSibling?.textContent
+  const select = (id: string) => fireEvent.click(card(id))
+
+  it('stops offering a reroute once the road has reopened and the truck has gone through', async () => {
+    render(<App live />)
+    await broadcast({}, { time: 645 })
+    select('S-01')
+    expect(button('Use reroute')).toBeEnabled()
+    expect(button('Choose wait')).toBeEnabled()
+
+    // 11:15: NB-03 reopened at 11:10 and S-01 is on it.
+    await broadcast({}, { time: 675 })
+    expect(button('Use reroute')).toBeDisabled()
+    expect(button('Use reroute')).toHaveAttribute('title', 'NB-03 reopened at 11:10, so there is no closure left to avoid.')
+    expect(button('Preview Reroute')).toBeDisabled()
+    expect(button('Choose wait')).toBeDisabled()
+    expect(button('Choose wait').getAttribute('title')).toMatch(/nothing left to wait for/)
+    // A later slot can still be asked for: the load is going to be late.
+    expect(button('Request slot')).toBeEnabled()
+    expect(groupOf('S-01')).toBe('needs_review')
+    expect(within(card('S-01')).getByText('Under way on the assigned route; NB-03 reopened at 11:10')).toBeInTheDocument()
+    expect(within(card('S-01')).queryByText(/Reroute must be chosen by/)).toBeNull()
+    expect(screen.getByText(/^No longer possible: NB-03 reopened at 11:10/)).toBeInTheDocument()
+  })
+
+  it('asks nothing more about a load that has been delivered', async () => {
+    render(<App live />)
+    await broadcast({}, { time: 645 })
+    select('S-01')
+    await broadcast({}, { time: 731 })
+    expect(groupOf('S-01')).toBe('needs_review')
+
+    // 12:12: S-01 reaches WH-A.
+    await broadcast({}, { time: 732 })
+    expect(groupOf('S-01')).toBe('delivered')
+    expect(within(card('S-01')).getByText('DELIVERED LATE')).toBeInTheDocument()
+    expect(within(card('S-01')).getByText('Arrived')).toBeInTheDocument()
+    expect(
+      within(card('S-01')).getByText('Delivered at 12:12, 42 min after the appointment window closed at 11:30.'),
+    ).toBeInTheDocument()
+    expect(within(card('S-01')).queryByText(/Reroute|reopens by/)).toBeNull()
+    // The panel has no comparison and no way to choose anything.
+    expect(screen.getByText(/Nothing is left to decide for S-01\./)).toBeInTheDocument()
+    for (const name of ['Use reroute', 'Choose wait', 'Request slot', 'Preview Reroute']) {
+      expect(screen.queryByRole('button', { name })).toBeNull()
+    }
+    expect(screen.queryByRole('button', { name: 'Reject all options for S-01' })).toBeNull()
+    expect(screen.queryByRole('alert')).toBeNull()
+  })
+
+  it('ends the day with every load delivered and nothing waiting for review', async () => {
+    render(<App live />)
+    await broadcast({}, { time: 645 })
+    expect(count('needs_review')).toBe('6')
+    expect(atRisk()).toBe('4')
+    await broadcast({}, { time: 14 * 60 })
+    expect(count('delivered')).toBe('10')
+    expect(count('needs_review')).toBe('0')
+    expect(count('monitoring')).toBe('0')
+    expect(atRisk()).toBe('0')
+    expect(await trucks()).toBe('0 at port, 0 moving, 0 waiting, 10 arrived')
+    expect(screen.queryAllByRole('button', { name: /^Reject all options/ })).toHaveLength(0)
+  })
+
+  it('shows a load delivered before any closure as delivered too', async () => {
+    render(<App live />)
+    await broadcast({ closure: false }, { time: 600 })
+    expect(groupOf('S-08')).toBe('delivered')
+    expect(within(card('S-08')).getByText('DELIVERED ON TIME')).toBeInTheDocument()
+    expect(groupOf('S-01')).toBe('monitoring')
+  })
+
+  it('closes the reroute for a truck that has left the port by the other road, with the reason', async () => {
+    render(<App live />)
+    await broadcast({}, { time: 645 })
+    select('S-04')
+    expect(button('Use reroute')).toBeEnabled()
+    // 10:58: S-04 leaves the port to reach NB-03 as it reopens.
+    await broadcast({}, { time: 658 })
+    expect(button('Use reroute')).toBeDisabled()
+    expect(button('Use reroute').getAttribute('title')).toMatch(/S-04 left the port at 10:58/)
+    expect(button('Choose wait')).toBeEnabled()
+    expect(within(card('S-04')).getByText('Reroute is no longer possible')).toBeInTheDocument()
+  })
+
+  it('times a late reroute from now, so the comparison stops promising an arrival that has gone', async () => {
+    render(<App live />)
+    await broadcast({}, { time: 601 })
+    select('S-01')
+    const cell = () => screen.getByRole('row', { name: /^Est\. arrival/ }).querySelector('[data-kind="reroute"]')
+    expect(cell()).toHaveTextContent('11:16 to 11:29')
+    await broadcast({}, { time: 645 })
+    expect(cell()).toHaveTextContent('12:00 to 12:13')
+    expect(within(card('S-01')).getByText(/^Reroute deadline 10:02 has passed/)).toBeInTheDocument()
+    // Both ways now miss the appointment, and the panel says so.
+    expect(screen.getByRole('alert')).toHaveTextContent(/No currently feasible response/)
+  })
+
+  it('does not let a reroute be undone, or swapped for Wait, once the truck is on its way', async () => {
+    render(<App live />)
+    await broadcast({}, { time: 645 })
+    select('S-01')
+    fireEvent.click(button('Use reroute'))
+    expect(button('Undo last choice')).toBeInTheDocument()
+    expect(button('Choose wait')).toBeEnabled()
+
+    await broadcast({}, { time: 650 })
+    expect(screen.queryByRole('button', { name: 'Undo last choice' })).toBeNull()
+    expect(screen.getByText(/^Cannot undo: S-01 has already acted on this choice/)).toBeInTheDocument()
+    expect(button('Choose wait')).toBeDisabled()
+    expect(button('Choose wait')).toHaveAttribute(
+      'title',
+      'S-01 is already on route R-A-ALT and cannot go back to wait for NB-03.',
+    )
+    expect(button('Use reroute')).toBeDisabled()
+    expect(button('Use reroute')).toHaveAttribute('aria-pressed', 'true')
+    // The card keeps the figures the reroute had when it was chosen.
+    expect(within(card('S-01')).getByText('12:00–12:13')).toBeInTheDocument()
+    expect(groupOf('S-01')).toBe('decision_recorded')
+
+    // It arrives when the card said it would, and the choice stays on the card.
+    await broadcast({}, { time: 733 })
+    expect(groupOf('S-01')).toBe('delivered')
+    expect(within(card('S-01')).getByText(/^Delivered at 12:13, 43 min after/)).toBeInTheDocument()
+    expect(within(card('S-01')).getByText(/Dispatcher’s recorded choice/)).toBeInTheDocument()
+    expect(screen.getByText('Recorded choice: Reroute.')).toBeInTheDocument()
+  })
+
+  it('still lets a Wait be undone while the truck is on its way, and not after delivery', async () => {
+    render(<App live />)
+    await broadcast({}, { time: 645 })
+    select('S-01')
+    fireEvent.click(button('Choose wait'))
+    await broadcast({}, { time: 700 })
+    expect(button('Undo last choice')).toBeInTheDocument()
+    await broadcast({}, { time: 740 })
+    expect(screen.queryByRole('button', { name: 'Undo last choice' })).toBeNull()
+  })
+
+  it('drops a preview when the previewed response closes', async () => {
+    render(<App live />)
+    await broadcast({}, { time: 645 })
+    select('S-01')
+    fireEvent.click(button('Preview Reroute'))
+    expect(screen.getByText(/Preview only: Reroute/)).toBeInTheDocument()
+    await broadcast({}, { time: 675 })
+    expect(screen.queryByText(/Preview only/)).toBeNull()
+    expect(button('Preview Reroute')).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('forgets a choice when the clock is moved back to before it was made', async () => {
+    render(<App live />)
+    await broadcast({}, { time: 645 })
+    select('S-01')
+    fireEvent.click(button('Use reroute'))
+    expect(groupOf('S-01')).toBe('decision_recorded')
+    // Back to 10:20, with the closure still reported.
+    await broadcast({}, { time: 620 })
+    expect(groupOf('S-01')).toBe('needs_review')
+    expect(within(card('S-01')).getByText('Held at the port: NB-03 is closed. Leaves 10:58.')).toBeInTheDocument()
+    expect(button('Use reroute')).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.queryByRole('button', { name: 'Undo last choice' })).toBeNull()
+  })
+
+  it('keeps a choice when an update arrives a moment behind the clock', async () => {
+    render(<App live />)
+    await broadcast({}, { time: 645.4 })
+    select('S-01')
+    fireEvent.click(button('Choose wait'))
+    await broadcast({}, { time: 645.1, beat: true })
+    expect(groupOf('S-01')).toBe('decision_recorded')
+  })
+
+  it('brings a delivered load back when the clock is moved back', async () => {
+    render(<App live />)
+    await broadcast({}, { time: 740 })
+    expect(groupOf('S-01')).toBe('delivered')
+    await broadcast({}, { time: 645 })
+    expect(groupOf('S-01')).toBe('needs_review')
+    select('S-01')
+    expect(button('Use reroute')).toBeEnabled()
+  })
+
+  it('has nothing more to send the driver once the load is delivered', async () => {
+    render(<App live />)
+    await broadcast({}, { time: 645 })
+    select('S-01')
+    fireEvent.click(button('Use reroute'))
+    // The notice carries the reroute as timed when it was chosen, not from the ready time.
+    expect(screen.getByRole('region', { name: 'Driver notice' })).toHaveTextContent('12:00')
+    fireEvent.click(button('Send to driver'))
+    await broadcast({}, { time: 740 })
+    const notice = screen.getByRole('region', { name: 'Driver notice' })
+    expect(notice).toHaveTextContent('S-01 has been delivered, so there is nothing new to send.')
+    expect(within(notice).getByRole('button', { name: 'Send update to driver' })).toBeDisabled()
+
+    // A delivered load with a choice but no notice sent shows no driver panel at all.
+    select('S-04')
+    expect(screen.queryByRole('region', { name: 'Driver notice' })).toBeNull()
+  })
+
+  it('the prefilled sample has no clock: no Delivered group and nothing closes', () => {
+    render(<App />)
+    expect(screen.queryByTestId('count-delivered')).toBeNull()
+    select('S-01')
+    expect(button('Use reroute')).toBeEnabled()
+    fireEvent.click(button('Use reroute'))
+    expect(button('Undo last choice')).toBeInTheDocument()
+    expect(within(card('S-01')).getByText('Reroute must be chosen by 10:02')).toBeInTheDocument()
+  })
+})
+
 describe('accessibility of the live dashboard', () => {
   const serious = async (container: HTMLElement) => {
     const results = await axe(container, {
@@ -239,6 +457,17 @@ describe('accessibility of the live dashboard', () => {
     fireEvent.click(card('S-01'))
     fireEvent.click(screen.getByRole('button', { name: 'Use reroute' }))
     await map()
+    expect(await serious(container)).toEqual([])
+  })
+
+  it('has no serious or critical axe violations with a delivered load open and responses closed', async () => {
+    const { container } = render(<App live />)
+    await broadcast({}, { time: 675 })
+    fireEvent.click(card('S-01'))
+    await map()
+    expect(await serious(container)).toEqual([])
+    await broadcast({}, { time: 740 })
+    expect(screen.getByText(/Nothing is left to decide for S-01\./)).toBeInTheDocument()
     expect(await serious(container)).toEqual([])
   })
 

@@ -390,3 +390,69 @@ describe('built app in a browser', () => {
     expect(await text(region('Community near the route'))).toContain(corridorLine(alternative))
   })
 })
+
+// The live dashboard, driven the way a demo drives it: the simulation page in
+// one tab is the feed, the dashboard in another follows it. Both run from the
+// built bundle and share one browser profile, so they talk over the same
+// channel a presenter's two tabs do.
+describe('a live day in a browser', () => {
+  it('closes responses as the day moves on, and ends with every load delivered', async () => {
+    const context = await browser.newContext({ viewport: { width: 1366, height: 768 } })
+    const errors: string[] = []
+    try {
+      const dashboard = await context.newPage()
+      const simulation = await context.newPage()
+      for (const tab of [dashboard, simulation]) {
+        tab.setDefaultTimeout(10_000)
+        tab.on('pageerror', (error) => errors.push(error.message))
+        await tab.route('**/assets/ArcgisMap-*.js', (route) => route.abort())
+      }
+      const shipmentCard = (id: string) => dashboard.locator(`[data-shipment-id="${id}"]`)
+      const groupOf = (id: string) =>
+        shipmentCard(id).evaluate((element) => element.closest('[data-column]')?.getAttribute('data-column'))
+      const action = (name: string) => dashboard.getByRole('button', { name, exact: true })
+
+      await dashboard.goto(`${origin}/`)
+      await dashboard.getByText('Waiting for live updates.').waitFor()
+      await simulation.goto(`${origin}/simulation.html`)
+      await simulation.getByRole('button', { name: 'Start simulation' }).click()
+      await simulation.getByRole('button', { name: 'Pause', exact: true }).click()
+      const slider = simulation.getByRole('slider', { name: 'Time of day' })
+      const seek = (minutes: number) => slider.fill(String(minutes))
+
+      // 10:45: the closure has been reported and the reference shipment can still be rerouted.
+      await seek(10 * 60 + 45)
+      await dashboard.getByText(/Closure on NB-03/).waitFor()
+      await shipmentCard(referenceId).click()
+      await expect.poll(() => action('Use reroute').isEnabled()).toBe(true)
+      expect(await groupOf(referenceId)).toBe('needs_review')
+
+      // 11:15: the road has reopened and the truck is on it. Nothing is left to reroute around.
+      await seek(11 * 60 + 15)
+      await dashboard.getByText(/reopened/).first().waitFor()
+      await expect.poll(() => action('Use reroute').isDisabled()).toBe(true)
+      expect(await action('Use reroute').getAttribute('title')).toMatch(/no closure left to avoid/)
+      expect(await action('Choose wait').isDisabled()).toBe(true)
+      expect(await action('Request slot').isEnabled()).toBe(true)
+
+      // The end of the day: every load is delivered, and the page asks for nothing.
+      await seek(Number(await slider.getAttribute('max')))
+      await expect.poll(() => dashboard.getByTestId('count-delivered').textContent()).toBe(String(shipmentIds.length))
+      expect(await dashboard.getByTestId('count-needs_review').textContent()).toBe('0')
+      expect(await groupOf(referenceId)).toBe('delivered')
+      await dashboard.getByText(`Nothing is left to decide for ${referenceId}.`, { exact: false }).waitFor()
+      for (const name of ['Use reroute', 'Choose wait', 'Request slot']) {
+        expect(await action(name).count(), name).toBe(0)
+      }
+      expect(await dashboard.getByRole('button', { name: /^Reject all options/ }).count()).toBe(0)
+
+      // Moving the clock back brings the choice back: nothing was lost for good.
+      await seek(10 * 60 + 45)
+      await expect.poll(() => groupOf(referenceId)).toBe('needs_review')
+      await expect.poll(() => action('Use reroute').isEnabled()).toBe(true)
+      expect(errors).toEqual([])
+    } finally {
+      await context.close()
+    }
+  })
+})

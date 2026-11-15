@@ -251,3 +251,8 @@
 .shipment-card--schedule {
   cursor: default;
 }
+
+/* A delivered load: finished, so it reads quieter than the open ones. */
+.shipment-card--delivered {
+  border-style: dashed;
+}

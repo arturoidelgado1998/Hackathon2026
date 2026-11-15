@@ -54,7 +54,8 @@ function sumKnown(values: readonly (number | null)[]): number | null {
   return Number(values.reduce<number>((total, value) => total + value!, 0).toFixed(10))
 }
 
-function evaluateAssessments(
+/** Totals for assessments the caller already has (a live day re-times a late reroute). */
+export function evaluateAssessments(
   shipments: readonly Shipment[],
   assessed: ReadonlyMap<string, ShipmentAssessment>,
   decisions: readonly EvaluationSelection[],

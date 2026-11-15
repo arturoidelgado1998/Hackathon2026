@@ -1676,6 +1676,86 @@
   ],
   "entries": [
     {
+      "id": "2026-11-15-clock-aware-dashboard",
+      "date": "2026-11-15",
+      "title": "Live dashboard follows the clock: closed responses, late reroutes and delivered loads",
+      "summary": "On a live day the dashboard now holds every shipment against where its truck is at the current clock time. A delivered load moves to a new Delivered group and offers nothing more. Reroute closes once the road has reopened or the truck has passed the turn-off; Wait closes once the road has reopened or the truck is on the alternative route. A reroute chosen late is timed by the engine from where the truck stands, and the truck leaves from there instead of jumping back to its ready time. Undo, previews, deadlines on cards, the At risk count and the driver notice follow the same rules. Brought up to staging 312b47c, which has the live dashboard (pull request 45) and the published cost and CO2 inputs (pull request 46). Dated in UTC like the entries below.",
+      "branch": "sim/clock-aware-responses",
+      "based_on": "staging at 312b47c (pull requests 45 and 46 merged). Started on sim/live-dashboard at 6a7530d and fast-forwarded to staging before the final checks.",
+      "integration_changes": [
+        "Staging removed the simulated and fictional labels from the screen (owner's decision), so nothing added here uses those words on screen.",
+        "Staging changed the cost inputs, so the new tests compare costs with the engine's own options instead of fixed dollar amounts."
+      ],
+      "behaviour_changes": [
+        "Live day only; the prefilled sample at /?sample has no clock and is unchanged.",
+        "New Delivered group on the live board. A delivered card shows DELIVERED ON TIME or DELIVERED LATE, the arrival time and one sentence on the outcome; the response panel shows that sentence and no comparison or buttons.",
+        "Reroute is closed, with the reason in the Status row and on the disabled buttons, when the road has reopened, when the truck has entered a segment the alternative route does not have, or when too little of the day is left to drive it.",
+        "A reroute for a truck held at the port or queued at the closed segment is timed from the current minute. Before this, the comparison kept showing the arrival of a reroute started at the ready time, however late it was chosen, and choosing it moved the truck back along the route to where it would have been.",
+        "Cards say when a deadline has passed (\"Reroute deadline 10:02 has passed: rerouting now may miss the appointment\") and drop the deadlines once the road has reopened.",
+        "Undo is offered only while taking the choice back would not move the truck; otherwise the panel says why. A previewed response that closes is dropped.",
+        "Moving the clock back forgets choices made after the new time (with a margin of half a second of clock speed, so ordinary jitter between updates does not undo a choice) and brings delivered loads back.",
+        "Once the road has reopened, an affected load that is on track returns to Monitoring; a late or tight one stays in Needs review because a later slot can still be requested.",
+        "At risk no longer counts delivered loads. Est. cost and CO2 remain totals for the whole day's plan, with a late reroute at the figures it had when chosen.",
+        "The driver notice for a late reroute carries the re-timed arrival. A delivered load has nothing new to send."
+      ],
+      "engine_boundary": [
+        "No formula was added. src/sim/liveAssessment.ts calls the engine's routeTiming for the remaining route and calculateMetrics for arrival, lateness, risk, cost, CO2 and duty; a delivered load's lateness is calculateMetrics applied to the one arrival that happened.",
+        "src/engine/evaluation.ts: evaluateAssessments is now exported so live totals can be evaluated from assessments that carry the re-timed reroute. Its behaviour is unchanged.",
+        "Options keep their fixed order and nothing is ranked. Nothing changes until the dispatcher chooses."
+      ],
+      "files": {
+        "added": [
+          "src/sim/liveAssessment.ts",
+          "src/state/live.test.ts",
+          "src/state/live.ts"
+        ],
+        "modified": [
+          "README.md",
+          "docs/changelog.json",
+          "sanity/app.sanity.test.ts",
+          "src/App.tsx",
+          "src/components/board/RiskBadge.tsx",
+          "src/components/board/ShipmentCard.tsx",
+          "src/components/board/TriageBoard.tsx",
+          "src/components/board/board.css",
+          "src/components/responses/ResponsePanel.tsx",
+          "src/driver/DriverNoticeDesk.tsx",
+          "src/driver/DriverNoticePanel.tsx",
+          "src/engine/evaluation.ts",
+          "src/sim/events.ts",
+          "src/sim/live.test.tsx",
+          "src/sim/trucks.ts",
+          "src/state/options.ts",
+          "src/state/reducer.ts",
+          "src/state/trucks.ts",
+          "src/types.ts",
+          "src/viewModels.ts"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "Node 24/npm 11, on staging 312b47c: all 527 unit and integration tests in 35 files pass (469 before), including 43 new checks of the live rules in src/state/live.test.ts and 15 new app-level checks in src/sim/live.test.tsx, with axe run on a delivered load and on closed responses.",
+        "npm run typecheck, npm run lint and npm run build pass; all 51 sanity checks in six files pass. The new one drives the built simulation page and dashboard in two tabs of one headless browser: reroute open at 10:45, closed at 11:15, every load delivered at the end of the day, and the choice back when the clock is moved back.",
+        "Edge cases covered by tests: delivered late, on time and early; one minute before delivery; delivered with a Wait, Reroute or slot request recorded; delivered before any closure; road reopened with the truck on it; truck left the port by the other road; truck moving on a shared segment; truck queued at the closure with and without a shared start; truck already inside the segment when it closes; reroute chosen at the ready time, mid-minute, late, and too late in the day; no reopening time; fast and slow timing cases; undo before and after the truck acts; preview of a response that closes; clock moved back before a choice and before a delivery; an update arriving a moment behind the clock; and the prefilled sample unchanged.",
+        "A sweep over every shipment at seven-minute steps checks that choosing an open reroute never moves the truck and that it then arrives at the time the option showed.",
+        "Browser, two tabs on the dev server (dashboard and simulation page): at 10:45 S-01 could be rerouted; at 11:15 Use reroute and Choose wait were disabled with their reasons and Request slot stayed enabled; at 12:15 S-01 sat under Delivered as DELIVERED LATE, the panel read \"Delivered at 12:12, 42 min after the appointment window closed at 11:30. Nothing is left to decide for S-01.\", no response buttons were on the page, At risk read 0 and the console had no errors."
+      ],
+      "outside_repo_changes": [
+        "Added a portplan-clock-aware entry to the shared, untracked .claude/launch.json and ran the dev server on port 5187 from this branch's worktree."
+      ],
+      "limitations": [
+        "Committed on branch sim/clock-aware-responses, one commit on top of staging 312b47c. Not pushed, and no pull request is open.",
+        "A closed response is refused by disabling its buttons. The reducer itself still checks only that the engine has figures for the option.",
+        "A truck cannot turn back. Once it is past the turn-off the reroute is closed, even where a real driver could double back.",
+        "The delivered time is the simulation's timing case (slow or fast end of the engine's range), not a measured arrival. SIMULATED.",
+        "Est. cost and CO2 in the top bar stay whole-day plan totals and still include delivered loads.",
+        "Decisions are still cleared when a closure is reported or withdrawn, and are lost if the dashboard is reloaded.",
+        "The simulation page's own outcome table still applies its wait-for-all or reroute-for-all setting from each ready time; it does not see the dashboard's choices.",
+        "The AI suggestion panel (pull request 44) is not on this branch. When both are merged, the facts it sends must use isResponseOptionOpen so it cannot suggest a closed response.",
+        "Not tested on a second physical device."
+      ]
+    },
+    {
       "id": "2026-11-15-remove-fake-data-wording",
       "date": "2026-11-15",
       "title": "Removed simulated, fictional and similar labels from the app",

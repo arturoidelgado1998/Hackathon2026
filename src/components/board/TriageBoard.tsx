@@ -12,12 +12,15 @@ export interface TriageBoardProps {
   onRejectAll?: (shipmentId: string) => void
   showEmptyGroups?: boolean
   onToggleEmptyGroups?: () => void
+  /** The groups to show, in order. A live day adds Delivered. */
+  columns?: { id: BoardColumn; title: string }[]
 }
 
 /** Workflow wording per group. "Decision recorded" is the dispatcher's choice, not an outcome. */
 const COLUMN_SUBTITLES: Partial<Record<BoardColumn, string>> = {
   needs_review: 'Earliest reroute deadline first; missing deadlines after known ones. No currently feasible response last. Ties: shipment ID.',
   decision_recorded: 'Dispatcher chose a response',
+  delivered: 'Arrived at the warehouse; nothing left to decide',
 }
 
 /**
@@ -32,9 +35,10 @@ export function TriageBoard({
   onRejectAll,
   showEmptyGroups = false,
   onToggleEmptyGroups,
+  columns = BOARD_COLUMNS,
 }: TriageBoardProps) {
   const idPrefix = useId()
-  const emptyColumns = BOARD_COLUMNS.filter(({ id }) => !cards.some((card) => card.column === id))
+  const emptyColumns = columns.filter(({ id }) => !cards.some((card) => card.column === id))
   return (
     <div
       className="triage-board"
@@ -61,7 +65,7 @@ export function TriageBoard({
           {emptyColumns.length === 1 ? 'group' : 'groups'}
         </button>
       )}
-      {BOARD_COLUMNS.map(({ id, title }) => {
+      {columns.map(({ id, title }) => {
         const columnCards = cards.filter((card) => card.column === id)
         if (id === 'needs_review') columnCards.sort(compareReviewUrgency)
         const titleId = `${idPrefix}-${id}-title`

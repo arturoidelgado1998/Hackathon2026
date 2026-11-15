@@ -27,6 +27,8 @@ export interface ResponsePanelProps {
   decision?: Decision
   previewDecision?: Decision | null
   onUndo?: () => void
+  /** Why the last choice can no longer be undone (live day); shown in place of Undo. */
+  undoBlockedReason?: string | null
   onCancelPreview?: () => void
   /** Optional notification when an option's explanation is toggled. */
   onWhy?: (kind: ResponseOptionKind) => void
@@ -231,6 +233,7 @@ function ShipmentResponses({
   decision,
   previewDecision,
   onUndo,
+  undoBlockedReason,
   onCancelPreview,
 }: Omit<ResponsePanelProps, 'view'> & { view: ResponsePanelView }) {
   const explanationId = useId()
@@ -304,7 +307,17 @@ function ShipmentResponses({
     return (
       <div className="responses-panel">
         {header}
-        {summary?.affected ? (
+        {view.closedNote ? (
+          <div className="responses-closed" role="status">
+            <p className="responses-empty">{view.closedNote}</p>
+            {decision && (
+              <p className="responses-hint">
+                Recorded choice: {OPTION_TITLES[decision.option_kind]}
+                {awaitingConfirmation ? ' (never confirmed)' : ''}.
+              </p>
+            )}
+          </div>
+        ) : summary?.affected ? (
           <NoFeasibleResponse />
         ) : (
           <p className="responses-empty">
@@ -349,6 +362,9 @@ function ShipmentResponses({
               >
                 Undo last choice
               </button>
+            )}
+            {!onUndo && undoBlockedReason && (
+              <p className="responses-note">Cannot undo: {undoBlockedReason}</p>
             )}
           </div>
         )}

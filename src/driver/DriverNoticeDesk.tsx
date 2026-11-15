@@ -43,6 +43,9 @@ export function DriverNoticeDesk({
   const decision = decisions[shipmentId]
   const sent = sentByShipment[shipmentId]
   if (!decision && !sent) return null
+  // A delivered load has nothing left to tell the driver; keep only what was sent.
+  const delivered = view.closedNote !== undefined
+  if (delivered && !sent) return null
 
   const draft = decision && incident ? buildDraft(view, decision, incident) : null
   const key = decision ? decisionKey(decision, scenario) : null
@@ -55,6 +58,9 @@ export function DriverNoticeDesk({
       onSend={draft && key ? () => desk.send(draft, key) : undefined}
       phone={phone}
       reply={sent?.reply ?? null}
+      nothingToSend={
+        delivered ? `${shipmentId} has been delivered, so there is nothing new to send.` : undefined
+      }
     />
   )
 }

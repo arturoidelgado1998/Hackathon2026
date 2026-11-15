@@ -77,6 +77,34 @@ for a live data feed.
   time is reached, not before, and the road is drawn open again once it reopens.
 - **The dispatcher still makes every choice.** Choosing **Use reroute** moves that
   truck onto the alternative route. The simulation never chooses a response.
+- **The dashboard follows the clock.** What a card offers depends on where its
+  truck is now, not only on the day as planned:
+  - A load that has reached its warehouse moves to **Delivered** with what
+    happened ("Delivered at 12:12, 42 min after the appointment window closed at
+    11:30"). It offers no responses, and it no longer counts as at risk.
+  - **Reroute closes** once the road has reopened, or once the truck has entered
+    a segment the alternative route does not have. A truck still at the port, on
+    a segment both routes share, or queued at the closed segment can still be
+    rerouted. A closed response keeps its column in the comparison and says why.
+  - **A reroute is timed from where the truck is.** For a truck held at the port
+    or queued at the closure, the estimate starts at the current minute, so it
+    gets later the longer the choice is left, and the card says when the reroute
+    deadline has passed. The truck then leaves from where it stands: choosing
+    late never moves it back in time.
+  - **Wait closes** once the road has reopened (the truck is simply on its way)
+    or once the truck is on the alternative route. **Request later slot** stays
+    open until delivery.
+  - **Undo** is offered only while taking the choice back would not move the
+    truck. After that the panel says why it cannot be undone.
+  - A previewed response that closes is dropped. If the clock is moved back,
+    choices made after the new time are forgotten and delivered loads return.
+  - Once the road has reopened, an affected load that is on track goes back to
+    Monitoring; one that is late or tight stays in Needs review, because a later
+    slot can still be requested.
+
+  The rules are in `src/sim/liveAssessment.ts`; every arrival, lateness, cost and
+  CO2 figure in them comes from the engine. The prefilled sample has no clock, so
+  none of this applies there.
 - **Trucks and closures.** A truck that is not yet on the road when a closure
   starts is held at the port and leaves in time to reach the segment as it
   reopens. A truck already on the road queues at the closed segment. The

@@ -63,7 +63,14 @@ export function liveEvents(
         events.push({
           time: leg.arrive,
           kind: 'shipment',
-          text: `${plan.shipment_id} is held at ${leg.segment_id}, which is closed.`,
+          text: `${plan.shipment_id} is held at ${leg.waited_for ?? leg.segment_id}, which is closed.`,
+        })
+      }
+      if (leg.waited_for !== undefined && leg.enter !== null) {
+        events.push({
+          time: leg.enter,
+          kind: 'shipment',
+          text: `${plan.shipment_id} turned off before ${leg.waited_for} onto route ${plan.route_id}.`,
         })
       }
     }
@@ -93,7 +100,7 @@ export function liveNote(
       }
       return `At the port. Leaves ${formatTime(plan.leaves ?? plan.departure)}.`
     case 'waiting': {
-      const leg = plan.legs.find((item) => item.segment_id === state.segment_id)
+      const leg = plan.legs.find((item) => (item.waited_for ?? item.segment_id) === state.segment_id)
       const since = leg ? ` since ${formatTime(leg.arrive)}` : ''
       return state.wait_until === null
         ? `Held at ${state.segment_id}${since}. Reopening time unknown.`

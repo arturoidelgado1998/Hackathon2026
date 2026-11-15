@@ -121,4 +121,10 @@ export interface Decision {
   status: DecisionStatus
   /** ISO 8601 timestamp of when the decision was recorded. */
   timestamp: string
+  /**
+   * Simulated minutes since midnight when it was recorded, on a live day.
+   * Absent on the prefilled sample, which has no clock. A reroute chosen
+   * late starts from where the truck was at this time.
+   */
+  sim_time?: number
 }
