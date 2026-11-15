@@ -146,7 +146,7 @@ const DELIVERY_ROWS: Row[] = [
   { label: 'Risk', cell: (o) => <RiskBadge risk={o.risk} /> },
   {
     label: 'Est. cost',
-    estimate: 'Estimated cost using placeholder assumptions.',
+    estimate: 'Estimated cost from published average trucking costs; see Assumptions & sources.',
     cell: (o) => <span className="pp-num">{formatCost(o.cost)}</span>,
   },
 ]

@@ -58,9 +58,9 @@ describe('persisted SIMULATED evaluation exports', () => {
       'co2Kg', 'pending', 'addedDriverDuty', 'flaggedRoutes',
     ])
     const expected = {
-      normal: [0, 0, 0, 1027, 0, 546.5, 0, 0, 10],
-      disrupted_no_action: [3, 1, 132, 1204, 0, 546.5, 0, 263, 10],
-      disrupted_selected_responses: [2, 0, 84, 1182, 20, 577.9, 2, 176, 10],
+      normal: [0, 0, 0, 817, 0, 522.7, 0, 0, 10],
+      disrupted_no_action: [3, 1, 132, 976, 0, 522.7, 0, 263, 10],
+      disrupted_selected_responses: [2, 0, 84, 951, 20, 552.7, 2, 176, 10],
     }
     for (const scenario of Object.keys(expected) as (keyof typeof expected)[]) {
       expect(json.map((row) => row.values[scenario])).toEqual(expected[scenario])

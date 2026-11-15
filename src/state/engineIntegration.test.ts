@@ -45,16 +45,16 @@ describe('fresh engine integration', () => {
     expect(getBaseline(shipment.id).miles).toBe(55)
     expect(buildCards('disrupted').find((card) => card.shipment.id === shipment.id))
       .toMatchObject({ reopen_needed_by: '10:23', reroute_decide_by: '09:57' })
-    expect(getTotals(initialState).co2Kg).toBeGreaterThan(546.5)
+    expect(getTotals(initialState).co2Kg).toBeGreaterThan(522.7)
   })
 
   it('uses current assumptions in baseline, option and total estimates', () => {
     const before = getTotals(initialState)
     assumptions.mpg = 5
     assumptions.labor_rate_per_hr = 50
-    expect(getBaseline(shipment.id)).toMatchObject({ cost: 143, co2_kg: 91.9 })
+    expect(getBaseline(shipment.id)).toMatchObject({ cost: 121, co2_kg: 91.9 })
     expect(getResponseOptions(shipment.id, 'disrupted')[1])
-      .toMatchObject({ cost: 181, co2_kg: 122.5 })
+      .toMatchObject({ cost: 152, co2_kg: 122.5 })
     expect(getTotals(initialState).cost).toBeGreaterThan(before.cost!)
     expect(getTotals(initialState).co2Kg).toBeGreaterThan(before.co2Kg!)
   })

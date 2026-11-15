@@ -95,7 +95,7 @@ export const assumptions: Assumptions = {
   sources: assumptionsJson.sources,
 }
 
-/** Assumption field name -> true when the value is a placeholder (all are). */
+/** Assumption field name -> true when the value is still a team placeholder, false when it cites a published source. */
 export const assumptionPlaceholders: Record<string, boolean> = assumptionsJson.placeholders
 
 /** S-01 to WH-A: the team plan's reference shipment (45 mi original, 60 mi alternative). */

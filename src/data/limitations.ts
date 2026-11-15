@@ -8,7 +8,7 @@ export const limitations = [
   'All shipments, warehouses, routes and incident reports are simulated; no result is a measured real-world outcome.',
   'Sensitive-zone flags are placeholders until the corridor analysis (G3, #21). After that they show proximity (schools and disadvantaged communities within 150 m of an illustrative route), not measured exposure or health impact.',
   'Flagging an impact is not the same as resolving it. The tool makes trade-offs visible; it does not make a decision fair.',
-  'Cost, fuel economy and labor figures are placeholder assumptions until the team confirms and cites them.',
+  'Cost, labor and fuel economy inputs are published averages, not a carrier’s own figures: the cost and wage figures are national, and the fuel economy is what port truck operators reported, not a measurement.',
   'Waiting is assumed to be engine-off, and driver pay, legal hours-of-service and fatigue are not modeled.',
   'Driver notices are simulated: no real message is sent, and nothing confirms that a driver received or read one.',
 ] as const

@@ -28,7 +28,8 @@ export function AssumptionsPanel() {
     <div className="assumptions-panel">
       <h2>Assumptions &amp; sources</h2>
       <p className="assumptions-note">
-        Estimated values use the assumptions below. Placeholder values still need team verification.
+        Estimated values use the inputs below. Cost and CO2 inputs are published averages, cited in
+        the Source column. An input marked Placeholder is still a team assumption.
       </p>
       <nav className="assumptions-nav" aria-label="Assumptions sections">
         <a href={`#${id}-inputs`}>Inputs &amp; sources</a>

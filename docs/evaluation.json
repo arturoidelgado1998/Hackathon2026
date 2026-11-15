@@ -172,9 +172,9 @@
     "estimated": true,
     "data_label": "SIMULATED",
     "values": {
-      "normal": 1027,
-      "disrupted_no_action": 1204,
-      "disrupted_selected_responses": 1182
+      "normal": 817,
+      "disrupted_no_action": 976,
+      "disrupted_selected_responses": 951
     },
     "simulation": {
       "selection_rule": "Evaluation only: choose an available ON_TRACK Wait or Reroute whose full service range meets the original appointment, with the fewest added miles versus the assigned normal route; ties use Wait before Reroute. If neither is ON_TRACK, request a later slot and retain the current Wait metrics until confirmation. Unaffected shipments keep their assigned route. This rule does not select or rank UI responses.",
@@ -282,9 +282,9 @@
     "estimated": true,
     "data_label": "SIMULATED",
     "values": {
-      "normal": 546.5,
-      "disrupted_no_action": 546.5,
-      "disrupted_selected_responses": 577.9
+      "normal": 522.7,
+      "disrupted_no_action": 522.7,
+      "disrupted_selected_responses": 552.7
     },
     "simulation": {
       "selection_rule": "Evaluation only: choose an available ON_TRACK Wait or Reroute whose full service range meets the original appointment, with the fewest added miles versus the assigned normal route; ties use Wait before Reroute. If neither is ON_TRACK, request a later slot and retain the current Wait metrics until confirmation. Unaffected shipments keep their assigned route. This rule does not select or rank UI responses.",

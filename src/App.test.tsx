@@ -107,12 +107,12 @@ describe('App', () => {
     for (const title of ['Wait', 'Reroute', 'Request later slot']) {
       expect(within(responses).getByRole('columnheader', { name: title })).toBeInTheDocument()
     }
-    // Reference shipment values from the team's feature service (max-arrival case).
+    // Reference shipment, max-arrival case, with the sourced cost and CO2 inputs.
     expect(responses).toHaveTextContent('30 to 42 min late')
-    expect(responses).toHaveTextContent('$169')
-    expect(responses).toHaveTextContent('$167')
+    expect(responses).toHaveTextContent('$138')
+    expect(responses).toHaveTextContent('$132')
     expect(responses).toHaveTextContent('+15 mi')
-    expect(responses).toHaveTextContent('+23.5 kg')
+    expect(responses).toHaveTextContent('+22.5 kg')
     expect(responses).toHaveTextContent(
       '9 schools and 31 disadvantaged tracts within 150 m (real locations, illustrative route)',
     )

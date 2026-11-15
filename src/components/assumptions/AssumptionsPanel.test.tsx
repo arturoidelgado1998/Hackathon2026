@@ -45,9 +45,12 @@ describe('AssumptionsPanel', () => {
         expect(within(row).queryByText('Placeholder')).not.toBeInTheDocument()
       }
     }
-    expect(
-      within(table).getByText('EPA GHG Emission Factors Hub, 2025 edition (PLACEHOLDER until verified)'),
-    ).toBeInTheDocument()
+    // Cost and CO2 inputs cite a published source; only pickup handling is still a team assumption.
+    expect(within(table).getAllByText('Placeholder')).toHaveLength(1)
+    expect(within(table).getByText(/EPA GHG Emission Factors Hub, 2025 edition/)).toBeInTheDocument()
+    expect(within(table).getByText(/Feasibility Assessment for Drayage Trucks/)).toBeInTheDocument()
+    expect(within(table).getByText(/Operational Costs of Trucking/)).toBeInTheDocument()
+    expect(within(table).getByText(/Bureau of Labor Statistics/)).toBeInTheDocument()
   })
 
   it('describes the 150 m community measure as proximity, with its basis and real sources', () => {
