@@ -9,6 +9,7 @@ import {
   MEASURES,
   advantagesOf,
   givesUp,
+  noteHasFigures,
   type CheckedSuggestion,
   type Difference,
   type Measure,
@@ -45,7 +46,7 @@ export async function requestSuggestion(
   if (
     !received ||
     typeof received.note !== 'string' ||
-    /\d/.test(received.note) ||
+    noteHasFigures(received.note, facts) ||
     !Array.isArray(received.because) ||
     (kind !== null && !option?.available)
   ) {

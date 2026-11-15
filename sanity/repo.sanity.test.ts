@@ -151,7 +151,10 @@ describe('secrets and generated files', () => {
       for (const [, name] of content.matchAll(/import\.meta\.env\.([A-Za-z_]\w*)/g)) {
         if (!name.startsWith('VITE_') && !builtIn.has(name)) problems.push(`${file}: import.meta.env.${name}`)
       }
-      if (/\bLLM_(API_KEY|PROVIDER|BASE_URL|MODEL)\b/.test(content)) problems.push(`${file}: names a server-side variable`)
+      if (/\b(LLM_(API_KEY|PROVIDER|BASE_URL|MODEL)|ANTHROPIC_(API_KEY|MODEL))\b/.test(content)) {
+        problems.push(`${file}: names a server-side variable`)
+      }
+      if (/@anthropic-ai\/sdk/.test(content)) problems.push(`${file}: imports the model SDK into browser code`)
       if (/from\s+['"][^'"]*\/server\//.test(content)) problems.push(`${file}: imports from server/`)
       if (/\bprocess\.env\b/.test(content)) problems.push(`${file}: reads process.env`)
     }

@@ -116,6 +116,22 @@ describe('validateSuggestion', () => {
     expect(errorsFor({ ...reroute, note: 'x'.repeat(241) })).toEqual(['"note" is longer than 240 characters.'])
   })
 
+  it('allows the names the facts already use, such as a segment or shipment id, but still no figure', () => {
+    const named = 'The reroute avoids the NB-03 closure and keeps S-07 on track, though it passes more schools.'
+    expect(validateSuggestion({ ...reroute, note: named }, s07)).toMatchObject({ ok: true, suggestion: { note: named } })
+    const gas = 'Rerouting meets the window at the price of more schools passed, more miles and more CO2.'
+    expect(validateSuggestion({ ...reroute, note: gas }, s07).ok).toBe(true)
+    for (const note of [
+      'The reroute avoids NB-03, which reopens at 11:10.',
+      'The reroute avoids NB-03 and passes 18 schools.',
+      'The reroute avoids NB-04.', // not a name from the facts
+      'S-07 would be about 6 minutes late.',
+      'Rerouting adds 7.9 kg of CO2.',
+    ]) {
+      expect(errorsFor({ ...reroute, note }), note).toEqual(['"note" must not contain numbers or times.'])
+    }
+  })
+
   it('keeps the wording of a suggestion: nothing is called best or recommended', () => {
     for (const note of ['Reroute is the best option.', 'I recommend rerouting.', 'Rerouting is recommended.', 'The optimal choice is to reroute.']) {
       expect(errorsFor({ ...reroute, note }), note).toEqual(['"note" must not call an option best or recommended.'])

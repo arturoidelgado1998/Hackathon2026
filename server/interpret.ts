@@ -7,7 +7,7 @@ import {
   type AllowedSegment,
   type IncidentInterpretation,
 } from '../src/incident/interpretation.ts'
-import { askModel, type ModelConfig, type ModelFailure } from './model.ts'
+import { askModel, type ModelConfig, type ModelFailure, type ModelUsage } from './model.ts'
 import { buildModelRequest } from './prompt.ts'
 
 /** Long enough for a real incident report; short enough that nothing else fits. */
@@ -16,10 +16,16 @@ export const MAX_REPORT_CHARS = 2000
 export type InterpretFailure =
   | { code: 'bad_request'; message: string }
   | { code: 'not_configured'; message: string }
-  | (ModelFailure & { details?: string[] })
+  | (ModelFailure & { details?: string[]; served?: Served })
+
+/** Which model answered and what it used. Kept on the server: it is not sent to the browser. */
+export interface Served {
+  model: string
+  usage?: ModelUsage
+}
 
 export type InterpretResult =
-  | { ok: true; interpretation: IncidentInterpretation }
+  | { ok: true; interpretation: IncidentInterpretation; served?: Served }
   | ({ ok: false } & InterpretFailure)
 
 export interface InterpretDeps {
@@ -61,7 +67,12 @@ export async function interpretReport(report: unknown, deps: InterpretDeps): Pro
       code: 'invalid_model_response',
       message: 'The AI\'s reading of the report failed the checks, so it was discarded. Enter the incident manually.',
       details: checked.errors,
+      served: { model: reply.model, ...(reply.usage ? { usage: reply.usage } : {}) },
     }
   }
-  return { ok: true, interpretation: checked.interpretation }
+  return {
+    ok: true,
+    interpretation: checked.interpretation,
+    served: { model: reply.model, ...(reply.usage ? { usage: reply.usage } : {}) },
+  }
 }

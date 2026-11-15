@@ -1,10 +1,14 @@
-// The call to the language model. The team's provider is AI Squared's Bolt,
-// reached through an OpenAI-compatible chat completions endpoint, so this is a
-// plain HTTPS request with no SDK.
+// The call to the language model. Two providers are supported, chosen by
+// LLM_PROVIDER in the server's environment:
 //
-// The API key is read from the server's environment, sent only in the
-// Authorization header, and never logged, returned or put in an error message.
+//   anthropic        the Claude API, through the official SDK (anthropic.ts)
+//   anything else    an OpenAI-compatible chat completions endpoint, such as
+//                    AI Squared's Bolt, through a plain HTTPS request
+//
+// Either way the key is read from the server's environment, sent only in a
+// request header, and never logged, returned or put in an error message.
 
+import { askClaude } from './anthropic.ts'
 
 export interface ModelConfig {
   provider: string
@@ -20,12 +24,25 @@ export type ModelFailure =
   | { code: 'model_rejected'; message: string }
   | { code: 'invalid_model_response'; message: string }
 
-export type ModelAnswer = { ok: true; answer: unknown } | ({ ok: false } & ModelFailure)
+/** Tokens the request used, when the provider reports them. */
+export interface ModelUsage {
+  input_tokens: number
+  output_tokens: number
+}
+
+export type ModelAnswer =
+  | { ok: true; answer: unknown; model: string; usage?: ModelUsage }
+  | ({ ok: false } & ModelFailure)
 
 /** Reasoning models can take a while; past this the dispatcher is better served by manual entry. */
 export const MODEL_TIMEOUT_MS = 60_000
 
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]'])
+
+export const ANTHROPIC = 'anthropic'
+/** Always this address: the SDK must never pick one up from the surrounding environment. */
+export const ANTHROPIC_API = 'https://api.anthropic.com'
+export const DEFAULT_CLAUDE_MODEL = 'claude-opus-5-5'
 
 /**
  * The model settings from the environment, or the reason they cannot be used.
@@ -34,6 +51,23 @@ const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]'])
 export function readModelConfig(
   env: Record<string, string | undefined>,
 ): { ok: true; config: ModelConfig } | { ok: false; message: string } {
+  const provider = env.LLM_PROVIDER?.trim().toLowerCase() ?? ''
+  if (provider === ANTHROPIC) {
+    // Claude has its own variables, so the Bolt settings can stay in .env beside them.
+    const apiKey = env.ANTHROPIC_API_KEY?.trim()
+    if (!apiKey) {
+      return { ok: false, message: 'The AI service is not set up: ANTHROPIC_API_KEY missing from the server\'s environment.' }
+    }
+    return {
+      ok: true,
+      config: {
+        provider: ANTHROPIC,
+        baseUrl: ANTHROPIC_API,
+        model: env.ANTHROPIC_MODEL?.trim() || DEFAULT_CLAUDE_MODEL,
+        apiKey,
+      },
+    }
+  }
   const missing = ['LLM_API_KEY', 'LLM_BASE_URL', 'LLM_MODEL'].filter((name) => !env[name]?.trim())
   if (missing.length > 0) {
     return { ok: false, message: `The AI service is not set up: ${missing.join(', ')} missing from the server's environment.` }
@@ -70,13 +104,35 @@ function jsonObjectIn(text: string): unknown {
   }
 }
 
-/** A chat completions request that offers the model one function and asks it to call it. */
+/** One question for the model, with the shape its answer must take. Provider-neutral. */
 export interface ModelRequest {
   model: string
-  messages: { role: 'system' | 'user'; content: string }[]
-  temperature: number
-  tools: { type: 'function'; function: { name: string; description: string; parameters: object } }[]
-  tool_choice: { type: 'function'; function: { name: string } }
+  /** The instructions. They say what to do, not how the answer is delivered. */
+  system: string
+  /** The data to work on. */
+  user: string
+  answer: {
+    /** A short identifier, used as the function name where the provider answers through a function call. */
+    name: string
+    description: string
+    /** JSON schema of the answer. */
+    schema: Record<string, unknown>
+  }
+}
+
+/** The request as an OpenAI-compatible chat completions body: one function, which the model is asked to call. */
+export function chatCompletionsBody(request: ModelRequest) {
+  const { name, description, schema } = request.answer
+  return {
+    model: request.model,
+    messages: [
+      { role: 'system' as const, content: `${request.system}\n\nGive your answer by calling ${name} exactly once.` },
+      { role: 'user' as const, content: request.user },
+    ],
+    temperature: 0,
+    tools: [{ type: 'function' as const, function: { name, description, parameters: schema } }],
+    tool_choice: { type: 'function' as const, function: { name } },
+  }
 }
 
 /** Pulls the function's arguments out of a chat completions response, whichever way the model returned them. */
@@ -117,13 +173,16 @@ export async function askModel(
   request: ModelRequest,
   fetchImpl: typeof fetch = fetch,
 ): Promise<ModelAnswer> {
+  if (config.provider === ANTHROPIC) return askClaude(config, request, fetchImpl)
+
+  const body = chatCompletionsBody(request)
   let response: Response
   try {
-    response = await post(config, request, fetchImpl)
+    response = await post(config, body, fetchImpl)
     // Some OpenAI-compatible servers do not accept a forced function call or
     // a temperature. Ask once more without them; the validator still applies.
     if (response.status === 400 || response.status === 422) {
-      const { model, messages, tools } = request
+      const { model, messages, tools } = body
       response = await post(config, { model, messages, tools }, fetchImpl)
     }
   } catch (error) {
@@ -144,15 +203,23 @@ export async function askModel(
     return { ok: false, code: 'model_rejected', message: `The AI service answered with an error (HTTP ${response.status}).` }
   }
 
-  let body: unknown
+  let reply: unknown
   try {
-    body = await response.json()
+    reply = await response.json()
   } catch {
     return { ok: false, code: 'invalid_model_response', message: 'The AI service did not answer in JSON.' }
   }
-  const answer = answerFrom(body, request.tool_choice.function.name)
+  const answer = answerFrom(reply, request.answer.name)
   if (answer === undefined) {
     return { ok: false, code: 'invalid_model_response', message: 'The AI did not return a structured answer.' }
   }
-  return { ok: true, answer }
+  const used = (reply as { usage?: { prompt_tokens?: number; completion_tokens?: number } }).usage
+  return {
+    ok: true,
+    answer,
+    model: config.model,
+    ...(typeof used?.prompt_tokens === 'number' && typeof used.completion_tokens === 'number'
+      ? { usage: { input_tokens: used.prompt_tokens, output_tokens: used.completion_tokens } }
+      : {}),
+  }
 }

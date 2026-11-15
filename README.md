@@ -142,8 +142,12 @@ The LLM key is server-side only (`server/`); only `VITE_`-prefixed variables rea
 
 The dispatcher pastes an incident report; the AI reads it and returns which segment it names, whether it is a closure, the stated time to reopening, and the exact words it relied on. That is all it does. It calculates nothing, it cannot add a segment or a route, and nothing changes until the dispatcher confirms.
 
-- **Provider:** AI Squared's Bolt (`bolt-instruct-v2`), through an OpenAI-compatible endpoint. No SDK is installed; the server makes a plain HTTPS request.
-- **Setup:** copy `.env.example` to `.env` and fill in `LLM_PROVIDER`, `LLM_BASE_URL`, `LLM_MODEL` and `LLM_API_KEY`. Edit the file in an editor; do not put the key on a command line.
+- **Providers:** two are supported, chosen by `LLM_PROVIDER` in `.env`.
+  - **AI Squared's Bolt** (`bolt-instruct-v2`), through an OpenAI-compatible endpoint, with a plain HTTPS request. Set `LLM_BASE_URL`, `LLM_MODEL` and `LLM_API_KEY`.
+  - **The Claude API**, through Anthropic's official SDK (`@anthropic-ai/sdk`, the one dependency this adds; it is used by the server only). Set `LLM_PROVIDER=anthropic` and `ANTHROPIC_API_KEY`; `ANTHROPIC_MODEL` is optional and defaults to `claude-opus-5-5`. Claude answers through structured outputs, and if it declines a request for a policy reason the API retries on its default fallback model.
+  - The two sets of variables are separate, so both can sit in `.env` and switching is one line. The Bolt key is never sent to Claude, or the other way round.
+- **Setup:** copy `.env.example` to `.env` and fill it in. Edit the file in an editor; do not put a key on a command line.
+- **Comparing models:** `npm run ai:tests -- --check --models=claude-opus-5-5,claude-sonnet-5-5,claude-haiku-5-5` asks each model the same eight questions and prints how many it got right, how long it took and an estimated cost.
 - **Run:** `npm run server` in one terminal and `npm run dev` in another. The dev server forwards `/incident` to the incident server, so the browser never talks to the model and never sees the key.
 - **Without a key, or without a route to the model**, the server still starts and answers with a clear error. The manual-entry path (A2) is for exactly that.
 

@@ -59,7 +59,7 @@ function fakeModel(answer: unknown) {
 describe('suggestResponse', () => {
   it('returns the suggestion with reasons confirmed and everything it gives up added', async () => {
     const { fetchImpl } = fakeModel(good)
-    expect(await suggestResponse(facts, { config, fetchImpl })).toEqual({
+    expect(await suggestResponse(facts, { config, fetchImpl })).toMatchObject({
       ok: true,
       suggestion: {
         suggested_option: 'reroute',

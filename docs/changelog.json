@@ -868,10 +868,11 @@
         "Tests confirm the key appears in the Authorization header only, and in no response, error or log line; the build check confirms no server-side name is in the browser bundle"
       ],
       "deviations_from_issue": [
-        "Acceptance criterion 1 is not met yet: the real model's answers to the five test reports are not recorded. The venue network blocked the model's address (it resolved to a Cisco Umbrella block page), so no request reached the model from the build machine. docs/ai-tests.md lists the expected results and says the actual ones are not recorded",
+        "Acceptance criterion 1 is met with Claude, not with Bolt: docs/ai-tests.md records the real answers of Claude models to the five test reports, all as expected. Bolt, the provider the team named, is still unreachable from the venue network, so its answers are not recorded",
         "The issue's Vite-only stack gained a dev proxy entry and two npm scripts; no dependency was added",
         "Evidence is compared with line breaks and repeated spaces collapsed; otherwise it must match the report exactly",
-        "Beyond the issue's rules, the validator also rejects any field outside the six, a duration on a non-closure, a duration over 24 hours, and a closure with no segment that does not ask for clarification"
+        "Beyond the issue's rules, the validator also rejects any field outside the six, a duration on a non-closure, a duration over 24 hours, and a closure with no segment that does not ask for clarification",
+        "One dependency was added after all: @anthropic-ai/sdk, for the Claude provider the owner asked for. The Bolt path still uses none"
       ],
       "revisions": [],
       "follow_ups": [
@@ -1642,6 +1643,84 @@
     }
   ],
   "entries": [
+    {
+      "id": "2026-11-14-claude-provider",
+      "date": "2026-11-14",
+      "title": "Claude API as a second model provider, tested for real, with a model comparison",
+      "summary": "The server can now use the Claude API in place of Bolt, chosen by one setting. With a one-day key from the owner, four Claude models were asked the five test reports and three suggestions through the app's own server code. After three fixes to the instructions and one to a check, all four models passed everything in three consecutive runs. Claude Opus 5.5 is recommended and is the default.",
+      "issues": [
+        15
+      ],
+      "related_issues": [
+        16
+      ],
+      "branch": "ai/a1-incident-endpoint",
+      "pull_request": null,
+      "commits": [],
+      "files": {
+        "added": [
+          "docs/ai-model-comparison.md",
+          "server/anthropic.test.ts",
+          "server/anthropic.ts"
+        ],
+        "modified": [
+          ".env.example",
+          "README.md",
+          "docs/ai-tests.md",
+          "docs/changelog.json",
+          "package-lock.json",
+          "package.json",
+          "sanity/build.sanity.test.ts",
+          "sanity/repo.sanity.test.ts",
+          "server/ai-tests.ts",
+          "server/interpret.ts",
+          "server/model.ts",
+          "server/prompt.ts",
+          "server/suggest.test.ts",
+          "server/suggest.ts",
+          "src/suggestion/client.ts",
+          "src/suggestion/suggestion.test.ts",
+          "src/suggestion/suggestion.ts"
+        ],
+        "deleted": []
+      },
+      "numbers_that_moved": [
+        "Tests: 499 to 512",
+        "Dependencies: one added, @anthropic-ai/sdk 1.8.0, used by the server only",
+        "First real run: 4 of 5 reports read correctly per model, and between 1 and 3 of 3 suggestions passing; final three runs: 5 of 5 and 3 of 3 for every model"
+      ],
+      "decisions": [
+        "LLM_PROVIDER=anthropic selects Claude; any other value keeps the OpenAI-compatible path used for Bolt. Claude has its own variables (ANTHROPIC_API_KEY, ANTHROPIC_MODEL), so both sets can sit in .env and the Bolt key is never sent to Claude",
+        "Claude is called through Anthropic's official SDK, with the answer shape enforced by structured outputs; the server's validator still checks every answer",
+        "The SDK is always given the address api.anthropic.com and the server's own key, so it cannot pick up an address or credential from the surrounding environment; a test confirms this",
+        "If Claude declines a request for a policy reason, the API retries on its default fallback model; the model that actually answered is recorded",
+        "The default model is claude-opus-5-5 and stays so until a real run; ANTHROPIC_MODEL changes it",
+        "The prompts no longer say how to deliver the answer; each provider adds that itself (a function call for Bolt, a JSON object for Claude)",
+        "A segment id written in a report settles which segment is meant; a general area such as 'near the port' names no segment. Both were added to the instructions after the first real run",
+        "The AI's sentence may use names the figures already use (a shipment or segment id) and the word CO2; any actual figure is still refused. The target length, 200 characters, is now stated to the model",
+        "Tokens are counted for refused answers too, so the cost comparison is not skewed",
+        "Recommended model: Claude Opus 5.5. It was as accurate as the others, and on the one close trade-off (S-07) it made no suggestion, as the instructions ask; Sonnet 5.5 and Haiku 5.5 suggested Reroute there"
+      ],
+      "verification": [
+        "npm run typecheck, lint and test pass (512 tests)",
+        "Real Claude API, through server/ai-tests.ts: three consecutive runs of 8 questions on each of 4 models, 96 answers, all passing; recorded in docs/ai-tests.md and docs/ai-model-comparison.md",
+        "Viewed in the browser with the real server and Claude Opus 5.5: S-01 showed Reroute with three confirmed reasons and three things it gives up; S-07 showed no suggestion with the AI's sentence; no option was pressed in either case",
+        "Structured outputs, the fallback setting and low effort were accepted by the API for all four models"
+      ],
+      "not_verified": [
+        "Bolt is still unreached, so A1's test record is from Claude, not from the provider the team named",
+        "Eight synthetic questions cannot rank the models finely, and no report written by a real dispatcher was tried",
+        "The fallback after a declined request never triggered, so that path is covered by unit tests only",
+        "Not committed or pushed"
+      ],
+      "known_gaps": [
+        "The pipeline's Live AI check still uses Bolt's secret and variables; running it on Claude needs an ANTHROPIC_API_KEY repository secret",
+        "The Claude key in the local .env was created to expire after one day"
+      ],
+      "outside_the_repo": [
+        "A Claude API key supplied by the owner was written to the ignored .env in this working copy; about 20 small API calls' worth of spend per full comparison run, seven runs in all (well under two dollars by the script's estimate)"
+      ]
+    },
     {
       "id": "2026-11-14-merge-staging-into-a1",
       "date": "2026-11-14",

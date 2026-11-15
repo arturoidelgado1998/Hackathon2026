@@ -154,10 +154,25 @@ export const WEIGHING = [
 export const SLOT_GIVES_UP =
   'The warehouse has not confirmed a later slot. Until it does, the original deadline still applies and nothing is solved.'
 
+/** The length the model is asked to keep to, and the longer limit at which its sentence is refused. */
+export const NOTE_TARGET_CHARS = 200
 export const MAX_NOTE_CHARS = 240
 export const MAX_REASONS = 3
 
 export const SUGGESTION_FIELDS = ['suggested_option', 'because', 'note'] as const
+
+const IDENTIFIER = /\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b/g
+
+/**
+ * True when the model's sentence states a figure. Names the facts already use,
+ * such as the shipment id or a segment id like NB-03, contain digits but are
+ * not figures, and nor is the "2" in CO2, so those are set aside first.
+ */
+export function noteHasFigures(note: string, facts: ShipmentFacts): boolean {
+  const names = new Set([facts.shipment_id, ...facts.options.flatMap((o) => o.status.match(IDENTIFIER) ?? [])])
+  const words = note.replace(IDENTIFIER, (token) => (names.has(token) ? '' : token)).replace(/\bCO2\b/gi, '')
+  return /\d/.test(words)
+}
 
 /** The JSON schema given to the model. It can name an option and measures, and write one sentence. */
 export function suggestionSchema(facts: ShipmentFacts) {
@@ -180,7 +195,7 @@ export function suggestionSchema(facts: ShipmentFacts) {
       },
       note: {
         type: 'string',
-        description: 'One plain sentence to the dispatcher. No numbers or times: the dashboard prints the figures.',
+        description: `One plain sentence to the dispatcher, at most ${NOTE_TARGET_CHARS} characters. No numbers or times: the dashboard prints the figures.`,
       },
     },
   } as const
@@ -239,7 +254,7 @@ export function validateSuggestion(answer: unknown, facts: ShipmentFacts): Sugge
   } else {
     if (note.trim().length > MAX_NOTE_CHARS) errors.push(`"note" is longer than ${MAX_NOTE_CHARS} characters.`)
     // The dashboard prints every figure from its own data, so the model's sentence carries none.
-    if (/\d/.test(note)) errors.push('"note" must not contain numbers or times.')
+    if (noteHasFigures(note, facts)) errors.push('"note" must not contain numbers or times.')
     // Nothing in the comparison is ranked or called the best; the suggestion keeps to that wording.
     if (/\b(best|recommend\w*|optimal)\b/i.test(note)) errors.push('"note" must not call an option best or recommended.')
   }

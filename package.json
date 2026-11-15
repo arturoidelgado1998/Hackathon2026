@@ -16,6 +16,7 @@
     "ai:tests": "node --env-file-if-exists=.env server/ai-tests.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "1.8.0",
     "@arcgis/core": "5.1.27",
     "@arcgis/map-components": "5.1.27",
     "@esri/calcite-components": "5.1.2",
