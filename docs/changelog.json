@@ -1814,6 +1814,47 @@
   ],
   "entries": [
     {
+      "id": "2026-11-15-readme-demo",
+      "date": "2026-11-15",
+      "title": "README opens with the demo: a preview clip, the full video and product screenshots",
+      "summary": "Added a Demo section at the top of the README for people seeing the project for the first time: a 22-second preview clip that links to the full 3-minute video, five screenshots with one sentence each, what is real and what is simulated, and three lines on how it is built.",
+      "branch": "docs/readme-demo",
+      "changes": [
+        "docs/media/demo-preview.gif: five short cuts from the demo video (the closure, the comparison, the AI suggestion, the driver's phone, the deliveries), 1200 px wide, 22 seconds, 2.2 MB.",
+        "docs/media/*.png: five frames from the same video with the caption bar cropped off, 1600 px wide.",
+        "README.md: the new Demo section, placed straight after the one-line description.",
+        "The full video is not in the repository. It is a file on the GitHub release tagged demo-video, and the README links to it."
+      ],
+      "files": {
+        "added": [
+          "docs/media/ai-suggestion.png",
+          "docs/media/compare-responses.png",
+          "docs/media/delivered.png",
+          "docs/media/demo-preview.gif",
+          "docs/media/driver-notice.png",
+          "docs/media/road-reopened.png"
+        ],
+        "modified": [
+          "README.md",
+          "docs/changelog.json"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "npm run sanity passes (57 of 57), including the checks on tracked files and on this change log. No application code changed.",
+        "Every image path in the new README section exists in the repository, and the release file answers at the linked address."
+      ],
+      "outside_repo_changes": [
+        "Created the GitHub release demo-video on main with the file RouteRipple-demo-3min.mp4 (11.7 MB)."
+      ],
+      "limitations": [
+        "GitHub downloads a release file instead of playing it in the page. A video that plays inside the README has to be uploaded through GitHub's web editor, or hosted on a video site.",
+        "While the repository is private, the video link and the images work only for people with access.",
+        "The screenshots are frames from the demo video, so they include the drawn cursor, and the driver screenshot includes the phone frame added for the video.",
+        "The test counts in the README are as of this change and are not updated automatically."
+      ]
+    },
+    {
       "id": "2026-11-15-network-gate-and-ai-limits",
       "date": "2026-11-15",
       "title": "A gate for other devices, the AI kept local, and the model address out of pipeline logs",

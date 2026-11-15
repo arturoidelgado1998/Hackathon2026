@@ -3,6 +3,41 @@
 AI-assisted disruption triage dashboard for port-to-warehouse deliveries.
 Stack: Vite + React + TypeScript, Vitest, ESLint, plain CSS.
 
+## Demo
+
+[![RouteRipple demo: a road closes, the dispatcher compares responses, asks the AI, tells the driver, and the loads are delivered](docs/media/demo-preview.gif)](https://github.com/arturoidelgado1998/Hackathon2026/releases/download/demo-video/RouteRipple-demo-3min.mp4)
+
+**[Watch the full 3-minute demo](https://github.com/arturoidelgado1998/Hackathon2026/releases/download/demo-video/RouteRipple-demo-3min.mp4)** (MP4, 11 MB, no audio). The clip above is a 22-second cut of it.
+
+A road out of the Port of Long Beach closes at 10:00. RouteRipple shows the
+dispatcher which shipments it delays, what each response would cost, and who
+else it affects. The dispatcher decides, the driver is told, and the dashboard
+follows the day until every load is delivered.
+
+| | |
+|---|---|
+| ![The comparison table for shipment S-01 beside the map, with the closed road in red and the alternative route dashed](docs/media/compare-responses.png) | ![The AI suggestion panel listing its reasons and what the suggested option gives up](docs/media/ai-suggestion.png) |
+| **Compare responses side by side.** Wait, reroute or request a later slot, with arrival, cost, driver time, CO2, and the schools and disadvantaged neighbourhoods each route passes. Nothing is ranked. | **Ask the AI for a suggestion.** It sees only the figures in the table. The dashboard checks every reason it gives against those figures and lists what the suggestion gives up. It selects nothing. |
+| ![The dispatcher's driver notice panel showing the driver's reply, beside the driver's page](docs/media/driver-notice.png) | ![A shipment after the road has reopened, with the reroute and wait options closed and the reason shown](docs/media/road-reopened.png) |
+| **Tell the driver, and hear back.** Nothing reaches the driver until Send. The driver can acknowledge or flag a concern; the decision stays with dispatch. (The phone frame was added for the video; the page inside it is the real driver page.) | **The dashboard follows the clock.** Once the road reopens or a truck has passed the turn-off, the responses that no longer apply are closed and say why. |
+| ![The board at the end of the day with every load under Delivered](docs/media/delivered.png) | |
+| **Delivered loads ask for nothing more.** Each card says when it arrived and whether it met its appointment. | |
+
+What is real and what is not: the shipments, routes, travel times and the
+closure are simulated. The schools and disadvantaged-community tracts along
+each route are real public data, and the cost and CO2 inputs are published
+trucking figures; see the **Assumptions & sources** panel in the app and
+[`src/data/README.md`](src/data/README.md).
+
+What is underneath:
+
+- **One engine** computes every arrival, lateness, cost and CO2 figure. The
+  interface and the AI never recompute them.
+- **The AI is boxed in.** Its answer is refused whole unless every reason it
+  gives is true in the figures, and its key stays on the server.
+- **650 unit tests and 57 browser checks** run on every pull request, along
+  with a live check of the AI on its test reports.
+
 ## Brand
 
 The approved **Route Node** mark and RouteRipple wordmark appear in the dashboard,
