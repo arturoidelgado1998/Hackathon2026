@@ -1814,6 +1814,76 @@
   ],
   "entries": [
     {
+      "id": "2026-11-15-live-ai-check-by-hand",
+      "date": "2026-11-15",
+      "title": "The live AI check only runs when started by hand",
+      "summary": "The project owner asked for anything that could cost money to be switched off. The pipeline's live AI check called the model eight times on every push and pull request, 47 pipeline runs in the last day. It now runs only when someone starts the workflow by hand.",
+      "branch": "ci/live-ai-check-manual-only",
+      "related_issues": [
+        15
+      ],
+      "changes": [
+        ".github/workflows/advisory-checks.yml: the live AI check job runs only on workflow_dispatch. On a push or a pull request it is skipped and asks the model nothing. The header comment now describes the branch protection that exists.",
+        "README.md: says the live check is started by hand."
+      ],
+      "what_costs_nothing": [
+        "The pipeline itself: the repository is public and every job uses GitHub's standard runners, which are free for public repositories.",
+        "Dependabot, secret scanning, branch protection, private vulnerability reporting and the release file: all free for a public repository.",
+        "The repository uses no Git LFS, GitHub Pages, Codespaces configuration, larger runners or scheduled jobs."
+      ],
+      "files": {
+        "added": [],
+        "modified": [
+          ".github/workflows/advisory-checks.yml",
+          "README.md",
+          "docs/changelog.json"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "npm run sanity passes (57 of 57). No application code changed.",
+        "The pull request's own pipeline run shows the live AI check as skipped."
+      ],
+      "outside_repo_changes": [
+        "On the development machine the Claude API key was commented out of the two local .env files and the provider set back to Bolt, so nothing local can spend on the Claude API. The key was still accepted by the API when checked and should be revoked in the Anthropic console."
+      ],
+      "limitations": [
+        "Anyone with write access can still start the live check by hand, and each run asks the model eight questions.",
+        "If the repository is made private again, pipeline minutes count against the account's monthly free allowance."
+      ]
+    },
+    {
+      "id": "2026-11-15-mit-licence",
+      "date": "2026-11-15",
+      "title": "MIT licence",
+      "summary": "The repository is public and had no licence, which leaves all rights reserved by default. Added the MIT licence at the project owner's choice.",
+      "branch": "chore/mit-licence",
+      "changes": [
+        "LICENSE: the MIT licence, copyright 2026 Aaron Cobian, Arturo Delgado and Nicole Traboulsi.",
+        "package.json: the license field says MIT. The package stays private, so it cannot be published to npm by accident.",
+        "README.md: a Licence section, which also says the two bundled design skills keep their own licences and where the public datasets are listed."
+      ],
+      "files": {
+        "added": [
+          "LICENSE"
+        ],
+        "modified": [
+          "README.md",
+          "docs/changelog.json",
+          "package-lock.json",
+          "package.json"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "npm run typecheck and lint pass; npm test passes (650 tests); npm run sanity passes (57 of 57).",
+        "This is the first change made after main and staging were protected, so it could only be merged once the pipeline's required checks had passed."
+      ],
+      "limitations": [
+        "The licence covers the team's own code. The bundled skills under .github/skills and the third-party packages have their own licences, and the public datasets have their publishers' terms."
+      ]
+    },
+    {
       "id": "2026-11-15-public-repo-hardening",
       "date": "2026-11-15",
       "title": "After going public: dependency advisories cleared, a security policy, update pull requests, a steadier live AI check and the team in the README",

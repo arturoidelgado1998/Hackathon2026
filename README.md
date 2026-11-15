@@ -75,8 +75,8 @@ every input and where it comes from.
   interface and the AI never recompute them.
 - **The AI is boxed in.** Its answer is refused whole unless every reason it
   gives is true in the figures, and its key stays on the server.
-- **650 unit tests and 57 browser checks** run on every pull request, along
-  with a live check of the AI on its test reports.
+- **650 unit tests and 57 browser checks** run on every pull request. A live
+  check of the AI on its test reports can be started by hand.
 - **Stack:** React and TypeScript on Vite, the ArcGIS Maps SDK for the map, a
   small Node server for the AI, Python for the data scripts, and Vitest and
   Playwright for the tests.
@@ -87,6 +87,13 @@ Built by Aaron Cobian, [Arturo Delgado](https://github.com/arturoidelgado1998)
 and [Nicole Traboulsi](https://github.com/nmtraboulsi).
 
 To report a security problem, see [SECURITY.md](SECURITY.md).
+
+## Licence
+
+The code is under the [MIT licence](LICENSE). Two bundled design skills under
+`.github/skills/` keep their own licences, which sit beside them. The public
+datasets the map uses are listed, with their publishers, in
+[`src/data/README.md`](src/data/README.md).
 
 ---
 
@@ -343,7 +350,7 @@ The dispatcher pastes an incident report; the AI reads it and returns which segm
 - **Setup:** copy `.env.example` to `.env` and fill it in. Edit the file in an editor; do not put a key on a command line.
 - **Comparing models:** `npm run ai:tests -- --check --models=claude-opus-5-5,claude-sonnet-5-5,claude-haiku-5-5` asks each model the same eight questions and prints how many it got right, how long it took and an estimated cost.
 - **Run:** `npm run server` in one terminal and `npm run dev` in another. The dev server forwards `/incident` to the incident server, so the browser never talks to the model and never sees the key. Only this computer's browser is forwarded: started with `--host`, other devices get the pages but not the AI.
-- **Pipeline:** the live AI check reads `LLM_API_KEY` and `LLM_BASE_URL` from repository secrets, so both are masked in the run's log; `LLM_MODEL` and `LLM_PROVIDER` are plain variables.
+- **Pipeline:** the live AI check runs only when someone starts it by hand (Actions tab, **Run workflow**), never on a push or a pull request, because every run spends on the model key. It reads `LLM_API_KEY` and `LLM_BASE_URL` from repository secrets, so both are masked in the run's log; `LLM_MODEL` and `LLM_PROVIDER` are plain variables.
 - **Without a key, or without a route to the model**, the server still starts and answers with a clear error. The manual-entry path (A2) is for exactly that.
 
 `POST /incident/interpret` takes `{ "report": "..." }` (up to 2,000 characters) and answers:
