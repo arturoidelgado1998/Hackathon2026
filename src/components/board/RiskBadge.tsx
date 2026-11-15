@@ -13,10 +13,13 @@ const RISK_DISPLAY: Record<RiskLabel, { label: string; icon: ReactNode }> = {
 
 export interface RiskBadgeProps {
   risk: RiskLabel
+  /** Replaces the risk wording, for an outcome that is no longer an estimate. */
+  label?: string
 }
 
-export function RiskBadge({ risk }: RiskBadgeProps) {
-  const { label, icon } = RISK_DISPLAY[risk]
+export function RiskBadge({ risk, label: wording }: RiskBadgeProps) {
+  const { icon } = RISK_DISPLAY[risk]
+  const label = wording ?? RISK_DISPLAY[risk].label
   return (
     <span className={`risk-badge risk-badge--${risk.toLowerCase()}`} data-risk={risk}>
       <span className="risk-badge__icon">{icon}</span>

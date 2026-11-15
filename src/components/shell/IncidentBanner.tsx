@@ -7,10 +7,12 @@ export interface IncidentBannerProps {
   incident: Incident | null
   /** Display name of the affected segment. */
   segmentName?: string
+  /** The segment has reopened; delays it caused may remain. */
+  reopened?: boolean
 }
 
 /** Says what changed. A reopening time is a report, never a guarantee. */
-export function IncidentBanner({ incident, segmentName }: IncidentBannerProps) {
+export function IncidentBanner({ incident, segmentName, reopened = false }: IncidentBannerProps) {
   if (incident === null) {
     return (
       <p className="pp-incident pp-incident--clear">
@@ -32,6 +34,25 @@ export function IncidentBanner({ incident, segmentName }: IncidentBannerProps) {
         ? `Assumed to reopen ${reopen} (dispatcher assumption).`
         : `Reported to reopen ${reopen} (estimate, not a guarantee).`
 
+  if (reopened && reopen !== null) {
+    return (
+      <p className="pp-incident pp-incident--clear">
+        <span className="pp-incident__icon">
+          <CheckIcon size={14} />
+        </span>
+        <span>
+          <strong>
+            {incident.segment_id}
+            {segmentName ? `, ${segmentName}` : ''} reopened
+          </strong>{' '}
+          <span className="pp-num">
+            at {reopen}, after closing at {incident.start_time}. Shipments it delayed may still be late.
+          </span>
+        </span>
+      </p>
+    )
+  }
+
   return (
     <p className="pp-incident pp-incident--active">
       <span className="pp-incident__icon">
@@ -44,7 +65,7 @@ export function IncidentBanner({ incident, segmentName }: IncidentBannerProps) {
         </strong>{' '}
         <span
           className="pp-num"
-          title="Simulated closure report; reopening is an estimate, not a guarantee"
+          title="Closure report; reopening is an estimate, not a guarantee"
         >
           from {incident.start_time}. {reopenText}
         </span>

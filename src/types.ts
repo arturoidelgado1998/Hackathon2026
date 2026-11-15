@@ -1,4 +1,4 @@
-// Shared PortPlan entities. Every later issue imports from here.
+// Shared RouteRipple entities. Every later issue imports from here.
 // Field names are fixed by issue #2 (D1); do not rename them.
 
 /** 24-hour "HH:MM" clock time on the single demo day, e.g. "07:45". */
@@ -50,6 +50,7 @@ export interface Route {
   kind: RouteKind
   truck_suitability_note: string
   near_sensitive_zone: boolean
+  sensitive_zone_note?: string
   schools_150m: number | null
   dac_tracts: string[] | null
   max_diesel_pm_pctl: number | null
@@ -120,4 +121,10 @@ export interface Decision {
   status: DecisionStatus
   /** ISO 8601 timestamp of when the decision was recorded. */
   timestamp: string
+  /**
+   * Simulated minutes since midnight when it was recorded, on a live day.
+   * Absent on the prefilled sample, which has no clock. A reroute chosen
+   * late starts from where the truck was at this time.
+   */
+  sim_time?: number
 }

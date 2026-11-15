@@ -191,7 +191,7 @@ describe('ResponsePanel', () => {
 
   it('shows who bears each option, with a text warning', () => {
     render(<ResponsePanel view={makeView()} />)
-    expect(screen.getByText('Stakeholder impact (SIMULATED)')).toBeInTheDocument()
+    expect(screen.getByText('Stakeholder impact')).toBeInTheDocument()
 
     const [waitDriver, rerouteDriver, slotDriver] = row('Driver')
     expect(waitDriver).toHaveTextContent('120 min on duty')
@@ -200,8 +200,8 @@ describe('ResponsePanel', () => {
     expect(slotDriver).toHaveTextContent('n/a until a new slot is confirmed')
 
     const [waitCommunity, rerouteCommunity, slotCommunity] = row('Community')
-    expect(waitCommunity).toHaveTextContent('No flagged zone on this route (placeholder)')
-    expect(rerouteCommunity).toHaveTextContent('Passes a flagged zone (placeholder)')
+    expect(waitCommunity).toHaveTextContent('No flagged zone on this route')
+    expect(rerouteCommunity).toHaveTextContent('Passes a flagged zone')
     expect(within(rerouteCommunity).getByRole('img', { name: 'Warning' })).toBeInTheDocument()
     expect(within(waitCommunity).queryByRole('img', { name: 'Warning' })).not.toBeInTheDocument()
     expect(slotCommunity).toHaveTextContent('n/a until a new slot is confirmed')
@@ -225,11 +225,51 @@ describe('ResponsePanel', () => {
     )
     const [waitCommunity, rerouteCommunity] = row('Community')
     expect(rerouteCommunity).toHaveTextContent(
-      '3 schools and 2 disadvantaged tracts within 150 m (real locations, illustrative route)',
+      '3 schools and 2 disadvantaged tracts within 150 m',
     )
     expect(within(rerouteCommunity).getByRole('img', { name: 'Warning' })).toBeInTheDocument()
     expect(waitCommunity).toHaveTextContent('0 schools and 0 disadvantaged tracts within 150 m')
     expect(within(waitCommunity).queryByRole('img', { name: 'Warning' })).not.toBeInTheDocument()
+  })
+
+  it('leaves the truck network row out when the check is switched off', () => {
+    render(<ResponsePanel view={makeView()} />)
+    expect(screen.queryByRole('rowheader', { name: 'Truck network (Caltrans record)' })).not.toBeInTheDocument()
+  })
+
+  it('shows the Caltrans truck record per route as a record, with gaps as text warnings', () => {
+    render(
+      <ResponsePanel
+        view={makeView({
+          truckNetwork: {
+            wait: {
+              recorded: [{ designation: 'National Network (STAA trucks)', highways: ['I-710'] }],
+              restrictions: [],
+              noRecord: ['SR-60'],
+              notCovered: [],
+            },
+            reroute: {
+              recorded: [],
+              restrictions: ['I-110: No trucks over 6,000 pounds.'],
+              noRecord: [],
+              notCovered: ['Alameda St / local streets'],
+            },
+          },
+        })}
+      />,
+    )
+    const [waitTrucks, rerouteTrucks, slotTrucks] = row('Truck network (Caltrans record)')
+    expect(waitTrucks).toHaveTextContent('I-710: National Network (STAA trucks)')
+    expect(waitTrucks).toHaveTextContent('No Caltrans record for SR-60')
+    expect(rerouteTrucks).toHaveTextContent('Recorded restriction on I-110: No trucks over 6,000 pounds.')
+    expect(rerouteTrucks).toHaveTextContent('Not on the state truck network, not checked: Alameda St / local streets')
+    expect(within(rerouteTrucks).getAllByRole('img', { name: 'Warning' })).toHaveLength(2)
+    expect(slotTrucks).not.toHaveTextContent('National Network')
+    // A record, never a verdict on whether a truck may use the route.
+    expect(waitTrucks).toHaveAttribute('title', expect.stringMatching(/not a check that a truck may use the route/))
+    for (const cell of [waitTrucks, rerouteTrucks]) {
+      expect(cell.textContent).not.toMatch(/legal|allowed|suitable|safe/i)
+    }
   })
 
   it('requires confirmation before a slot has actually been requested', () => {
@@ -263,6 +303,26 @@ describe('ResponsePanel', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(
       'No currently feasible response: review with warehouse or customer.',
     )
+  })
+
+  it('does not mistake an affected shipment with no options for an unaffected shipment', () => {
+    render(<ResponsePanel view={{ ...sampleView('S-01'), options: [] }} />)
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'No currently feasible response: review with warehouse or customer.',
+    )
+    expect(screen.queryByText(/No response needed/)).not.toBeInTheDocument()
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+  })
+
+  it('does not count an unavailable on-track option as feasible', () => {
+    render(
+      <ResponsePanel
+        view={makeView({
+          options: [wait, { ...reroute, arrival_min: null, arrival_max: null }, requestSlot],
+        })}
+      />,
+    )
+    expect(screen.getByRole('alert')).toHaveTextContent('No currently feasible response')
   })
 
   it('shows the banner when reroute is UNKNOWN', () => {
@@ -351,11 +411,11 @@ describe('ResponsePanel', () => {
     expect(details).toHaveFocus()
 
     for (const step of [
-      'Departs 10:00',
-      'Reaches NB-03 at 10:10 to 10:12',
-      'Waits until 11:10 (58 to 60 min)',
-      'Arrives 12:00 to 12:12',
-      'Deadline 11:30',
+      'Departure: max(cargo ready 09:30, truck available 09:15) + pickup handling 30 min = 10:00.',
+      'PORT-01: enter 10:00–10:00, exit 10:10–10:12; closure wait 0–0 min.',
+      'NB-03: enter 11:10–11:10, exit 11:40–11:48; closure wait 58–60 min.',
+      'Estimated arrival 12:00–12:12; service starts 12:00–12:12 (not before appointment opening 11:00).',
+      'Original appointment 11:00–11:30: lateness 30–42 min; risk LATE.',
     ]) {
       expect(within(details).getByText(step)).toBeInTheDocument()
     }

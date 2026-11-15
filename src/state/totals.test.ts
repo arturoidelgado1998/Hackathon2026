@@ -1,6 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as data from '../data/index.ts'
-import type { Baseline } from '../viewModels.ts'
 import type { Decision } from '../types.ts'
 import { initialState, type AppState } from './reducer.ts'
 import { getTotals } from './totals.ts'
@@ -32,17 +31,17 @@ afterEach(() => vi.restoreAllMocks())
 
 describe('getTotals', () => {
   it('sums the normal baseline, with no shipment at risk', () => {
-    expectTotals(normal, 0, 1027, 546.5)
+    expectTotals(normal, 0, 817, 522.7)
   })
 
-  it('uses supplied wait metrics for affected shipments and baselines for the rest', () => {
-    expectTotals(disrupted, 4, 1204, 546.5)
+  it('calculates current wait metrics for affected shipments and normal metrics for the rest', () => {
+    expectTotals(disrupted, 4, 976, 522.7)
   })
 
   it.each([
-    ['wait', 'S-01', 4, 1204, 546.5],
-    ['reroute', 'S-01', 3, 1202, 570],
-    ['reroute', 'S-03', 4, 1215, 570],
+    ['wait', 'S-01', 4, 976, 522.7],
+    ['reroute', 'S-01', 3, 970, 545.2],
+    ['reroute', 'S-03', 4, 982, 545.2],
   ] as const)('uses the recorded %s response for %s', (kind, id, atRisk, cost, co2Kg) => {
     expectTotals(withDecision(decision(kind, id)), atRisk, cost, co2Kg)
   })
@@ -54,7 +53,7 @@ describe('getTotals', () => {
         'S-01': decision('reroute'),
         'S-02': decision('reroute', 'S-02'),
       },
-    }, 3, 1210, 593.5)
+    }, 3, 973, 567.7)
   })
 
   it.each(['S-01', 'S-02'])(
@@ -62,7 +61,7 @@ describe('getTotals', () => {
     (shipmentId) => {
       expectTotals(
         withDecision(decision('request_slot', shipmentId, 'pending_confirmation')),
-        4, 1204, 546.5,
+        4, 976, 522.7,
       )
     },
   )
@@ -71,7 +70,7 @@ describe('getTotals', () => {
     expectTotals({
       ...disrupted,
       previewDecision: decision('reroute', 'S-01', 'previewed'),
-    }, 4, 1204, 546.5)
+    }, 4, 976, 522.7)
   })
 
   it.each([
@@ -81,60 +80,36 @@ describe('getTotals', () => {
     expectTotals({
       ...withDecision(decision('reroute')),
       previewDecision: decision(kind, shipmentId, 'previewed'),
-    }, 3, 1202, 570)
+    }, 3, 970, 545.2)
   })
 
   it('does not change current metrics when all responses are rejected', () => {
-    expectTotals({ ...disrupted, rejectedShipmentIds: ['S-01'] }, 4, 1204, 546.5)
+    expectTotals({ ...disrupted, rejectedShipmentIds: ['S-01'] }, 4, 976, 522.7)
   })
 
-  it('counts an UNKNOWN current response as at risk', () => {
-    const readOptions = data.getResponseOptions
-    vi.spyOn(data, 'getResponseOptions').mockImplementation((id, scenario) =>
-      readOptions(id, scenario).map((option) =>
-        id === 'S-02' && option.kind === 'wait' ? { ...option, risk: 'UNKNOWN' } : option,
-      ),
-    )
-    expectTotals(disrupted, 5, 1204, 546.5)
+  it('counts engine UNKNOWN risk and keeps unknown wait cost null, including pending slots', () => {
+    const reopen = data.sampleIncident.reported_reopen_time
+    data.sampleIncident.reported_reopen_time = null
+    try {
+      expect(getTotals(disrupted)).toEqual({ atRisk: 7, cost: null, co2Kg: 522.7 })
+      expect(getTotals(withDecision(
+        decision('request_slot', 'S-01', 'pending_confirmation'),
+      ))).toEqual({ atRisk: 7, cost: null, co2Kg: 522.7 })
+    } finally {
+      data.sampleIncident.reported_reopen_time = reopen
+    }
   })
 
-  it('keeps a missing selected cost unknown without dropping its known CO2', () => {
-    const readOptions = data.getResponseOptions
-    vi.spyOn(data, 'getResponseOptions').mockImplementation((id, scenario) =>
-      readOptions(id, scenario).map((option) =>
-        id === 'S-01' && option.kind === 'reroute' ? { ...option, cost: null } : option,
-      ),
-    )
-    const actual = getTotals(withDecision(decision('reroute')))
-    expect(actual.atRisk).toBe(3)
-    expect(actual.cost).toBeNull()
-    expect(actual.co2Kg).toBeCloseTo(570, 6)
-  })
-
-  it('keeps missing wait CO2 unknown while a slot request remains pending', () => {
-    const readOptions = data.getResponseOptions
-    vi.spyOn(data, 'getResponseOptions').mockImplementation((id, scenario) =>
-      readOptions(id, scenario).map((option) =>
-        id === 'S-01' && option.kind === 'wait' ? { ...option, co2_kg: null } : option,
-      ),
-    )
-    expect(getTotals(withDecision(
-      decision('request_slot', 'S-01', 'pending_confirmation'),
-    ))).toEqual({ atRisk: 4, cost: 1204, co2Kg: null })
-  })
-
-  it.each([null, undefined, Number.NaN, Number.POSITIVE_INFINITY])(
-    'does not silently omit an unknown baseline cost (%s)',
-    (cost) => {
-      const readBaseline = data.getBaseline
-      vi.spyOn(data, 'getBaseline').mockImplementation((id) =>
-        id === 'S-06'
-          ? { ...readBaseline(id), cost } as unknown as Baseline
-          : readBaseline(id),
-      )
-      const actual = getTotals(disrupted)
-      expect(actual.cost).toBeNull()
-      expect(actual.co2Kg).toBeCloseTo(546.5, 6)
+  it.each([Number.NaN, Number.POSITIVE_INFINITY, -1])(
+    'surfaces an invalid raw cost assumption (%s), never a fixture fallback',
+    (rate) => {
+      const original = data.assumptions.labor_rate_per_hr
+      data.assumptions.labor_rate_per_hr = rate
+      try {
+        expect(() => getTotals(disrupted)).toThrow(/labor_rate_per_hr/)
+      } finally {
+        data.assumptions.labor_rate_per_hr = original
+      }
     },
   )
 
@@ -168,11 +143,14 @@ describe('getTotals', () => {
     })).toThrow(/Invalid committed decision/)
   })
 
-  it('surfaces a missing wait response rather than substituting the baseline', () => {
-    const readOptions = data.getResponseOptions
-    vi.spyOn(data, 'getResponseOptions').mockImplementation((id, scenario) =>
-      readOptions(id, scenario).filter((option) => id !== 'S-01' || option.kind !== 'wait'),
-    )
-    expect(() => getTotals(disrupted)).toThrow(/No current response metrics for S-01/)
+  it('surfaces missing raw assigned-route data rather than substituting fixture metrics', () => {
+    const shipment = data.shipments[0]
+    const assigned = shipment.assigned_route_id
+    shipment.assigned_route_id = 'missing'
+    try {
+      expect(() => getTotals(disrupted)).toThrow(/Missing assigned route/)
+    } finally {
+      shipment.assigned_route_id = assigned
+    }
   })
 })

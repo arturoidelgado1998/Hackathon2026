@@ -21,6 +21,8 @@ export type BoardColumn =
   | 'needs_review'
   | 'awaiting_confirmation'
   | 'decision_recorded'
+  /** Live day only: the truck has reached the warehouse. */
+  | 'delivered'
 
 /** Listed in the order a dispatcher works them: what needs attention first. */
 export const BOARD_COLUMNS: { id: BoardColumn; title: string }[] = [
@@ -28,6 +30,12 @@ export const BOARD_COLUMNS: { id: BoardColumn; title: string }[] = [
   { id: 'awaiting_confirmation', title: 'Awaiting confirmation' },
   { id: 'decision_recorded', title: 'Decision recorded' },
   { id: 'monitoring', title: 'Monitoring' },
+]
+
+/** A live day adds the loads that have arrived, which need nothing more. */
+export const LIVE_BOARD_COLUMNS: { id: BoardColumn; title: string }[] = [
+  ...BOARD_COLUMNS,
+  { id: 'delivered', title: 'Delivered' },
 ]
 
 /** One shipment's current status in one scenario. All values are estimates. */
@@ -59,9 +67,23 @@ export interface ShipmentCardView {
   destinationName: string
   summary: ShipmentSummary
   column: BoardColumn
+  /** E3 estimates; only affected shipments carry incident decision deadlines. */
+  incidentSegmentId?: string
+  reopen_needed_by?: TimeHHMM | null
+  reroute_decide_by?: TimeHHMM | null
+  no_feasible_response?: boolean
   /** Committed choice only; previews never change the queue. */
   decision?: Decision
   rejectionNote?: string
+  /** Where the truck is right now, when positions are arriving. */
+  liveNote?: string
+  /** Set once the truck has reached the warehouse (live day only). */
+  delivered_at?: TimeHHMM
+  /**
+   * Deadline lines as they stand at the current clock time. When present they
+   * replace the two planned-day deadline lines.
+   */
+  liveDeadlines?: string[]
 }
 
 /** Sensitive-zone facts for the route an option would use. Null until G3. */
@@ -69,6 +91,22 @@ export interface CommunityInfo {
   schools_150m: number | null
   dac_tracts: string[] | null
   max_diesel_pm_pctl: number | null
+}
+
+/**
+ * What Caltrans records about trucks on the highways a route follows (G5).
+ * A record, not a verdict: the routes are illustrative and nothing here says
+ * a truck may or may not use them.
+ */
+export interface TruckNetworkInfo {
+  /** One entry per designation, e.g. National Network: I-710, I-405. */
+  recorded: { designation: string; highways: string[] }[]
+  /** Restrictions Caltrans notes on those highways, as written in the record. */
+  restrictions: string[]
+  /** Highways on the route that the Caltrans layer has no rows for. */
+  noRecord: string[]
+  /** Segments off the state highway network, which the layer does not cover. */
+  notCovered: string[]
 }
 
 /** Everything the response panel displays for the selected shipment. */
@@ -82,4 +120,8 @@ export interface ResponsePanelView {
   baseline: Baseline
   /** Community facts per option kind; missing kinds have no route. */
   community: Partial<Record<ResponseOptionKind, CommunityInfo>>
+  /** Truck network record per option kind; absent when the check is switched off. */
+  truckNetwork?: Partial<Record<ResponseOptionKind, TruckNetworkInfo>>
+  /** Shown in place of the comparison when nothing is left to decide (delivered). */
+  closedNote?: string
 }

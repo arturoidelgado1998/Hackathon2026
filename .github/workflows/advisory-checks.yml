@@ -13,6 +13,8 @@ on:
     branches: [main, staging]
   push:
     branches: [main, staging]
+  # Lets the live AI check be rerun by hand from the Actions tab.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -87,10 +89,57 @@ jobs:
       - name: Install the browser
         run: npx playwright install --with-deps --only-shell chromium
 
+      # The data checks in sanity/data.sanity.test.ts import the Python scripts
+      # in scripts/ (standard library only, Python 3.9 or later, no network).
+      - name: Check Python is available
+        run: python3 --version
+
       - name: Build
         run: npm run build
 
-      # Repository hygiene, the change log, the build output, and the built
-      # app driven through its main flow in a real browser.
+      # Repository hygiene, the change log, the build output, the generated
+      # data files and the scripts that write them, and the built app driven
+      # through its main flow in a real browser. Every file matching
+      # sanity/**/*.sanity.test.ts is run.
       - name: Sanity checks
         run: npm run test:sanity
+
+  # The unit tests and sanity checks replace the model with canned answers, so
+  # they run without a key. This job asks the real model the five SYNTHETIC
+  # test reports and compares its readings with what is expected, then asks it
+  # for a suggestion on three simulated shipments and checks each one.
+  # The key is the repository secret LLM_API_KEY; the address and model are
+  # repository variables. Pull requests from forks get no secret and skip.
+  ai-live:
+    name: Live AI check on the test reports and suggestions
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      HAS_KEY: ${{ secrets.LLM_API_KEY != '' }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Skipped, no key
+        if: env.HAS_KEY != 'true'
+        run: echo "::notice::LLM_API_KEY is not available to this run, so the live AI check was skipped."
+
+      # The Bolt path uses Node only, but the Claude path needs its SDK, so
+      # install either way. Lifecycle scripts are not needed here.
+      - name: Install dependencies
+        if: env.HAS_KEY == 'true'
+        run: npm ci --ignore-scripts
+
+      # The script never prints the key.
+      - name: Ask the model
+        if: env.HAS_KEY == 'true'
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ vars.LLM_BASE_URL }}
+          LLM_MODEL: ${{ vars.LLM_MODEL }}
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
+        run: npm run ai:tests -- --check

@@ -26,10 +26,13 @@ function formatArrival(min: TimeHHMM | null, max: TimeHHMM | null): string {
 /** One shipment in the queue. Selecting it opens its response comparison. */
 export function ShipmentCard({ card, selected = false, onSelectShipment }: ShipmentCardProps) {
   const { shipment, destinationName, summary, decision, rejectionNote } = card
+  const delivered = card.delivered_at !== undefined
   return (
     <button
       type="button"
-      className={`shipment-card${selected ? ' shipment-card--selected' : ''}`}
+      className={`shipment-card${selected ? ' shipment-card--selected' : ''}${
+        delivered ? ' shipment-card--delivered' : ''
+      }`}
       aria-pressed={selected}
       data-shipment-id={shipment.id}
       onClick={() => onSelectShipment?.(shipment.id)}
@@ -41,7 +44,14 @@ export function ShipmentCard({ card, selected = false, onSelectShipment }: Shipm
             <CheckIcon size={12} /> Selected
           </span>
         )}
-        <RiskBadge risk={summary.risk} />
+        {delivered ? (
+          <RiskBadge
+            risk={summary.risk}
+            label={summary.risk === 'LATE' ? 'DELIVERED LATE' : 'DELIVERED ON TIME'}
+          />
+        ) : (
+          <RiskBadge risk={summary.risk} />
+        )}
       </span>
       <span className="shipment-card__dest">{destinationName}</span>
       <span className="shipment-card__times">
@@ -52,22 +62,51 @@ export function ShipmentCard({ card, selected = false, onSelectShipment }: Shipm
           </span>
         </span>
         <span className="shipment-card__row">
-          <span className="shipment-card__label">Est. arrival</span>{' '}
+          <span className="shipment-card__label">{delivered ? 'Arrived' : 'Est. arrival'}</span>{' '}
           <span
             className="shipment-card__value pp-num"
-            title="Estimated arrival: scenario bounds, not a statistical interval"
+            title={
+              delivered
+                ? 'Arrival time at the warehouse'
+                : 'Estimated arrival: scenario bounds, not a statistical interval'
+            }
           >
             {formatArrival(summary.arrival_min, summary.arrival_max)}
           </span>
         </span>
       </span>
+      {card.liveNote && <span className="shipment-card__live">{card.liveNote}</span>}
       <span className="shipment-card__reason">{summary.reason}</span>
+      {card.liveDeadlines ? (
+        card.liveDeadlines.map((line) => (
+          <span key={line} className="shipment-card__deadline">
+            {line}
+          </span>
+        ))
+      ) : (
+        <>
+          {summary.affected && card.incidentSegmentId && card.reopen_needed_by && (
+            <span className="shipment-card__deadline">
+              Wait works only if {card.incidentSegmentId} reopens by {card.reopen_needed_by}
+            </span>
+          )}
+          {summary.affected && card.reroute_decide_by && (
+            <span className="shipment-card__deadline">
+              Reroute must be chosen by {card.reroute_decide_by}
+            </span>
+          )}
+        </>
+      )}
       {decision && (
         <span className="shipment-card__decision">
           {OPTION_TITLES[decision.option_kind]} —{' '}
-          {decision.status === 'pending_confirmation'
-            ? 'Awaiting confirmation; original risk retained'
-            : 'Decision recorded; estimate, not a confirmed outcome'}
+          {delivered
+            ? decision.status === 'pending_confirmation'
+              ? 'Later slot was requested; not confirmed before arrival'
+              : 'Dispatcher’s recorded choice'
+            : decision.status === 'pending_confirmation'
+              ? 'Awaiting confirmation; original risk retained'
+              : 'Decision recorded; estimate, not a confirmed outcome'}
         </span>
       )}
       {rejectionNote && <span className="shipment-card__rejection">{rejectionNote}</span>}

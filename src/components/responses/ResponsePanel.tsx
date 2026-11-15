@@ -1,9 +1,10 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import type { Decision, ResponseOption, ResponseOptionKind } from '../../types'
-import type { Baseline, CommunityInfo, ResponsePanelView } from '../../viewModels'
+import type { Baseline, CommunityInfo, ResponsePanelView, TruckNetworkInfo } from '../../viewModels'
+import { isResponseOptionAvailable } from '../../state/options'
 import { RiskBadge } from '../board/RiskBadge'
 import { AlertIcon, ClockIcon } from '../icons'
-import { delta, deltaOneDecimal } from './deltas'
+import { delta, deltaOneDecimal } from '../../engine/deltas.ts'
 import {
   NA,
   NOT_MODELED_TEXT,
@@ -26,6 +27,8 @@ export interface ResponsePanelProps {
   decision?: Decision
   previewDecision?: Decision | null
   onUndo?: () => void
+  /** Why the last choice can no longer be undone (live day); shown in place of Undo. */
+  undoBlockedReason?: string | null
   onCancelPreview?: () => void
   /** Optional notification when an option's explanation is toggled. */
   onWhy?: (kind: ResponseOptionKind) => void
@@ -38,11 +41,20 @@ const FEASIBLE: ResponseOption['risk'][] = ['ON_TRACK', 'TIGHT']
 
 function hasFeasibleOption(options: ResponseOption[]): boolean {
   return options.some(
-    (o) => (o.kind === 'wait' || o.kind === 'reroute') && FEASIBLE.includes(o.risk),
+    (o) => o.kind !== 'request_slot' && isResponseOptionAvailable(o) && FEASIBLE.includes(o.risk),
   )
 }
 
 const isPending = (o: ResponseOption) => o.kind === 'request_slot'
+
+function NoFeasibleResponse() {
+  return (
+    <p className="responses-banner" role="alert">
+      <AlertIcon size={14} label="Warning" />
+      <span>No currently feasible response: review with warehouse or customer.</span>
+    </p>
+  )
+}
 
 function Warning({ children }: { children: ReactNode }) {
   return (
@@ -56,9 +68,9 @@ function communityCell(option: ResponseOption, community?: CommunityInfo): React
   if (isPending(option)) return PENDING_STRIP_TEXT
   if (!community || community.schools_150m === null) {
     return option.passes_sensitive_zone ? (
-      <Warning>Passes a flagged zone (placeholder)</Warning>
+      <Warning>Passes a flagged zone</Warning>
     ) : (
-      'No flagged zone on this route (placeholder)'
+      'No flagged zone on this route'
     )
   }
   const schools = community.schools_150m
@@ -66,6 +78,41 @@ function communityCell(option: ResponseOption, community?: CommunityInfo): React
   const text = formatCommunityCounts(schools, tracts)
   return schools > 0 || (tracts !== null && tracts > 0) ? <Warning>{text}</Warning> : text
 }
+
+/** What Caltrans records for the route's highways, with gaps called out. Never a verdict. */
+function truckCell(option: ResponseOption, trucks?: TruckNetworkInfo): ReactNode {
+  if (isPending(option)) return PENDING_STRIP_TEXT
+  if (!trucks || option.miles === null) return NA
+  return (
+    <ul className="responses-trucks">
+      {trucks.recorded.map(({ designation, highways }) => (
+        <li key={designation}>
+          {highways.join(', ')}: {designation}
+        </li>
+      ))}
+      {trucks.restrictions.map((restriction) => (
+        <li key={restriction}>
+          <Warning>Recorded restriction on {restriction}</Warning>
+        </li>
+      ))}
+      {trucks.noRecord.length > 0 && (
+        <li>
+          <Warning>No Caltrans record for {trucks.noRecord.join(', ')}</Warning>
+        </li>
+      )}
+      {trucks.notCovered.map((segment) => (
+        <li key={segment}>
+          <Warning>Not on the state truck network, not checked: {segment}</Warning>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+const TRUCK_ROW_LABEL = 'Truck network (Caltrans record)'
+const TRUCK_ROW_ESTIMATE =
+  'The designation Caltrans records for the state highways this route follows. ' +
+  'A record, not a check that a truck may use the route.'
 
 /** A value with its change against the normal scenario underneath. */
 function withChange(value: string, change: string | null): ReactNode {
@@ -86,7 +133,7 @@ interface Row {
 const DELIVERY_ROWS: Row[] = [
   {
     label: 'Est. arrival',
-    estimate: 'Estimated arrival from a simulated scenario.',
+    estimate: 'Estimated arrival range.',
     cell: (o) => (
       <span className="pp-num" title="scenario bounds, not a statistical interval">
         {formatArrival(o)}
@@ -101,7 +148,7 @@ const DELIVERY_ROWS: Row[] = [
   { label: 'Risk', cell: (o) => <RiskBadge risk={o.risk} /> },
   {
     label: 'Est. cost',
-    estimate: 'Estimated cost using placeholder assumptions.',
+    estimate: 'Estimated cost from published average trucking costs; see Assumptions & sources.',
     cell: (o) => <span className="pp-num">{formatCost(o.cost)}</span>,
   },
 ]
@@ -122,7 +169,7 @@ const IMPACT_ROWS: Row[] = [
   {
     label: 'Community',
     estimate:
-      'Estimated proximity along an illustrative route; not measured exposure or health impact.',
+      'Estimated proximity along the route; not measured exposure or health impact.',
     cell: (o, _baseline, community) => communityCell(o, community),
   },
   {
@@ -186,6 +233,7 @@ function ShipmentResponses({
   decision,
   previewDecision,
   onUndo,
+  undoBlockedReason,
   onCancelPreview,
 }: Omit<ResponsePanelProps, 'view'> & { view: ResponsePanelView }) {
   const explanationId = useId()
@@ -195,7 +243,7 @@ function ShipmentResponses({
   const whyRefs = useRef<Partial<Record<ResponseOptionKind, HTMLButtonElement>>>({})
   const headingRef = useRef<HTMLHeadingElement>(null)
   const feedbackRef = useRef<HTMLDivElement>(null)
-  const { shipment, destinationName, summary, options, baseline, community } = view
+  const { shipment, destinationName, summary, options, baseline, community, truckNetwork } = view
   const preview = previewDecision?.shipment_id === shipment.id ? previewDecision : null
   const awaitingConfirmation = decision?.status === 'pending_confirmation'
   const previousFeedback = useRef({ decision, preview })
@@ -236,16 +284,22 @@ function ShipmentResponses({
       <p className="responses-context">
         <span>
           Appointment{' '}
-          <strong className="pp-num" title="Simulated appointment window.">
+          <strong className="pp-num" title="Appointment window.">
             {shipment.appt_start}–{shipment.appt_end}
           </strong>
         </span>
-        {summary && (
+        {summary && view.closedNote && (
+          <RiskBadge
+            risk={summary.risk}
+            label={summary.risk === 'LATE' ? 'DELIVERED LATE' : 'DELIVERED ON TIME'}
+          />
+        )}
+        {summary && !view.closedNote && (
           <>
             <RiskBadge risk={summary.risk} />
             <span
               className="responses-reason"
-              title="Estimated timing from a simulated scenario."
+              title="Estimated timing."
             >
               <span title="scenario bounds, not a statistical interval">{summary.reason}</span>
             </span>
@@ -259,9 +313,23 @@ function ShipmentResponses({
     return (
       <div className="responses-panel">
         {header}
-        <p className="responses-empty">
-          No response needed: this shipment is not affected by an incident.
-        </p>
+        {view.closedNote ? (
+          <div className="responses-closed" role="status">
+            <p className="responses-empty">{view.closedNote}</p>
+            {decision && (
+              <p className="responses-hint">
+                Recorded choice: {OPTION_TITLES[decision.option_kind]}
+                {awaitingConfirmation ? ' (never confirmed)' : ''}.
+              </p>
+            )}
+          </div>
+        ) : summary?.affected ? (
+          <NoFeasibleResponse />
+        ) : (
+          <p className="responses-empty">
+            No response needed: this shipment is not affected by an incident.
+          </p>
+        )}
       </div>
     )
   }
@@ -301,6 +369,9 @@ function ShipmentResponses({
                 Undo last choice
               </button>
             )}
+            {!onUndo && undoBlockedReason && (
+              <p className="responses-note">Cannot undo: {undoBlockedReason}</p>
+            )}
           </div>
         )}
         {preview && (
@@ -324,12 +395,7 @@ function ShipmentResponses({
           </div>
         )}
       </div>
-      {!hasFeasibleOption(options) && (
-        <p className="responses-banner" role="alert">
-          <AlertIcon size={14} label="Warning" />
-          <span>No currently feasible response: review with warehouse or customer.</span>
-        </p>
-      )}
+      {!hasFeasibleOption(options) && <NoFeasibleResponse />}
       <div
         className="responses-table-scroll"
         role="region"
@@ -375,7 +441,7 @@ function ShipmentResponses({
               <td
                 key={o.kind}
                 data-kind={o.kind}
-                title="Estimated status from a simulated scenario; reopening times are not guaranteed."
+                title="Estimated status; reopening times are not guaranteed."
               >
                 {isPending(o) ? (
                   <span className="responses-pending">
@@ -393,7 +459,7 @@ function ShipmentResponses({
         <tbody>
           <tr className="responses-group">
             <th colSpan={columns} scope="colgroup">
-              Stakeholder impact (SIMULATED)
+              Stakeholder impact
             </th>
           </tr>
           {IMPACT_ROWS.map((row) => (
@@ -406,6 +472,16 @@ function ShipmentResponses({
               ))}
             </tr>
           ))}
+          {truckNetwork && (
+            <tr>
+              <th scope="row">{TRUCK_ROW_LABEL}</th>
+              {options.map((o) => (
+                <td key={o.kind} data-kind={o.kind} title={TRUCK_ROW_ESTIMATE}>
+                  {truckCell(o, truckNetwork[o.kind])}
+                </td>
+              ))}
+            </tr>
+          )}
           <tr>
             <th scope="row">Not modeled</th>
             <td colSpan={options.length} className="responses-not-modeled">
@@ -473,11 +549,11 @@ function ShipmentResponses({
               Close
             </button>
           </div>
-          <p className="responses-note">Estimated inputs and steps from this simulated scenario.</p>
+          <p className="responses-note">The inputs and steps behind this estimate.</p>
           {option.explanation_inputs.length > 0 ? (
             <ol>
               {option.explanation_inputs.map((input, index) => (
-                <li key={index} title="Estimated explanation input from a simulated scenario.">
+                <li key={index} title="Estimated input to this result.">
                   {input}
                 </li>
               ))}

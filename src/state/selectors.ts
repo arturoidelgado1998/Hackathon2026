@@ -1,6 +1,5 @@
 // Assembles what each dashboard component displays from the data module.
-// Pure functions with no calculations: they look values up and pass them on.
-// E4 will swap the data module calls for engine calls.
+// Engine estimates and raw route facts are passed through, never recalculated here.
 
 import { defaultColumn } from '../components/board/index.ts'
 import {
@@ -10,17 +9,22 @@ import {
   getRoute,
   getRoutesForDestination,
   getShipment,
+  getShipmentAssessment,
   getShipmentSummary,
-  sampleIncident,
+  getActiveIncident,
   shipments,
 } from '../data/index.ts'
+import { getSegment } from '../data/index.ts'
+import { getTruckNetworkForSegment } from '../data/real/index.ts'
 import type { MapPanelProps } from '../map/MapPanel.tsx'
+import { TRUCK_NETWORK_CHECK } from './features.ts'
 import type { Decision, ResponseOptionKind, Route } from '../types.ts'
 import type {
   CommunityInfo,
   ResponsePanelView,
   Scenario,
   ShipmentCardView,
+  TruckNetworkInfo,
 } from '../viewModels.ts'
 
 function destinationName(facilityId: string): string {
@@ -33,6 +37,35 @@ function communityOf(route: Route | undefined): CommunityInfo | undefined {
     schools_150m: route.schools_150m,
     dac_tracts: route.dac_tracts,
     max_diesel_pm_pctl: route.max_diesel_pm_pctl,
+  }
+}
+
+/** Gathers the Caltrans truck network record for every segment of a route. */
+export function truckNetworkOf(route: Route | undefined): TruckNetworkInfo | undefined {
+  if (!route) return undefined
+  const byDesignation = new Map<string, Set<string>>()
+  const restrictions = new Set<string>()
+  const noRecord = new Set<string>()
+  const notCovered: string[] = []
+  for (const segmentId of route.segment_ids) {
+    const entry = getTruckNetworkForSegment(segmentId)
+    if (!entry || entry.highways.length === 0) {
+      notCovered.push(getSegment(segmentId)?.name ?? segmentId)
+      continue
+    }
+    for (const stretch of entry.stretches) {
+      const designation = stretch.designation_meaning ?? 'No designation recorded'
+      if (!byDesignation.has(designation)) byDesignation.set(designation, new Set())
+      byDesignation.get(designation)!.add(stretch.highway)
+      if (stretch.special_restriction) restrictions.add(`${stretch.highway}: ${stretch.restriction_note}`)
+    }
+    for (const highway of entry.no_record_for) noRecord.add(highway)
+  }
+  return {
+    recorded: [...byDesignation].map(([designation, highways]) => ({ designation, highways: [...highways] })),
+    restrictions: [...restrictions],
+    noRecord: [...noRecord],
+    notCovered,
   }
 }
 
@@ -54,6 +87,7 @@ export function buildCards(
   rejectedShipmentIds: string[] = [],
 ): ShipmentCardView[] {
   return shipments.map((shipment) => {
+    const assessment = getShipmentAssessment(shipment.id, scenario)
     const summary = summaryFor(shipment.id, scenario)
     const decision = decisions[shipment.id]
     if (decision && decision.shipment_id !== shipment.id) {
@@ -83,6 +117,12 @@ export function buildCards(
       column: decision
         ? decision.status === 'pending_confirmation' ? 'awaiting_confirmation' : 'decision_recorded'
         : defaultColumn(summary, scenario),
+      ...(summary.affected ? {
+        incidentSegmentId: getActiveIncident().segment_id,
+        reopen_needed_by: assessment.reopen_needed_by,
+        reroute_decide_by: assessment.reroute_decide_by,
+        no_feasible_response: assessment.no_feasible_response,
+      } : {}),
       ...(decision ? { decision } : {}),
       ...(!decision && rejectedShipmentIds.includes(shipment.id)
         ? { rejectionNote: 'Dispatcher rejected all options' }
@@ -106,6 +146,14 @@ export function buildResponseView(
   const rerouteCommunity = communityOf(alternativeRouteFor(shipment.destination_id))
   if (rerouteCommunity) community.reroute = rerouteCommunity
 
+  const truckNetwork: Partial<Record<ResponseOptionKind, TruckNetworkInfo>> = {}
+  if (TRUCK_NETWORK_CHECK) {
+    const waitTrucks = truckNetworkOf(getRoute(shipment.assigned_route_id))
+    if (waitTrucks) truckNetwork.wait = waitTrucks
+    const rerouteTrucks = truckNetworkOf(alternativeRouteFor(shipment.destination_id))
+    if (rerouteTrucks) truckNetwork.reroute = rerouteTrucks
+  }
+
   return {
     shipment,
     destinationName: destinationName(shipment.destination_id),
@@ -113,6 +161,7 @@ export function buildResponseView(
     options: getResponseOptions(shipmentId, scenario),
     baseline: getBaseline(shipmentId),
     community,
+    ...(TRUCK_NETWORK_CHECK ? { truckNetwork } : {}),
   }
 }
 
@@ -141,5 +190,5 @@ export function buildHighlightedRoutes(
 
 /** The confirmed closure shown on the map panel, if the scenario has one. */
 export function incidentSegmentFor(scenario: Scenario): string | null {
-  return scenario === 'disrupted' ? sampleIncident.segment_id : null
+  return scenario === 'disrupted' ? getActiveIncident().segment_id : null
 }

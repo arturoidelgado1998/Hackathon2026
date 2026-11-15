@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { assumptions, assumptionPlaceholders } from '../../data'
+import { assumptions, assumptionPlaceholders, corridor } from '../../data'
 import { limitations } from '../../data/limitations'
 import { AssumptionsPanel } from './index'
 
@@ -40,36 +40,52 @@ describe('AssumptionsPanel', () => {
       expect(sourceCell).toHaveTextContent(assumptions.sources[key])
       expect(valueCell).toHaveAttribute('title', expect.stringMatching(/estimated/i))
       if (assumptionPlaceholders[key]) {
-        expect(within(row).getByText('Placeholder')).toBeInTheDocument()
+        expect(within(row).getByText('Team assumption')).toBeInTheDocument()
       } else {
-        expect(within(row).queryByText('Placeholder')).not.toBeInTheDocument()
+        expect(within(row).queryByText('Team assumption')).not.toBeInTheDocument()
       }
     }
-    expect(
-      within(table).getByText('EPA GHG Emission Factors Hub, 2025 edition (PLACEHOLDER until verified)'),
-    ).toBeInTheDocument()
+    // Cost and CO2 inputs cite a published source; only pickup handling is still a team assumption.
+    expect(within(table).getAllByText('Team assumption')).toHaveLength(1)
+    expect(within(table).getByText(/EPA GHG Emission Factors Hub, 2025 edition/)).toBeInTheDocument()
+    expect(within(table).getByText(/Feasibility Assessment for Drayage Trucks/)).toBeInTheDocument()
+    expect(within(table).getByText(/Operational Costs of Trucking/)).toBeInTheDocument()
+    expect(within(table).getByText(/Bureau of Labor Statistics/)).toBeInTheDocument()
   })
 
-  it('explains all four value types without treating unknown values as zero', () => {
+  it('describes the 150 m community measure as proximity, with its basis and real sources', () => {
+    render(<AssumptionsPanel />)
+    const section = screen.getByRole('region', { name: 'Community proximity (150 m)' })
+    expect(section).toHaveTextContent('not measured exposure or health impact')
+    expect(section).toHaveTextContent('Kozawa, Fruin and Winer (2009)')
+    const table = within(section).getByRole('table', { name: 'Real layers used for community proximity' })
+    for (const source of corridor.sources) {
+      const row = within(table).getByRole('rowheader', { name: source.name }).closest('tr')!
+      expect(row).toHaveTextContent(source.publisher)
+      expect(row).toHaveTextContent(source.edition)
+      expect(row).toHaveTextContent(source.retrieved)
+    }
+  })
+
+  it('explains the value types without treating unknown values as zero', () => {
     render(<AssumptionsPanel />)
     const legend = screen.getByRole('region', { name: 'Value types' })
     expect(within(legend).getAllByRole('term').map((term) => term.textContent)).toEqual([
       'Confirmed',
       'Estimated',
-      'Simulated',
       'Unknown',
     ])
     expect(legend).toHaveTextContent('Not available or not yet confirmed; not zero.')
   })
 
-  it('shows the eleven reusable limitations verbatim, including the first and last', () => {
+  it('shows the twelve reusable limitations verbatim, including the first and last', () => {
     render(<AssumptionsPanel />)
     const panel = screen.getByRole('region', { name: 'Limitations' })
     const items = within(panel).getAllByRole('listitem')
-    expect(items).toHaveLength(11)
+    expect(items).toHaveLength(12)
     expect(items.map((item) => item.textContent)).toEqual([...limitations])
     expect(items[0]).toHaveTextContent(
-      'Routes and travel times are illustrative; route suitability for trucks is not verified.',
+      'Routes and travel times are approximate; route suitability for trucks is not verified.',
     )
     expect(items[10]).toHaveTextContent(
       'Waiting is assumed to be engine-off, and driver pay, legal hours-of-service and fatigue are not modeled.',

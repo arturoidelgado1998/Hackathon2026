@@ -126,10 +126,6 @@
   background: var(--pp-surface-muted);
 }
 
-.shipment-card:focus-visible {
-  outline-offset: -2px;
-}
-
 /* Selected: filled row, an inner outline and a "Selected" tag. */
 .shipment-card--selected,
 .shipment-card--selected:hover {
@@ -138,15 +134,23 @@
   outline-offset: -2px;
 }
 
-.shipment-card__top {
-  display: flex;
-  align-items: center;
-  gap: var(--pp-space-2);
+.shipment-card:focus-visible {
+  outline: 3px dashed var(--pp-focus);
+  outline-offset: -5px;
 }
 
+.shipment-card__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--pp-space-1) var(--pp-space-2);
+}
+
+/* The id never breaks; a badge too long for the row wraps under it instead. */
 .shipment-card__id {
   font-weight: 650;
   font-size: var(--pp-text-md);
+  white-space: nowrap;
 }
 
 .shipment-card__top .risk-badge {
@@ -187,10 +191,15 @@
 }
 
 .shipment-card__decision,
-.shipment-card__rejection {
+.shipment-card__rejection,
+.shipment-card__deadline {
   font-size: var(--pp-text-xs);
   font-weight: 600;
   line-height: 1.4;
+}
+
+.shipment-card__deadline {
+  overflow-wrap: anywhere;
 }
 
 .shipment-card__actions {
@@ -232,4 +241,21 @@
     color: var(--pp-accent);
     text-underline-offset: 0.2em;
   }
+}
+
+/* Where the truck is right now. */
+.shipment-card__live {
+  font-size: var(--pp-text-xs);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* A schedule entry is not a control. */
+.shipment-card--schedule {
+  cursor: default;
+}
+
+/* A delivered load: finished, so it reads quieter than the open ones. */
+.shipment-card--delivered {
+  border-style: dashed;
 }

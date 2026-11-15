@@ -1,7 +1,7 @@
 // Is the production build complete and shaped the way the app expects?
 // Needs dist/: run `npm run build` first, or `npm run sanity` to do both.
 
-import { existsSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { fromRoot, readText } from './helpers.ts'
 
@@ -36,7 +36,7 @@ beforeAll(() => {
 describe('production build', () => {
   it('has a page with the app root and title', () => {
     expect(html).toContain('<div id="root"></div>')
-    expect(html).toContain('<title>PortPlan</title>')
+    expect(html).toContain('<title>RouteRipple</title>')
     // The dev entry must have been replaced by a built bundle.
     expect(html).not.toContain('/src/main.tsx')
   })
@@ -63,10 +63,44 @@ describe('production build', () => {
     expect(firstLoad).toBeLessThan(FIRST_LOAD_JS_BUDGET_BYTES)
   })
 
+  it('builds the driver page as its own small page, without the map', () => {
+    const driver = readText('dist', 'driver.html')
+    expect(driver).toContain('<title>RouteRipple driver notice</title>')
+    expect(driver).not.toContain('/src/driver/main.tsx')
+    const scripts = [...driver.matchAll(/<(?:script[^>]*\ssrc|link[^>]*rel="modulepreload"[^>]*\shref)="\/([^"]+)"/g)]
+      .map((m) => m[1])
+    expect(scripts.length).toBeGreaterThan(0)
+    // A phone must never download the dashboard's map.
+    expect(scripts.filter((file) => /ArcgisMap/.test(file))).toEqual([])
+    const size = scripts.reduce((total, file) => total + statSync(fromRoot('dist', file)).size, 0)
+    expect(size).toBeLessThan(FIRST_LOAD_JS_BUDGET_BYTES)
+  })
+
   it('has no server-side variable names in the browser bundle', () => {
     const leaks = assets
       .filter((f) => f.endsWith('.js'))
-      .filter((f) => /\bLLM_(API_KEY|PROVIDER)\b/.test(readText('dist', 'assets', f)))
+      .filter((f) => /\bLLM_(API_KEY|PROVIDER|BASE_URL|MODEL)\b|sk-bolt-|record_incident|suggest_response|ANTHROPIC_API_KEY|api\.anthropic\.com/.test(readText('dist', 'assets', f)))
     expect(leaks).toEqual([])
+  })
+
+  it('ships the branded title and browser/mobile icons on every entry point', () => {
+    for (const [entry, title] of [
+      ['index.html', 'RouteRipple'],
+      ['driver.html', 'RouteRipple driver notice'],
+      ['simulation.html', 'RouteRipple simulation'],
+    ]) {
+      const source = readText('dist', entry)
+      expect(source).toContain(`<title>${title}</title>`)
+      const icons = [...source.matchAll(/<link[^>]*rel="(?:icon|apple-touch-icon)"[^>]*href="([^"]+)"/g)]
+        .map((match) => match[1])
+      expect(icons, entry).toHaveLength(2)
+      for (const icon of icons) {
+        expect(icon, entry).toMatch(/^\//)
+        expect(statSync(fromRoot('dist', icon.slice(1))).size).toBeGreaterThan(0)
+      }
+    }
+    const touchIcon = readFileSync(fromRoot('dist', 'apple-touch-icon.png'))
+    expect(touchIcon.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a')
+    expect([touchIcon.readUInt32BE(16), touchIcon.readUInt32BE(20)]).toEqual([180, 180])
   })
 })

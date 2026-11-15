@@ -14,62 +14,62 @@
   "baselines": {
     "S-01": {
       "miles": 45,
-      "cost": 130,
-      "co2_kg": 70.7,
+      "cost": 103,
+      "co2_kg": 67.6,
       "driver_duty_min": 74
     },
     "S-02": {
       "miles": 45,
-      "cost": 130,
-      "co2_kg": 70.7,
+      "cost": 103,
+      "co2_kg": 67.6,
       "driver_duty_min": 74
     },
     "S-03": {
       "miles": 45,
-      "cost": 130,
-      "co2_kg": 70.7,
+      "cost": 103,
+      "co2_kg": 67.6,
       "driver_duty_min": 74
     },
     "S-04": {
       "miles": 40,
-      "cost": 117,
-      "co2_kg": 62.8,
+      "cost": 93,
+      "co2_kg": 60.1,
       "driver_duty_min": 68
     },
     "S-05": {
       "miles": 40,
-      "cost": 117,
-      "co2_kg": 62.8,
+      "cost": 93,
+      "co2_kg": 60.1,
       "driver_duty_min": 68
     },
     "S-06": {
       "miles": 45,
-      "cost": 130,
-      "co2_kg": 70.7,
+      "cost": 103,
+      "co2_kg": 67.6,
       "driver_duty_min": 74
     },
     "S-07": {
       "miles": 40,
-      "cost": 117,
-      "co2_kg": 62.8,
+      "cost": 93,
+      "co2_kg": 60.1,
       "driver_duty_min": 68
     },
     "S-08": {
       "miles": 16,
-      "cost": 52,
-      "co2_kg": 25.1,
+      "cost": 42,
+      "co2_kg": 24.0,
       "driver_duty_min": 35
     },
     "S-09": {
       "miles": 16,
-      "cost": 52,
-      "co2_kg": 25.1,
+      "cost": 42,
+      "co2_kg": 24.0,
       "driver_duty_min": 35
     },
     "S-10": {
       "miles": 16,
-      "cost": 52,
-      "co2_kg": 25.1,
+      "cost": 42,
+      "co2_kg": 24.0,
       "driver_duty_min": 35
     }
   },
@@ -216,8 +216,8 @@
             "lateness_max": 42,
             "risk": "LATE",
             "miles": 45,
-            "cost": 169,
-            "co2_kg": 70.7,
+            "cost": 138,
+            "co2_kg": 67.6,
             "requires_confirmation": false,
             "status": "Estimate: assumes NB-03 reopens at the reported 11:10",
             "explanation_inputs": [
@@ -230,7 +230,7 @@
               "30 to 42 min late"
             ],
             "driver_duty_min": 132,
-            "passes_sensitive_zone": false,
+            "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "Driver duty up to 132 min including up to 60 min waiting",
               "Warehouse WH-A: 30 to 42 min late"
@@ -244,8 +244,8 @@
             "lateness_max": 0,
             "risk": "ON_TRACK",
             "miles": 60,
-            "cost": 167,
-            "co2_kg": 94.2,
+            "cost": 132,
+            "co2_kg": 90.1,
             "requires_confirmation": false,
             "status": "Estimate: alternative route R-A-ALT avoids NB-03",
             "explanation_inputs": [
@@ -259,8 +259,8 @@
             "driver_duty_min": 88,
             "passes_sensitive_zone": true,
             "stakeholder_notes": [
-              "+15 mi and +23.5 kg CO2 versus the original route",
-              "Passes SYNTHETIC school zone (Z-01)"
+              "+15 mi and +22.5 kg CO2 versus the original route",
+              "9 schools and 31 disadvantaged tracts within 150 m (real locations, illustrative route)"
             ]
           },
           {
@@ -308,8 +308,8 @@
             "lateness_max": 0,
             "risk": "ON_TRACK",
             "miles": 45,
-            "cost": 159,
-            "co2_kg": 70.7,
+            "cost": 129,
+            "co2_kg": 67.6,
             "requires_confirmation": false,
             "status": "Estimate: assumes NB-03 reopens at the reported 11:10",
             "explanation_inputs": [
@@ -322,7 +322,7 @@
               "Meets window"
             ],
             "driver_duty_min": 117,
-            "passes_sensitive_zone": false,
+            "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "Driver duty up to 117 min including up to 45 min waiting",
               "Warehouse WH-A: meets window"
@@ -336,8 +336,8 @@
             "lateness_max": 0,
             "risk": "ON_TRACK",
             "miles": 60,
-            "cost": 167,
-            "co2_kg": 94.2,
+            "cost": 132,
+            "co2_kg": 90.1,
             "requires_confirmation": false,
             "status": "Estimate: alternative route R-A-ALT avoids NB-03",
             "explanation_inputs": [
@@ -351,8 +351,8 @@
             "driver_duty_min": 88,
             "passes_sensitive_zone": true,
             "stakeholder_notes": [
-              "+15 mi and +23.5 kg CO2 versus the original route",
-              "Passes SYNTHETIC school zone (Z-01)"
+              "+15 mi and +22.5 kg CO2 versus the original route",
+              "9 schools and 31 disadvantaged tracts within 150 m (real locations, illustrative route)"
             ]
           },
           {
@@ -400,8 +400,8 @@
             "lateness_max": 38,
             "risk": "LATE",
             "miles": 45,
-            "cost": 156,
-            "co2_kg": 70.7,
+            "cost": 126,
+            "co2_kg": 67.6,
             "requires_confirmation": false,
             "status": "Estimate: assumes NB-03 reopens at the reported 11:10",
             "explanation_inputs": [
@@ -414,7 +414,7 @@
               "26 to 38 min late"
             ],
             "driver_duty_min": 112,
-            "passes_sensitive_zone": false,
+            "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "Driver duty up to 112 min including up to 40 min waiting",
               "Warehouse WH-A: 26 to 38 min late"
@@ -428,8 +428,8 @@
             "lateness_max": 14,
             "risk": "LATE",
             "miles": 60,
-            "cost": 167,
-            "co2_kg": 94.2,
+            "cost": 132,
+            "co2_kg": 90.1,
             "requires_confirmation": false,
             "status": "Estimate: alternative route R-A-ALT avoids NB-03",
             "explanation_inputs": [
@@ -443,8 +443,8 @@
             "driver_duty_min": 88,
             "passes_sensitive_zone": true,
             "stakeholder_notes": [
-              "+15 mi and +23.5 kg CO2 versus the original route",
-              "Passes SYNTHETIC school zone (Z-01)"
+              "+15 mi and +22.5 kg CO2 versus the original route",
+              "9 schools and 31 disadvantaged tracts within 150 m (real locations, illustrative route)"
             ]
           },
           {
@@ -492,8 +492,8 @@
             "lateness_max": 46,
             "risk": "LATE",
             "miles": 40,
-            "cost": 149,
-            "co2_kg": 62.8,
+            "cost": 122,
+            "co2_kg": 60.1,
             "requires_confirmation": false,
             "status": "Estimate: assumes NB-03 reopens at the reported 11:10",
             "explanation_inputs": [
@@ -506,7 +506,7 @@
               "35 to 46 min late"
             ],
             "driver_duty_min": 116,
-            "passes_sensitive_zone": false,
+            "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "Driver duty up to 116 min including up to 50 min waiting",
               "Warehouse WH-B: 35 to 46 min late"
@@ -520,8 +520,8 @@
             "lateness_max": 13,
             "risk": "TIGHT",
             "miles": 45,
-            "cost": 136,
-            "co2_kg": 70.7,
+            "cost": 109,
+            "co2_kg": 67.6,
             "requires_confirmation": false,
             "status": "Estimate: alternative route R-B-ALT avoids NB-03",
             "explanation_inputs": [
@@ -535,8 +535,8 @@
             "driver_duty_min": 83,
             "passes_sensitive_zone": true,
             "stakeholder_notes": [
-              "+5 mi and +7.9 kg CO2 versus the original route",
-              "Passes SYNTHETIC residential area (Z-02)"
+              "+5 mi and +7.5 kg CO2 versus the original route",
+              "18 schools and 79 disadvantaged tracts within 150 m (real locations, illustrative route)"
             ]
           },
           {
@@ -584,8 +584,8 @@
             "lateness_max": 0,
             "risk": "ON_TRACK",
             "miles": 40,
-            "cost": 129,
-            "co2_kg": 62.8,
+            "cost": 104,
+            "co2_kg": 60.1,
             "requires_confirmation": false,
             "status": "Estimate: assumes NB-03 reopens at the reported 11:10",
             "explanation_inputs": [
@@ -598,7 +598,7 @@
               "Meets window"
             ],
             "driver_duty_min": 86,
-            "passes_sensitive_zone": false,
+            "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "Driver duty up to 86 min including up to 20 min waiting",
               "Warehouse WH-B: meets window"
@@ -612,8 +612,8 @@
             "lateness_max": 0,
             "risk": "ON_TRACK",
             "miles": 45,
-            "cost": 136,
-            "co2_kg": 70.7,
+            "cost": 109,
+            "co2_kg": 67.6,
             "requires_confirmation": false,
             "status": "Estimate: alternative route R-B-ALT avoids NB-03",
             "explanation_inputs": [
@@ -627,8 +627,8 @@
             "driver_duty_min": 83,
             "passes_sensitive_zone": true,
             "stakeholder_notes": [
-              "+5 mi and +7.9 kg CO2 versus the original route",
-              "Passes SYNTHETIC residential area (Z-02)"
+              "+5 mi and +7.5 kg CO2 versus the original route",
+              "18 schools and 79 disadvantaged tracts within 150 m (real locations, illustrative route)"
             ]
           },
           {
@@ -688,8 +688,8 @@
             "lateness_max": 6,
             "risk": "TIGHT",
             "miles": 40,
-            "cost": 156,
-            "co2_kg": 62.8,
+            "cost": 128,
+            "co2_kg": 60.1,
             "requires_confirmation": false,
             "status": "Estimate: assumes NB-03 reopens at the reported 11:10",
             "explanation_inputs": [
@@ -702,7 +702,7 @@
               "May be up to 6 min late"
             ],
             "driver_duty_min": 126,
-            "passes_sensitive_zone": false,
+            "passes_sensitive_zone": true,
             "stakeholder_notes": [
               "Driver duty up to 126 min including up to 60 min waiting",
               "Warehouse WH-B: may be up to 6 min late"
@@ -716,8 +716,8 @@
             "lateness_max": 0,
             "risk": "ON_TRACK",
             "miles": 45,
-            "cost": 136,
-            "co2_kg": 70.7,
+            "cost": 109,
+            "co2_kg": 67.6,
             "requires_confirmation": false,
             "status": "Estimate: alternative route R-B-ALT avoids NB-03",
             "explanation_inputs": [
@@ -731,8 +731,8 @@
             "driver_duty_min": 83,
             "passes_sensitive_zone": true,
             "stakeholder_notes": [
-              "+5 mi and +7.9 kg CO2 versus the original route",
-              "Passes SYNTHETIC residential area (Z-02)"
+              "+5 mi and +7.5 kg CO2 versus the original route",
+              "18 schools and 79 disadvantaged tracts within 150 m (real locations, illustrative route)"
             ]
           },
           {

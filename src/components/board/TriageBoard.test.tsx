@@ -100,6 +100,21 @@ describe('TriageBoard', () => {
     expect(within(column('Needs review')).getByText('No shipments')).toBeInTheDocument()
     expect(within(column('Monitoring')).queryByText('No shipments')).not.toBeInTheDocument()
     expect(screen.getByTestId('count-needs_review')).toHaveTextContent('0')
+    expect(screen.getByText('No shipments affected by the current incident')).toBeInTheDocument()
+  })
+
+  it('does not confuse an emptied review queue with no affected shipments', () => {
+    render(
+      <TriageBoard cards={[{ ...FIXTURE[2], column: 'decision_recorded' }]} />,
+    )
+    expect(screen.getByTestId('count-needs_review')).toHaveTextContent('0')
+    expect(screen.queryByText('No shipments affected by the current incident')).not.toBeInTheDocument()
+  })
+
+  it('explains an entirely empty shipment list', () => {
+    render(<TriageBoard cards={[]} />)
+    expect(screen.getByText('No shipments affected by the current incident')).toBeInTheDocument()
+    expect(screen.getByText('0 today')).toBeInTheDocument()
   })
 
   it('renders every card field', () => {

@@ -6,21 +6,66 @@
 import type {
   Assumptions,
   Facility,
-  Incident,
-  ResponseOption,
   RoadSegment,
   Route,
   Shipment,
 } from '../types'
 import type { Baseline, Scenario, ShipmentSummary } from '../viewModels'
+import { assessShipment } from '../engine/responses.ts'
+import type { EngineResponseOption, ShipmentAssessment } from '../engine/responses.ts'
+import { getActiveIncident, sampleIncident, setActiveIncident } from './demoIncident.ts'
 import assumptionsJson from './assumptions.json'
+import corridorJson from './corridor.json'
 import facilitiesJson from './facilities.json'
 import routesJson from './routes.json'
-import sampleResponsesJson from './sample-responses.json'
 import segmentsJson from './segments.json'
 import shipmentsJson from './shipments.json'
 
 export type { Baseline, Scenario, ShipmentSummary }
+export { getActiveIncident, sampleIncident, setActiveIncident }
+
+/** One real public layer used by the corridor analysis. */
+export interface CorridorSource {
+  id: 'schools' | 'dac_tracts'
+  name: string
+  publisher: string
+  /** School year or release, as published. */
+  edition: string
+  url: string
+  /** Date the layer was downloaded, YYYY-MM-DD. */
+  retrieved: string
+  features_in_study_box: number
+}
+
+/** What the corridor analysis found beside one route. */
+export interface RouteCorridor {
+  schools_150m: number
+  /** NCES school ids. */
+  schools: string[]
+  /** Census tract ids. */
+  dac_tracts: string[]
+  max_diesel_pm_pctl: number | null
+  near_sensitive_zone: boolean
+  note: string
+}
+
+/**
+ * The corridor analysis (G3): REAL schools and disadvantaged tracts within
+ * 150 m of each ILLUSTRATIVE route. Written by scripts/corridor_analysis.py.
+ * A proximity measure, not measured exposure.
+ */
+export interface CorridorFile {
+  label: string
+  buffer_m: number
+  method: string
+  meaning: string
+  basis: string
+  sources: CorridorSource[]
+  routes: Record<string, RouteCorridor>
+  segments: Record<string, { schools: string[]; dac_tracts: string[]; near_sensitive_zone: boolean }>
+}
+
+export const corridor = corridorJson as unknown as CorridorFile
 
 /** Every sample data file carries this label. */
 export const DATA_LABEL = 'SIMULATED' as const
@@ -36,28 +81,31 @@ export type RouteRecord = Route & {
   total_minutes_max: number
 }
 
-/** One shipment in one scenario, as stored in sample-responses.json. */
-export interface ScenarioEntry {
-  summary: ShipmentSummary
-  /** wait, reroute, request_slot; empty when the shipment is unaffected. */
-  options: ResponseOption[]
+/**
+ * The generated files carry labels such as "(fictional)" and "ILLUSTRATIVE".
+ * They stay in the files, which are not edited by hand, and are dropped here
+ * so the app shows plain names and notes.
+ */
+function plain(text: string): string {
+  return text
+    .replace(/\s*\((?:fictional|synthetic|real locations, illustrative route)\)/gi, '')
+    .replace(/^ILLUSTRATIVE - not verified for trucks$/i, 'Not verified for trucks')
+    .replace(/\bSYNTHETIC\s+/g, '')
 }
 
-/** Shape of sample-responses.json. */
-export interface SampleResponsesFile {
-  label: typeof DATA_LABEL
-  note: string
-  reference_shipment_id: string
-  incident: Incident
-  baselines: Record<string, Baseline>
-  scenarios: Record<Scenario, Record<string, ScenarioEntry>>
-}
-
-const responses = sampleResponsesJson as unknown as SampleResponsesFile
-
-export const facilities: Facility[] = facilitiesJson.items as Facility[]
-export const segments: RoadSegment[] = segmentsJson.items as unknown as RoadSegment[]
-export const routes: RouteRecord[] = routesJson.items as RouteRecord[]
+export const facilities: Facility[] = (facilitiesJson.items as Facility[]).map((facility) => ({
+  ...facility,
+  name: plain(facility.name),
+}))
+export const segments: RoadSegment[] = (segmentsJson.items as unknown as RoadSegment[]).map((segment) => ({
+  ...segment,
+  sensitive_zone_note: plain(segment.sensitive_zone_note),
+}))
+export const routes: RouteRecord[] = (routesJson.items as RouteRecord[]).map((route) => ({
+  ...route,
+  sensitive_zone_note: plain(route.sensitive_zone_note),
+  truck_suitability_note: plain(route.truck_suitability_note),
+}))
 export const shipments: Shipment[] = shipmentsJson.items as Shipment[]
 
 export const assumptions: Assumptions = {
@@ -69,39 +117,42 @@ export const assumptions: Assumptions = {
   sources: assumptionsJson.sources,
 }
 
-/** Assumption field name -> true when the value is a placeholder (all are). */
+/** Assumption field name -> true when the value is still a team placeholder, false when it cites a published source. */
 export const assumptionPlaceholders: Record<string, boolean> = assumptionsJson.placeholders
-
-/** The sample incident: NB-03 closed from 10:00, reported reopening 11:10. */
-export const sampleIncident: Incident = responses.incident
 
 /** S-01 to WH-A: the team plan's reference shipment (45 mi original, 60 mi alternative). */
 export const REFERENCE_SHIPMENT_ID = 'S-01'
 
-const ORDER: ResponseOption['kind'][] = ['wait', 'reroute', 'request_slot']
-
-function entry(shipmentId: string, scenario: Scenario): ScenarioEntry {
-  const found = responses.scenarios[scenario][shipmentId]
-  if (!found) throw new Error(`No sample data for shipment ${shipmentId} (${scenario})`)
-  return found
+/** Reassess raw inputs on every call; never cache generated response values. */
+export function getShipmentAssessment(shipmentId: string, scenario: Scenario): ShipmentAssessment {
+  const shipment = getShipment(shipmentId)
+  if (!shipment) throw new Error(`Unknown shipment: ${shipmentId}`)
+  return assessShipment(
+    shipment, scenario === 'disrupted' ? getActiveIncident() : null, { routes, segments }, assumptions,
+  )
 }
 
 /** Current status of a shipment in a scenario. Throws for an unknown id. */
 export function getShipmentSummary(shipmentId: string, scenario: Scenario): ShipmentSummary {
-  return entry(shipmentId, scenario).summary
+  const { risk, arrival_min, arrival_max, lateness_min, lateness_max, reason, affected } =
+    getShipmentAssessment(shipmentId, scenario).summary
+  return { risk, arrival_min, arrival_max, lateness_min, lateness_max, reason, affected }
 }
 
 /** Response options in the order wait, reroute, request_slot; [] when none. */
-export function getResponseOptions(shipmentId: string, scenario: Scenario): ResponseOption[] {
-  const options = responses.scenarios[scenario][shipmentId]?.options ?? []
-  return [...options].sort((a, b) => ORDER.indexOf(a.kind) - ORDER.indexOf(b.kind))
+export function getResponseOptions(shipmentId: string, scenario: Scenario): EngineResponseOption[] {
+  return getShipment(shipmentId) ? getShipmentAssessment(shipmentId, scenario).options : []
 }
 
 /** Normal-scenario metrics on the assigned route. Throws for an unknown id. */
 export function getBaseline(shipmentId: string): Baseline {
-  const found = responses.baselines[shipmentId]
-  if (!found) throw new Error(`No baseline for shipment ${shipmentId}`)
-  return found
+  const baseline = getShipmentAssessment(shipmentId, 'normal').baseline
+  return {
+    miles: baseline.miles,
+    cost: baseline.cost!,
+    co2_kg: baseline.co2_kg,
+    driver_duty_min: baseline.driver_duty_min!,
+  }
 }
 
 export function getFacility(id: string): Facility | undefined {

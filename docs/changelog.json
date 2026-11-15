@@ -1,10 +1,10 @@
 {
   "_meta": {
-    "project": "PortPlan",
+    "project": "RouteRipple",
     "repository": "arturoidelgado1998/Hackathon2026",
     "tracker_issue": 1,
     "purpose": "One entry per GitHub issue: what changed, where, how it was checked and what is left. Read this before starting an issue; update it in the same pull request that does the work.",
-    "last_updated": "2026-11-14",
+    "last_updated": "2026-11-15",
     "status_values": {
       "not_started": "No work yet",
       "in_progress": "Someone is working on it; assignee and branch are set",
@@ -31,10 +31,10 @@
   "summary": {
     "counts": {
       "done": 5,
-      "ready_for_review": 3,
-      "not_started": 9,
-      "in_review": 2,
-      "on_hold": 3
+      "ready_for_review": 9,
+      "not_started": 3,
+      "in_review": 4,
+      "in_progress": 1
     },
     "current_branch_for_phase_1": "phase-1-dashboard",
     "pull_requests": [
@@ -70,16 +70,28 @@
         "state": "open",
         "base": "main",
         "head": "staging"
+      },
+      {
+        "number": 37,
+        "url": "https://github.com/arturoidelgado1998/Hackathon2026/pull/37",
+        "state": "open",
+        "base": "staging",
+        "head": "gis/g3-g5-corridor"
       }
     ],
     "next_up": [
       7,
       8,
       9,
+      10,
+      11,
+      12,
+      13,
+      14,
       21
     ],
     "data_source": "ArcGIS feature service, imported by scripts/import_map_data.py",
-    "sanity_checks": "npm run sanity: 28 checks in sanity/, also run by the pipeline's sanity job",
+    "sanity_checks": "npm run sanity: 57 checks in sanity/, also run by the pipeline's sanity job",
     "delivery_checklist": [
       {
         "task": "Update main and create Nicole's branch",
@@ -601,11 +613,11 @@
       "code": "D9",
       "title": "Empty, error and loading states; accessibility pass",
       "phase": "Phase 1: Dashboard",
-      "status": "not_started",
+      "status": "ready_for_review",
       "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
+      "assignee": "nmtraboulsi",
+      "built_by": "D9-accessibility agent",
+      "branch": "nicole/d9-e1-e4-engine-integration",
       "pull_request": null,
       "commit": null,
       "depends_on": [
@@ -618,8 +630,18 @@
       "already_in_place": [
         "Empty states exist for no selection and no options; contrast measured at 5.8:1 or better; focus rings themed"
       ],
-      "changes": [],
-      "verification": [],
+      "changes": [
+        "Sample-triggerable interpretation loading and AI-unavailable feedback, with no fake incident endpoint or enabled A2 flow.",
+        "Explicit no-affected and no-feasible states, readable type, visible selected keyboard focus and accessible control names.",
+        "Authorized vitest-axe dependency, six dashboard accessibility cases and persistent real Chromium keyboard, responsive and contrast checks."
+      ],
+      "verification": [
+        "D9 agent: 85 affected UI tests and two real-browser accessibility sanity checks pass.",
+        "Real Chromium checks cover core keyboard workflow, responsive geometry at 390/760/1024/1440 widths and desktop text contrast of at least 4.5:1.",
+        "Focused ESLint, whitespace checks and Impeccable detector pass.",
+        "jsdom color-contrast checking is disabled explicitly; clipped mobile cells, ArcGIS canvas, physical devices, screen readers and true browser zoom are not fully audited.",
+        "Parent verification after E4: all 306 tests, 30 sanity checks, typecheck, ESLint and production build pass."
+      ],
       "deviations_from_issue": [],
       "revisions": [],
       "follow_ups": [
@@ -631,11 +653,11 @@
       "code": "E1",
       "title": "Engine: departure, route timing and closure wait",
       "phase": "Phase 2: Engine",
-      "status": "not_started",
+      "status": "ready_for_review",
       "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
+      "assignee": "nmtraboulsi",
+      "built_by": "E1-timing agent",
+      "branch": "nicole/d9-e1-e4-engine-integration",
       "pull_request": null,
       "commit": null,
       "depends_on": [
@@ -645,8 +667,16 @@
       "already_in_place": [
         "src/data/README.md lists the expected values the engine must reproduce"
       ],
-      "changes": [],
-      "verification": [],
+      "changes": [
+        "Pure TypeScript departure and ordered segment timing with explicit min/max arrivals, waits and unknown reopening bounds.",
+        "Dispatcher-assumed reopening takes precedence and is marked as an assumption; same-day time inputs are validated explicitly.",
+        "Production timing imports only engine helpers and shared types."
+      ],
+      "verification": [
+        "E1 agent: 44 focused time/timing tests pass under Node 24.",
+        "E1 agent: typecheck and focused ESLint pass.",
+        "Parent verification after E4: all 306 tests and 30 sanity checks pass, with no production sample-response imports."
+      ],
       "deviations_from_issue": [],
       "revisions": [],
       "follow_ups": [
@@ -658,19 +688,27 @@
       "code": "E2",
       "title": "Engine: appointment, lateness, risk, cost, CO2 and driver duty",
       "phase": "Phase 2: Engine",
-      "status": "not_started",
+      "status": "ready_for_review",
       "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
+      "assignee": "nmtraboulsi",
+      "built_by": "E2-metrics agent",
+      "branch": "nicole/d9-e1-e4-engine-integration",
       "pull_request": null,
       "commit": null,
       "depends_on": [
         "E1"
       ],
       "already_in_place": [],
-      "changes": [],
-      "verification": [],
+      "changes": [
+        "Pure metrics built on E1 timings: inclusive appointment deadline, lateness/risk, estimated cost and tailpipe CO2, driver duty and increase over the assigned normal plan.",
+        "Every metrics result is marked estimated; unavailable values remain null and sensitive-zone context passes through unchanged.",
+        "Reference S-01 normal, wait and reroute values match the updated feature-service acceptance values."
+      ],
+      "verification": [
+        "E2 agent: 44 focused metrics tests pass under Node 24.",
+        "E2 agent: typecheck passes.",
+        "Parent verification after E4: all 306 tests and 30 sanity checks pass; live S-01 metrics match the reference."
+      ],
       "deviations_from_issue": [],
       "revisions": [],
       "follow_ups": [
@@ -682,19 +720,28 @@
       "code": "E3",
       "title": "Engine: response options, totals and scenario comparison",
       "phase": "Phase 2: Engine",
-      "status": "not_started",
+      "status": "ready_for_review",
       "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
+      "assignee": "nmtraboulsi",
+      "built_by": "E3-responses agent",
+      "branch": "nicole/d9-e1-e4-engine-integration",
       "pull_request": null,
       "commit": null,
       "depends_on": [
         "E2"
       ],
       "already_in_place": [],
-      "changes": [],
-      "verification": [],
+      "changes": [
+        "Pure engine assessments and response options expose calculation explanations, community context, explicit availability and the two decision deadlines.",
+        "Pending requests retain their current plan and risk; unavailable routes and unknown reopening do not produce guessed metrics.",
+        "Nine estimated SIMULATED evaluation rows compare normal, disrupted-no-action and reproducibly selected-response conditions without ranking or automatically selecting UI options."
+      ],
+      "verification": [
+        "E3 agent: 32 focused response/evaluation tests and typecheck pass.",
+        "Parent: all 120 E1-E3 tests pass together across five engine test files.",
+        "Normal, disrupted and selected-response evaluation totals match the independently recorded fixture baseline.",
+        "Parent independently parsed CSV and JSON exports: all nine rows, three scenarios and 27 numeric cells match the recorded expected values."
+      ],
       "deviations_from_issue": [],
       "revisions": [],
       "follow_ups": [
@@ -706,11 +753,11 @@
       "code": "E4",
       "title": "Wire the dashboard to the engine and export the evaluation table",
       "phase": "Phase 2: Engine",
-      "status": "not_started",
+      "status": "ready_for_review",
       "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
+      "assignee": "nmtraboulsi",
+      "built_by": "E4-integration agent",
+      "branch": "nicole/d9-e1-e4-engine-integration",
       "pull_request": null,
       "commit": null,
       "depends_on": [
@@ -721,8 +768,20 @@
       "already_in_place": [
         "src/state/selectors.ts is the single place that reads the data module"
       ],
-      "changes": [],
-      "verification": [],
+      "changes": [
+        "Runtime data helpers, board assessments and indicator totals now delegate to the pure engine; sample-responses.json is imported only by tests.",
+        "Affected cards display reopening and reroute deadlines; Needs review sorts by earliest reroute deadline, with explicit tie/missing-deadline handling and no-feasible shipments last.",
+        "Response delta arithmetic is shared from the engine instead of calculated in UI helpers.",
+        "npm run evaluate exports all nine estimated SIMULATED rows to docs/evaluation.csv and docs/evaluation.json with units, scenario labels and the evaluation-only selection rule.",
+        "Documentation and integration/export tests cover fresh input changes and preserve the existing decision, pending, preview, Undo and Reset behavior."
+      ],
+      "verification": [
+        "E4 agent: 277 affected tests, typecheck, focused ESLint and evaluation export pass.",
+        "Parent: full 306-test suite, all 30 sanity checks, typecheck, ESLint and production build pass under Node 24.22.3/npm 11.21.2.",
+        "Parent: 16 live-browser assertions pass, including exact deadline/order/reference metrics, preview, choice, Undo, pending, rejection, scenarios and Reset.",
+        "Parent: parsed CSV/JSON contain exactly nine rows, three scenarios and all 27 independently expected numeric values.",
+        "Impeccable detector reports no findings; no production TypeScript imports sample-responses.json."
+      ],
       "deviations_from_issue": [],
       "revisions": [],
       "follow_ups": [
@@ -734,23 +793,95 @@
       "code": "A1",
       "title": "Incident interpretation endpoint and validator",
       "phase": "Phase 3: AI incident",
-      "status": "not_started",
+      "status": "ready_for_review",
       "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
+      "assignee": "arturoidelgado1998",
+      "built_by": "Coordinator",
+      "branch": "ai/a1-incident-endpoint",
       "pull_request": null,
-      "commit": null,
+      "commit": {
+        "hash": "0c1b82c",
+        "date": "2026-11-14T15:37:39-08:00",
+        "message": "A1: Incident interpretation endpoint, with an AI suggestion on the comparison",
+        "files": {
+          "added": [
+            "docs/ai-tests.md",
+            "sanity/server.sanity.test.ts",
+            "server/ai-tests.ts",
+            "server/app.test.ts",
+            "server/app.ts",
+            "server/index.ts",
+            "server/interpret.test.ts",
+            "server/interpret.ts",
+            "server/model.ts",
+            "server/prompt.ts",
+            "server/suggest.test.ts",
+            "server/suggest.ts",
+            "server/test-reports.ts",
+            "src/components/suggestion/SuggestionInApp.test.tsx",
+            "src/components/suggestion/SuggestionPanel.test.tsx",
+            "src/components/suggestion/SuggestionPanel.tsx",
+            "src/components/suggestion/suggestion.css",
+            "src/incident/interpretation.test.ts",
+            "src/incident/interpretation.ts",
+            "src/suggestion/client.ts",
+            "src/suggestion/facts.ts",
+            "src/suggestion/suggestion.test.ts",
+            "src/suggestion/suggestion.ts"
+          ],
+          "modified": [
+            ".env.example",
+            ".github/workflows/advisory-checks.yml",
+            "README.md",
+            "docs/changelog.json",
+            "package.json",
+            "sanity/app.sanity.test.ts",
+            "sanity/build.sanity.test.ts",
+            "sanity/repo.sanity.test.ts",
+            "src/App.tsx",
+            "src/components/responses/format.ts",
+            "tsconfig.node.json",
+            "vite.config.ts"
+          ],
+          "deleted": []
+        }
+      },
       "depends_on": [
         "D1",
         "D2"
       ],
       "already_in_place": [],
-      "changes": [],
-      "verification": [],
-      "deviations_from_issue": [],
+      "changes": [
+        "server/: a small Node server with POST /incident/interpret and GET /health, run with npm run server. It listens on this machine only, and the dev server forwards /incident to it, so the browser never talks to the model",
+        "src/incident/interpretation.ts: the six-field answer format, the JSON schema given to the model (it lists the real segment ids), and the validator every model answer must pass",
+        "Provider: AI Squared's Bolt (bolt-instruct-v2) through an OpenAI-compatible endpoint, called with Node's built-in fetch. The model returns its reading through one function call, record_incident",
+        "The model is sent the report text, each segment's id and name, and the answer format. Nothing else",
+        "A model answer that fails any check is discarded whole and returned as an error with the reasons; there is no partial incident",
+        "server/ai-tests.ts (npm run ai:tests): asks the real model the five test reports and writes docs/ai-tests.md; --check prints without writing",
+        "A new pipeline job, Live AI check on the five test reports, runs them on GitHub with the LLM_API_KEY repository secret and puts the table on the run's summary page",
+        ".env.example and the README record the provider, the variables, the endpoint's answers and the network note"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test pass (244 tests with A1 alone, 49 new); npm run sanity passes (48 checks with A1 alone, 3 new)",
+        "Unit tests give the server canned model answers for all five test reports: each correct answer passes, and an invented segment, a quote that is not in the report, an extra field, a missing structured answer and broken JSON are each refused",
+        "The real server was started with node: with the AI off it answers 503 not_configured, and through a stand-in model on this machine a report is followed end to end",
+        "Tests confirm the key appears in the Authorization header only, and in no response, error or log line; the build check confirms no server-side name is in the browser bundle"
+      ],
+      "deviations_from_issue": [
+        "Acceptance criterion 1 is met with Claude, not with Bolt: docs/ai-tests.md records the real answers of Claude models to the five test reports, all as expected. Bolt, the provider the team named, is still unreachable from the venue network, so its answers are not recorded",
+        "The issue's Vite-only stack gained a dev proxy entry and two npm scripts; no dependency was added",
+        "Evidence is compared with line breaks and repeated spaces collapsed; otherwise it must match the report exactly",
+        "Beyond the issue's rules, the validator also rejects any field outside the six, a duration on a non-closure, a duration over 24 hours, and a closure with no segment that does not ask for clarification",
+        "One dependency was added after all: @anthropic-ai/sdk, for the Claude provider the owner asked for. The Bolt path still uses none"
+      ],
       "revisions": [],
-      "follow_ups": []
+      "follow_ups": [
+        "Record the real answers: run npm run ai:tests on a network that can reach the model, or read the Live AI check job's summary once the branch is pushed",
+        "Whether Bolt honours a forced function call is unverified. If the service refuses the request, the server asks once more without it; if the model answers in JSON text, that is accepted and checked the same way",
+        "The repository secret LLM_API_KEY and the variables LLM_BASE_URL, LLM_MODEL and LLM_PROVIDER were set on GitHub on 2026-11-14. Anyone with write access can read the secret through a workflow change; the key appears to be a shared event key",
+        "For the demo: on the venue network the AI call fails, so the manual-entry path in A2 (#16) will be what the dispatcher sees unless the laptop is on another network",
+        "The feature service now has more segments than src/data; when the importer is updated, the model's segment list follows automatically because it is read from segments.json"
+      ]
     },
     {
       "number": 16,
@@ -890,7 +1021,8 @@
         "Edited the feature service: S-03's appointment changed from 11:00-11:40 to 11:00-11:34 (3 rows) so one shipment has no confirmed fix",
         "The feature service can be edited without signing in; tighten its sharing settings",
         "Sensitive-zone flags come from the service's two SYNTHETIC rectangles until G3 (#21)",
-        "Reference values changed: the plan's $121/$161/$158 is the min case; stored values are the max case $130/$169/$167. Issues #11-#14 and #17 were updated"
+        "Reference values changed: the plan's $121/$161/$158 is the min case; stored values are the max case $130/$169/$167. Issues #11-#14 and #17 were updated",
+        "2026-11-14: the feature service now has 15 segments, 7 facilities (a second port, PORT-LA, and warehouses WH-D and WH-E) and 16 shipments. scripts/import_map_data.py stops with KeyError 'R-LA-D-ORIG' because its route table lists only the first six routes. src/data still holds the earlier 9 segments and 10 shipments"
       ]
     },
     {
@@ -965,13 +1097,37 @@
       "code": "G3",
       "title": "150 m corridor analysis with real school and SB 535 layers",
       "phase": "Phase 5: GIS / ArcGIS",
-      "status": "on_hold",
-      "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
-      "pull_request": null,
-      "commit": null,
+      "status": "in_review",
+      "github_state": "closed",
+      "assignee": "arturoidelgado1998",
+      "built_by": "Coordinator",
+      "branch": "gis/g3-g5-corridor",
+      "pull_request": 37,
+      "commit": {
+        "hash": "1ae86f6",
+        "date": "2026-11-14T14:26:17-08:00",
+        "message": "G3: Count real schools and disadvantaged tracts within 150 m of each route",
+        "files": {
+          "added": [
+            "scripts/corridor_analysis.py",
+            "src/data/corridor-layers.json",
+            "src/data/corridor.json",
+            "src/data/corridorLayers.ts"
+          ],
+          "modified": [
+            "scripts/import_map_data.py",
+            "src/App.test.tsx",
+            "src/components/assumptions/AssumptionsPanel.test.tsx",
+            "src/components/assumptions/AssumptionsPanel.tsx",
+            "src/data/data.test.ts",
+            "src/data/index.ts",
+            "src/data/routes.json",
+            "src/data/sample-responses.json",
+            "src/data/segments.json"
+          ],
+          "deleted": []
+        }
+      },
       "depends_on": [
         "G1"
       ],
@@ -979,24 +1135,59 @@
         "Route fields schools_150m, dac_tracts and max_diesel_pm_pctl exist and are null",
         "ResponsePanel already switches its community wording when the counts are filled"
       ],
-      "changes": [],
-      "verification": [],
-      "deviations_from_issue": [],
+      "changes": [
+        "scripts/corridor_analysis.py: downloads the NCES public school layer and the SB 535 disadvantaged community tracts, measures 150 m around each route in California Albers (EPSG:3310), and writes src/data/corridor.json (counts, sources, dates) and corridor-layers.json (the places, for the map)",
+        "routes.json now carries schools_150m, dac_tracts and max_diesel_pm_pctl for all six routes; near_sensitive_zone is computed from them for routes and segments; the sample responses' passes_sensitive_zone and reroute notes follow",
+        "scripts/import_map_data.py copies the stored counts in on every run through one shared function, and leaves them out with a warning when the segment lines no longer match the stored analysis",
+        "The response comparison's community row now reads, for example, '9 schools and 31 disadvantaged tracts within 150 m (real locations, illustrative route)'",
+        "Assumptions & sources gained a Community proximity (150 m) section: method, what it means, the Kozawa et al. (2009) basis, and each layer's publisher, edition and download date",
+        "README.md and src/data/README.md describe 150 m as a proximity measure, not measured exposure"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test pass (195 tests); npm run sanity passes (28 checks)",
+        "The script was run twice and gave the same files",
+        "Result: R-A-ORIG 7 schools and 53 tracts, R-A-ALT 9 and 31, R-B-ORIG 5 and 51, R-B-ALT 18 and 79, R-C-ORIG 0 and 15, R-C-ALT 0 and 9",
+        "Viewed in the browser: S-01 and S-07 show the counts in the comparison table"
+      ],
+      "deviations_from_issue": [
+        "The analysis reads the segment lines already in src/data, not a fresh pull from the feature service, because the service has since been extended and import_map_data.py can no longer read it (see follow-ups)",
+        "The study box is the segment lines padded by about 2 km (1,359 schools, 853 tracts), not the brief's port-to-Ontario box",
+        "Acceptance criterion 3 is half met: an alternative passes more schools and tracts (R-B-ALT), but no alternative passes fewer of both than its original over more miles. The routes were not changed; that is the team's decision",
+        "max_diesel_pm_pctl is 99.8 for every route, so it is stored but not shown",
+        "Limitation 8 in src/data/limitations.ts still says the flags are placeholders until G3; its text is fixed by D8 (#9) and was left for the team to reword"
+      ],
       "revisions": [],
-      "follow_ups": []
+      "follow_ups": [
+        "The segment lines are schematic: measured against Caltrans highway lines, they sit a median of about 150 m to 1,900 m from the real highway, and 0% to 50% of each segment is within 150 m of it. The counts are real places near a drawn line. Redraw the lines along the roads in the feature service, then rerun scripts/corridor_analysis.py",
+        "The response comparison's group heading still reads 'Stakeholder impact (SIMULATED)' although the community row now holds real locations"
+      ]
     },
     {
       "number": 22,
       "code": "G4",
       "title": "Map overlays: schools, disadvantaged tracts and corridor",
       "phase": "Phase 5: GIS / ArcGIS",
-      "status": "on_hold",
-      "github_state": "open",
+      "status": "in_review",
+      "github_state": "closed",
       "assignee": "arturoidelgado1998",
-      "built_by": null,
-      "branch": null,
-      "pull_request": null,
-      "commit": null,
+      "built_by": "Coordinator",
+      "branch": "gis/g3-g5-corridor",
+      "pull_request": 37,
+      "commit": {
+        "hash": "d144b7f",
+        "date": "2026-11-14T14:26:17-08:00",
+        "message": "G4: Draw the 150 m corridor, schools and tracts on the map",
+        "files": {
+          "added": [],
+          "modified": [
+            "src/map/ArcgisMap.tsx",
+            "src/map/MapPanel.css",
+            "src/map/MapPanel.test.tsx",
+            "src/map/MapPanel.tsx"
+          ],
+          "deleted": []
+        }
+      },
       "depends_on": [
         "G2",
         "G3"
@@ -1004,12 +1195,24 @@
       "already_in_place": [
         "Layer 3 of the feature service has two SYNTHETIC zone polygons usable as a placeholder overlay"
       ],
-      "changes": [],
-      "verification": [],
-      "deviations_from_issue": [],
+      "changes": [
+        "src/map/ArcgisMap.tsx draws, for one route at a time, the 150 m corridor (a geodesic buffer from the SDK's geometry operator), the schools inside it as diamonds and the disadvantaged tracts it touches as diagonal hatching",
+        "The corridor follows the previewed or chosen route, otherwise the selected shipment's original route",
+        "src/map/MapPanel.tsx adds legend entries for the corridor, schools and tracts, a 'Within 150 m of <route>' line with the same counts the route carries, and each real layer's publisher, edition and download date",
+        "The counts and sources stay in the panel when the map cannot load",
+        "MapPanelProps is unchanged; the map component gained one optional prop, corridorRouteId"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test pass (195 tests, 6 new in MapPanel.test.tsx)",
+        "Viewed in the browser: previewing Reroute for S-07 switches the corridor to R-B-ALT and shows 18 schools and 79 tracts on the map panel and in the comparison table; hatched tracts and school diamonds seen after zooming in; no console errors"
+      ],
+      "deviations_from_issue": [
+        "No screenshots were saved to docs/screenshots: the tools used here can view the app but cannot write an image file"
+      ],
       "revisions": [],
       "follow_ups": [
-        "2026-11-14: assigned; stays on hold until G3 provides real layers"
+        "At the default zoom the 150 m corridor is about a pixel wide and tract hatching is faint; both are clear after zooming in",
+        "Take the slide screenshots by hand: Disrupted, select S-07, Preview Reroute, zoom into the I-110 corridor"
       ]
     },
     {
@@ -1017,25 +1220,237 @@
       "code": "G5",
       "title": "Stretch: hazard polygon and truck-route check",
       "phase": "Phase 5: GIS / ArcGIS",
-      "status": "on_hold",
-      "github_state": "open",
-      "assignee": null,
-      "built_by": null,
-      "branch": null,
-      "pull_request": null,
-      "commit": null,
+      "status": "in_progress",
+      "github_state": "closed",
+      "assignee": "arturoidelgado1998",
+      "built_by": "Coordinator",
+      "branch": "gis/g3-g5-corridor",
+      "pull_request": 37,
+      "commit": {
+        "hash": "a696460",
+        "date": "2026-11-14T14:26:18-08:00",
+        "message": "G5: Show the Caltrans truck network record on each response",
+        "files": {
+          "added": [
+            "scripts/import_reference_data.py",
+            "src/data/real/index.ts",
+            "src/data/real/lane-closures.json",
+            "src/data/real/real.test.ts",
+            "src/data/real/truck-network.json",
+            "src/state/features.ts"
+          ],
+          "modified": [
+            ".env.example",
+            "src/components/responses/ResponsePanel.test.tsx",
+            "src/components/responses/ResponsePanel.tsx",
+            "src/components/responses/responses.css",
+            "src/state/selectors.test.ts",
+            "src/state/selectors.ts",
+            "src/viewModels.ts"
+          ],
+          "deleted": []
+        }
+      },
       "depends_on": [
         "G4"
       ],
       "already_in_place": [],
-      "changes": [],
-      "verification": [],
-      "deviations_from_issue": [],
+      "changes": [
+        "Truck-route check: the response comparison has a 'Truck network (Caltrans record)' row showing the designation Caltrans records for the state highways each route follows, with text warnings where the layer has no record or a segment is on surface streets",
+        "scripts/import_reference_data.py and src/data/real/ supply the record (Caltrans Truck Network layer) and a snapshot of Caltrans District 7 lane closures, both labelled REAL",
+        "The row can be switched off with VITE_TRUCK_NETWORK_CHECK=off; with it off the view carries no truck data and the row is not rendered",
+        "Hazard polygon: not built (see deviations)"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test pass (195 tests: 8 on the real data, 5 on the selector, 2 on the row)",
+        "Viewed in the browser: S-01 shows 'I-710: National Network (STAA trucks)' and 'No Caltrans record for SR-60' for Wait, and I-710, I-605, I-405 for Reroute",
+        "A test checks the row never uses the words legal, allowed, suitable or safe"
+      ],
+      "deviations_from_issue": [
+        "Uses the Caltrans Truck Network layer, not the City of Los Angeles Goods Movement layer the issue names. The routes are mostly freeways outside the city, and the drawn lines sit too far from the real roads to compare with a street-level layer; the Caltrans record is matched by highway number instead",
+        "The hazard polygon is not built. The issue sends crossed segments through the A2 (#16) confirm step, which does not exist yet, and the WFIGS current fire perimeter layer had no perimeter in the study area on 2026-11-14, so only a drawn polygon could have been shown",
+        "Started while G4 is not merged, at the owner's request"
+      ],
       "revisions": [],
-      "follow_ups": []
+      "follow_ups": [
+        "2026-11-14: closed on GitHub at the owner's request with the hazard polygon not built; reopen it or open a new issue when A2 (#16) exists",
+        "The Caltrans layer has no rows for SR-60 and does not cover surface streets (C-LOCAL)",
+        "Which highway each segment follows is a table in scripts/import_reference_data.py, read from the segment names; the team should confirm it",
+        "Build the hazard polygon after A2 (#16): flag crossed segments as 'possibly affected, needs review' and never close one without the dispatcher"
+      ]
     }
   ],
   "other_changes": [
+    {
+      "id": "remove-fake-data-wording",
+      "title": "Remove wording that labels the data as simulated or fictional",
+      "related_issues": [],
+      "branch": "engine/sourced-cost-co2",
+      "pull_request": 46,
+      "commit": null,
+      "why": "Requested by the project owner: the audience knows the data is not real, and the repeated labels made the product look unfinished.",
+      "changes": [
+        "Removed the wording that labels the data as fake from what people see: the SIMULATED badge beside the totals and on the simulation page, the Illustrative badge on the Routes pane, \"(SIMULATED)\" in headings, \"simulated scenario\" in tooltips, \"(placeholder)\" on zone flags, and the Simulated value type.",
+        "Facility names and route notes are shown without \"(fictional)\", \"(real locations, illustrative route)\" and \"ILLUSTRATIVE\". The generated JSON files keep those labels; src/data/index.ts drops them for display.",
+        "Driver notice: the \"SIMULATED: no real message is sent\" lines are gone. The dashboard still says nothing goes to the driver until Send.",
+        "Limitations 1, 8, 9 and 12 are reworded without those words; there are still twelve.",
+        "Estimates are still called estimates, routes are still called not verified for trucks, and the Assumptions panel still lists every input and source."
+      ]
+    },
+    {
+      "id": "sourced-cost-co2-inputs",
+      "title": "Cost and CO2 inputs from published trucking sources",
+      "related_issues": [],
+      "branch": "engine/sourced-cost-co2",
+      "pull_request": null,
+      "commit": null,
+      "why": "The four inputs behind every cost and CO2 estimate were placeholders. The team plan asks for them to be confirmed or replaced and cited.",
+      "changes": [
+        "src/data/assumptions.json: the four cost and CO2 inputs are published figures with full citations. Fuel economy 6.5 to 6.8 mpg; non-labor cost $1.80 to $1.31 per mile; driver labor $40 to $36.08 per hour; diesel CO2 stays 10.21 kg per gallon and was checked against the EPA document itself. Pickup handling (30 min) is still a team placeholder.",
+        "Sources: San Pedro Bay Ports, 2021 Update: Feasibility Assessment for Drayage Trucks (February 2023), p. 71; ATRI, An Analysis of the Operational Costs of Trucking: 2026 Update (2025 data), line items as reported by FleetOwner on 22 July 2026; U.S. Bureau of Labor Statistics, OEWS May 2025; U.S. EPA, Emission Factors for Greenhouse Gas Inventories, last modified 15 January 2025, Table 2.",
+        "The engine's formulas are unchanged: cost = miles x non-labor cost per mile + duty hours x labor rate; tailpipe CO2 = miles / mpg x kg per gallon.",
+        "Every estimate changes. Reference shipment S-01, max-arrival case: normal $130 to $103, waiting at the closure $169 to $138, rerouted $167 to $132; CO2 70.7 to 67.6 kg on the original route and 94.2 to 90.1 kg rerouted. Day totals: normal $1,027 to $817, closure with no action $1,204 to $976, 546.5 to 522.7 kg.",
+        "Rerouting S-01 is still cheaper than waiting and still adds 15 miles and 22.5 kg of CO2, so the trade-off the dashboard shows is the same.",
+        "src/data/sample-responses.json regenerated with scripts/import_map_data.py from the service's original rows; docs/evaluation.csv and docs/evaluation.json regenerated with npm run evaluate.",
+        "scripts/import_map_data.py no longer compares cost and CO2 with the feature service, whose columns were calculated with the placeholder rates. It still compares arrival, lateness, risk and miles.",
+        "Assumptions panel, the cost row's description, limitation 10 and the data README no longer call these inputs placeholders. The data README has a Cost and CO2 inputs section listing each source and what the inputs do not capture."
+      ],
+      "verification": [
+        "Each shipment's normal, wait and reroute cost and CO2 were calculated independently with the Python implementation in scripts/import_map_data.py and agree with the engine; the same calculation reproduces the old figures ($1,027 and $1,204) with the old inputs.",
+        "Node 24/npm 11: all 469 unit and integration tests in 34 files pass after updating the 33 expectations that stated the old figures. npm run typecheck and npm run lint pass.",
+        "The EPA factor was read from the EPA PDF (Table 2: Diesel Fuel 10.21 kg CO2 per gallon). The 6.8 mpg figure was read from the ports' PDF, p. 71."
+      ]
+    },
+    {
+      "id": "live-truck-simulation",
+      "title": "Truck simulation page that drives the dashboard live",
+      "related_issues": [],
+      "branch": "sim/live-dashboard",
+      "pull_request": null,
+      "earlier_pull_requests": [
+        42
+      ],
+      "commit": {
+        "hash": "565d6e8",
+        "date": "2026-11-14T16:52:00-08:00",
+        "message": "Drive the dashboard live from the simulation page",
+        "files": {
+          "added": [
+            "server/simRelay.test.ts",
+            "server/simRelay.ts",
+            "src/components/board/ScheduleBoard.tsx",
+            "src/sim/LiveUpdates.css",
+            "src/sim/LiveUpdates.tsx",
+            "src/sim/events.ts",
+            "src/sim/live.test.tsx",
+            "src/sim/live.ts",
+            "src/sim/liveChannel.ts",
+            "src/sim/useLiveSim.ts"
+          ],
+          "modified": [
+            "sanity/accessibility.sanity.test.ts",
+            "sanity/app.sanity.test.ts",
+            "server/driverNotices.ts",
+            "src/App.tsx",
+            "src/components/board/ShipmentCard.tsx",
+            "src/components/board/board.css",
+            "src/components/board/index.ts",
+            "src/components/shell/AppShell.tsx",
+            "src/components/shell/IncidentBanner.tsx",
+            "src/data/demoIncident.ts",
+            "src/data/index.ts",
+            "src/main.tsx",
+            "src/map/ArcgisMap.tsx",
+            "src/map/MapPanel.css",
+            "src/map/MapPanel.tsx",
+            "src/sim/SimClock.css",
+            "src/sim/SimClock.test.tsx",
+            "src/sim/SimClock.tsx",
+            "src/sim/SimulationPage.test.tsx",
+            "src/sim/SimulationPage.tsx",
+            "src/sim/trucks.test.ts",
+            "src/sim/trucks.ts",
+            "src/sim/useSimClock.ts",
+            "src/state/selectors.ts",
+            "src/state/totals.ts",
+            "src/state/trucks.ts",
+            "src/viewModels.ts",
+            "vite.config.ts"
+          ],
+          "deleted": []
+        }
+      },
+      "earlier_commit": {
+        "hash": "f3d73d8",
+        "date": "2026-11-14T16:05:19-08:00",
+        "message": "Add a truck simulation: clock on the dashboard and a simulation page",
+        "pull_request": 42,
+        "files": {
+          "added": [
+            "simulation.html",
+            "src/sim/SimClock.css",
+            "src/sim/SimClock.test.tsx",
+            "src/sim/SimClock.tsx",
+            "src/sim/SimulationPage.css",
+            "src/sim/SimulationPage.test.tsx",
+            "src/sim/SimulationPage.tsx",
+            "src/sim/main.tsx",
+            "src/sim/settings.test.ts",
+            "src/sim/settings.ts",
+            "src/sim/trucks.test.ts",
+            "src/sim/trucks.ts",
+            "src/sim/useSimClock.ts",
+            "src/state/simulation.ts",
+            "src/state/trucks.ts"
+          ],
+          "modified": [
+            "src/App.tsx",
+            "src/map/ArcgisMap.tsx",
+            "src/map/MapPanel.css",
+            "src/map/MapPanel.tsx",
+            "vite.config.ts"
+          ],
+          "deleted": []
+        }
+      },
+      "why": "Let the team run a live demo: one person sets up and starts a run on a separate page, and the dashboard fills in as a dispatcher would see it, with nothing prefilled.",
+      "changes": [
+        "src/sim/trucks.ts: a timed trip per shipment and the truck's place on its route at any minute. Every time comes from the engine's routeTiming; nothing here calculates travel.",
+        "simulation.html and src/sim/SimulationPage.tsx: settings (normal day or closure, segment, times, wait or reroute for every delayed truck, slow or fast end of the range), Start, a clock (play, pause, restart, slider, speed), a map, an outcome table and a link that restores the same setup.",
+        "server/simRelay.ts and src/sim/liveChannel.ts: the simulation page's setup and clock reach every open dashboard through a relay on the dev and preview servers (/api/sim-state) and a BroadcastChannel for tabs in the same browser.",
+        "The dashboard at / is fed live and has no simulation controls or wording. Before a run starts it shows only the day's schedule; the Normal/Disrupted switch is not shown there. The prefilled sample is still at /?sample, which the browser sanity checks now open.",
+        "Once a run starts, a closure is reported when its start time is reached. Each shipment card carries a note on where its truck is, and a Live updates log under the map lists what has happened. The dispatcher still makes every choice.",
+        "A truck that is not yet on the road when a closure starts is held at the port and leaves in time to reach the segment as it reopens; a truck already on the road queues at the closed segment. The engine's arrivals, cost and CO2 are unchanged.",
+        "A closed segment is drawn closed only between its closing and reopening times, and the incident banner says when it has reopened.",
+        "src/data/demoIncident.ts: the closure the dashboard works with can be replaced by the one set on the simulation page; it is the sample incident otherwise.",
+        "Opening the simulation page sends nothing. The dashboards follow one page at a time: a change made by a person on any page takes control, and another running page's once-a-second repeats do not.",
+        "Pull request 42 put a clock with play and pause on the dashboard itself. That clock was removed again here: the dashboard only follows."
+      ],
+      "verification": [
+        "Node 24/npm 11: all 469 unit and integration tests in 34 files pass, including axe checks on the live dashboard and the simulation page.",
+        "npm run typecheck, npm run lint and npm run build pass; all 50 sanity checks in six files pass after merging staging eaaf869.",
+        "Browser, two tabs on the dev server: before Start the dashboard listed the 10 scheduled shipments with no risk badges and blank totals; at 10:30 no truck was on the map and S-01 read \"Held at the port: NB-03 is closed. Leaves 10:58.\"; at 11:30 the banner said NB-03 had reopened and the six held trucks were moving. The dashboard never showed the word \"simulation\"."
+      ]
+    },
+    {
+      "id": "routeripple-branding",
+      "title": "RouteRipple name and approved Route Node identity",
+      "related_issues": [],
+      "branch": "nicole/routeripple-branding",
+      "pull_request": null,
+      "commit": null,
+      "changes": [
+        "Shared accessible logo and readable RouteRipple wordmark on the dashboard, mobile driver page and simulation page, using the user-approved Route Node SVG.",
+        "All three HTML entry points have updated titles, the SVG favicon, a 180px Apple touch icon and the deep-blue browser theme color.",
+        "Updated current project metadata, documentation and map labels without changing driver storage/relay identifiers, source GIS URLs or historical changelog entries.",
+        "Installed the Apache-2.0 SVG logo skill at a pinned upstream revision and retained the three original concepts and responsive comparison page.",
+        "Fixed a real pressed-button contrast transition; kept the contrast threshold unchanged and made axe's sticky-table measurement use the existing tall-viewport approach."
+      ],
+      "verification": [
+        "All 445 unit/integration tests in 32 files and all 50 sanity checks in six files pass under Node 24/npm 11 after integrating staging 27d2fb7.",
+        "Typecheck, ESLint and production build pass; live desktop/mobile dashboard and driver-page checks pass."
+      ]
+    },
     {
       "id": "shared-contract",
       "title": "Shared dashboard view-model types",
@@ -1329,9 +1744,1257 @@
         "Undo reverses a local sample decision, not an external warehouse request. It is not a multi-step history.",
         "Historical route comparison remains on hold; no new dependencies, calculations or route rankings were introduced."
       ]
+    },
+    {
+      "id": "ai-suggestion",
+      "title": "AI suggestion on the response comparison",
+      "related_issues": [
+        15,
+        16
+      ],
+      "built_by": "Coordinator",
+      "branch": "ai/a1-incident-endpoint",
+      "pull_request": null,
+      "commit": {
+        "hash": "0c1b82c",
+        "date": "2026-11-14T15:37:39-08:00",
+        "message": "A1: Incident interpretation endpoint, with an AI suggestion on the comparison",
+        "files": {
+          "added": [
+            "docs/ai-tests.md",
+            "sanity/server.sanity.test.ts",
+            "server/ai-tests.ts",
+            "server/app.test.ts",
+            "server/app.ts",
+            "server/index.ts",
+            "server/interpret.test.ts",
+            "server/interpret.ts",
+            "server/model.ts",
+            "server/prompt.ts",
+            "server/suggest.test.ts",
+            "server/suggest.ts",
+            "server/test-reports.ts",
+            "src/components/suggestion/SuggestionInApp.test.tsx",
+            "src/components/suggestion/SuggestionPanel.test.tsx",
+            "src/components/suggestion/SuggestionPanel.tsx",
+            "src/components/suggestion/suggestion.css",
+            "src/incident/interpretation.test.ts",
+            "src/incident/interpretation.ts",
+            "src/suggestion/client.ts",
+            "src/suggestion/facts.ts",
+            "src/suggestion/suggestion.test.ts",
+            "src/suggestion/suggestion.ts"
+          ],
+          "modified": [
+            ".env.example",
+            ".github/workflows/advisory-checks.yml",
+            "README.md",
+            "docs/changelog.json",
+            "package.json",
+            "sanity/app.sanity.test.ts",
+            "sanity/build.sanity.test.ts",
+            "sanity/repo.sanity.test.ts",
+            "src/App.tsx",
+            "src/components/responses/format.ts",
+            "tsconfig.node.json",
+            "vite.config.ts"
+          ],
+          "deleted": []
+        }
+      },
+      "why": "The owner asked for the AI to take in the dashboard's simulated data and suggest an option, in place of pasting incident reports",
+      "changes": [
+        "src/suggestion/: the facts given to the AI, the comparison of options, the answer format and the checks",
+        "server/suggest.ts and POST /shipment/suggest",
+        "src/components/suggestion/SuggestionPanel.tsx, below the comparison table",
+        "npm run ai:tests also asks the real model for suggestions on S-01, S-07 and S-03",
+        "Changes tracker rule 4; see the dated entry 2026-11-14-ai-suggestion"
+      ]
     }
   ],
   "entries": [
+    {
+      "id": "2026-11-15-ai-and-live-dashboard-integration",
+      "date": "2026-11-15",
+      "title": "AI suggestion and clock-aware live dashboard, integrated",
+      "summary": "Brought the AI branch (pull request 44) and the clock-aware live dashboard (pull request 47) together on top of staging 312b47c, so the AI suggestion works on a live day. Fixed three visual flaws found while recording the demo.",
+      "branch": "ai/integration-live-dashboard",
+      "related_issues": [
+        15
+      ],
+      "source_staging_commit": "312b47c",
+      "conflicts_resolved": [
+        "docs/changelog.json: kept every entry from both branches, newest first. Nothing else conflicted."
+      ],
+      "integration_changes": [
+        "src/suggestion/facts.ts: the facts sent to the AI use isResponseOptionOpen, so on a live day a response the clock has closed is passed as unavailable and the AI cannot suggest it.",
+        "The suggestion panel is given the live view of the selected shipment, so its figures are the re-timed ones the comparison shows. A delivered load has no options and so no suggestion panel."
+      ],
+      "behaviour_changes": [
+        "The action row under the comparison reaches the bottom edge of its pane, so measures scrolling underneath no longer show through below the buttons.",
+        "A delivered card's badge wraps under the shipment id instead of being clipped.",
+        "The response panel heading for a delivered load shows DELIVERED ON TIME or DELIVERED LATE once, instead of ON TRACK plus a repeated sentence."
+      ],
+      "files": {
+        "added": [],
+        "modified": [
+          "docs/changelog.json",
+          "src/components/board/board.css",
+          "src/components/responses/ResponsePanel.tsx",
+          "src/components/responses/responses.css",
+          "src/sim/live.test.tsx",
+          "src/suggestion/facts.ts"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "On the integrated branch: npm run typecheck and lint pass; npm test passes (631 tests in 43 files); npm run sanity passes (57 of 57).",
+        "Run locally with the AI server on the Claude provider: on a live day at 10:01 the AI was asked about S-01 and leaned towards Reroute in about 2 seconds, with reasons and what it gives up printed from the dashboard's figures. The dashboard, simulation page and driver page loaded with no page errors.",
+        "Before making the repository public, every commit on every branch was scanned for keys: no key-shaped string and none of the real keys used on the development machine appear in the history."
+      ],
+      "not_verified": [
+        "Bolt has still not answered a request from the development machine (the venue network blocks its address); the pipeline's Live AI check is the only real Bolt run.",
+        "docs/ai-tests.md and docs/ai-model-comparison.md record runs made before the cost inputs changed."
+      ]
+    },
+    {
+      "id": "2026-11-15-clock-aware-dashboard",
+      "date": "2026-11-15",
+      "title": "Live dashboard follows the clock: closed responses, late reroutes and delivered loads",
+      "summary": "On a live day the dashboard now holds every shipment against where its truck is at the current clock time. A delivered load moves to a new Delivered group and offers nothing more. Reroute closes once the road has reopened or the truck has passed the turn-off; Wait closes once the road has reopened or the truck is on the alternative route. A reroute chosen late is timed by the engine from where the truck stands, and the truck leaves from there instead of jumping back to its ready time. Undo, previews, deadlines on cards, the At risk count and the driver notice follow the same rules. Brought up to staging 312b47c, which has the live dashboard (pull request 45) and the published cost and CO2 inputs (pull request 46). Dated in UTC like the entries below.",
+      "branch": "sim/clock-aware-responses",
+      "based_on": "staging at 312b47c (pull requests 45 and 46 merged). Started on sim/live-dashboard at 6a7530d and fast-forwarded to staging before the final checks.",
+      "integration_changes": [
+        "Staging removed the simulated and fictional labels from the screen (owner's decision), so nothing added here uses those words on screen.",
+        "Staging changed the cost inputs, so the new tests compare costs with the engine's own options instead of fixed dollar amounts."
+      ],
+      "behaviour_changes": [
+        "Live day only; the prefilled sample at /?sample has no clock and is unchanged.",
+        "New Delivered group on the live board. A delivered card shows DELIVERED ON TIME or DELIVERED LATE, the arrival time and one sentence on the outcome; the response panel shows that sentence and no comparison or buttons.",
+        "Reroute is closed, with the reason in the Status row and on the disabled buttons, when the road has reopened, when the truck has entered a segment the alternative route does not have, or when too little of the day is left to drive it.",
+        "A reroute for a truck held at the port or queued at the closed segment is timed from the current minute. Before this, the comparison kept showing the arrival of a reroute started at the ready time, however late it was chosen, and choosing it moved the truck back along the route to where it would have been.",
+        "Cards say when a deadline has passed (\"Reroute deadline 10:02 has passed: rerouting now may miss the appointment\") and drop the deadlines once the road has reopened.",
+        "Undo is offered only while taking the choice back would not move the truck; otherwise the panel says why. A previewed response that closes is dropped.",
+        "Moving the clock back forgets choices made after the new time (with a margin of half a second of clock speed, so ordinary jitter between updates does not undo a choice) and brings delivered loads back.",
+        "Once the road has reopened, an affected load that is on track returns to Monitoring; a late or tight one stays in Needs review because a later slot can still be requested.",
+        "At risk no longer counts delivered loads. Est. cost and CO2 remain totals for the whole day's plan, with a late reroute at the figures it had when chosen.",
+        "The driver notice for a late reroute carries the re-timed arrival. A delivered load has nothing new to send."
+      ],
+      "engine_boundary": [
+        "No formula was added. src/sim/liveAssessment.ts calls the engine's routeTiming for the remaining route and calculateMetrics for arrival, lateness, risk, cost, CO2 and duty; a delivered load's lateness is calculateMetrics applied to the one arrival that happened.",
+        "src/engine/evaluation.ts: evaluateAssessments is now exported so live totals can be evaluated from assessments that carry the re-timed reroute. Its behaviour is unchanged.",
+        "Options keep their fixed order and nothing is ranked. Nothing changes until the dispatcher chooses."
+      ],
+      "files": {
+        "added": [
+          "src/sim/liveAssessment.ts",
+          "src/state/live.test.ts",
+          "src/state/live.ts"
+        ],
+        "modified": [
+          "README.md",
+          "docs/changelog.json",
+          "sanity/app.sanity.test.ts",
+          "src/App.tsx",
+          "src/components/board/RiskBadge.tsx",
+          "src/components/board/ShipmentCard.tsx",
+          "src/components/board/TriageBoard.tsx",
+          "src/components/board/board.css",
+          "src/components/responses/ResponsePanel.tsx",
+          "src/driver/DriverNoticeDesk.tsx",
+          "src/driver/DriverNoticePanel.tsx",
+          "src/engine/evaluation.ts",
+          "src/sim/events.ts",
+          "src/sim/live.test.tsx",
+          "src/sim/trucks.ts",
+          "src/state/options.ts",
+          "src/state/reducer.ts",
+          "src/state/trucks.ts",
+          "src/types.ts",
+          "src/viewModels.ts"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "Node 24/npm 11, on staging 312b47c: all 527 unit and integration tests in 35 files pass (469 before), including 43 new checks of the live rules in src/state/live.test.ts and 15 new app-level checks in src/sim/live.test.tsx, with axe run on a delivered load and on closed responses.",
+        "npm run typecheck, npm run lint and npm run build pass; all 51 sanity checks in six files pass. The new one drives the built simulation page and dashboard in two tabs of one headless browser: reroute open at 10:45, closed at 11:15, every load delivered at the end of the day, and the choice back when the clock is moved back.",
+        "Edge cases covered by tests: delivered late, on time and early; one minute before delivery; delivered with a Wait, Reroute or slot request recorded; delivered before any closure; road reopened with the truck on it; truck left the port by the other road; truck moving on a shared segment; truck queued at the closure with and without a shared start; truck already inside the segment when it closes; reroute chosen at the ready time, mid-minute, late, and too late in the day; no reopening time; fast and slow timing cases; undo before and after the truck acts; preview of a response that closes; clock moved back before a choice and before a delivery; an update arriving a moment behind the clock; and the prefilled sample unchanged.",
+        "A sweep over every shipment at seven-minute steps checks that choosing an open reroute never moves the truck and that it then arrives at the time the option showed.",
+        "Browser, two tabs on the dev server (dashboard and simulation page): at 10:45 S-01 could be rerouted; at 11:15 Use reroute and Choose wait were disabled with their reasons and Request slot stayed enabled; at 12:15 S-01 sat under Delivered as DELIVERED LATE, the panel read \"Delivered at 12:12, 42 min after the appointment window closed at 11:30. Nothing is left to decide for S-01.\", no response buttons were on the page, At risk read 0 and the console had no errors."
+      ],
+      "outside_repo_changes": [
+        "Added a portplan-clock-aware entry to the shared, untracked .claude/launch.json and ran the dev server on port 5187 from this branch's worktree."
+      ],
+      "limitations": [
+        "Committed on branch sim/clock-aware-responses, one commit on top of staging 312b47c. Not pushed, and no pull request is open.",
+        "A closed response is refused by disabling its buttons. The reducer itself still checks only that the engine has figures for the option.",
+        "A truck cannot turn back. Once it is past the turn-off the reroute is closed, even where a real driver could double back.",
+        "The delivered time is the simulation's timing case (slow or fast end of the engine's range), not a measured arrival. SIMULATED.",
+        "Est. cost and CO2 in the top bar stay whole-day plan totals and still include delivered loads.",
+        "Decisions are still cleared when a closure is reported or withdrawn, and are lost if the dashboard is reloaded.",
+        "The simulation page's own outcome table still applies its wait-for-all or reroute-for-all setting from each ready time; it does not see the dashboard's choices.",
+        "The AI suggestion panel (pull request 44) is not on this branch. When both are merged, the facts it sends must use isResponseOptionOpen so it cannot suggest a closed response.",
+        "Not tested on a second physical device."
+      ]
+    },
+    {
+      "id": "2026-11-15-merge-staging-312b47c-into-a1",
+      "date": "2026-11-15",
+      "title": "Merged staging into the A1 branch a third time",
+      "summary": "Pull request #44 conflicted with staging again after pull requests 45 (live dashboard and simulation page) and 46 (published cost and CO2 inputs, fake-data labels removed from the screen) were merged. Merged staging 312b47c into ai/a1-incident-endpoint and kept both sides in every conflict.",
+      "branch": "ai/a1-incident-endpoint",
+      "related_issues": [
+        15
+      ],
+      "source_staging_commit": "312b47c",
+      "conflicts_resolved": [
+        "src/App.tsx: kept staging's schedule-only view and live wiring, and put the AI suggestion panel back under the response comparison.",
+        "vite.config.ts: kept staging's simulation relay plugin and this branch's proxy to the AI server, on both the dev and the preview server.",
+        "README.md: kept staging's description of server/ and this branch's line for src/incident/.",
+        "docs/changelog.json: kept every entry from both sides, newest first."
+      ],
+      "integration_changes": [
+        "Suggestion panel footnote: \"the dashboard's own simulated estimate\" now reads \"the dashboard's own estimate\", to follow the owner's decision on staging to drop fake-data labels from the screen. The prompt sent to the model still calls the figures simulated estimates.",
+        "SuggestionPanel.test.tsx: the CO2 figures it reads from the dashboard changed with staging's fuel-economy input (70.7 and 62.8 kg became 67.6 and 60.1 kg)."
+      ],
+      "files": {
+        "added": [],
+        "modified": [
+          "README.md",
+          "docs/changelog.json",
+          "src/App.tsx",
+          "src/components/suggestion/SuggestionPanel.test.tsx",
+          "src/components/suggestion/SuggestionPanel.tsx",
+          "vite.config.ts"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "After the merge: npm run typecheck and lint pass; npm test passes (573 tests in 42 files); npm run sanity passes (56 of 56)."
+      ],
+      "not_verified": [
+        "The AI suggestion panel has not been tried by hand on a live day. On the live dashboard it appears once a run has started and a shipment is selected.",
+        "docs/ai-tests.md and docs/ai-model-comparison.md record runs made before the cost inputs changed. The suggestions in them were given the old cost and CO2 figures; they were not rerun.",
+        "Bolt has still not answered a request from this machine; the pipeline's Live AI check is the first real run."
+      ]
+    },
+    {
+      "id": "2026-11-15-a1-live-check-fix-and-staging-merge",
+      "date": "2026-11-15",
+      "title": "Fixed the live AI check and merged staging into the A1 branch again",
+      "summary": "The first pipeline run of the Live AI check on pull request #44 failed before asking Bolt anything: the job installed no packages, and the server had started importing the Claude SDK. The SDK is now loaded only when Claude is the chosen provider, and the job installs dependencies. Staging's rebrand to RouteRipple and the truck simulation were merged in.",
+      "issues": [
+        15
+      ],
+      "related_issues": [],
+      "branch": "ai/a1-incident-endpoint",
+      "pull_request": null,
+      "merged_branches": {
+        "from": "staging",
+        "into": "ai/a1-incident-endpoint"
+      },
+      "conflicts": [
+        {
+          "file": "docs/changelog.json",
+          "resolution": "Took staging's record and added this branch's entries, A1's issue record and the ai-suggestion item; entries re-sorted newest first; counts recalculated"
+        }
+      ],
+      "decisions": [
+        "server/model.ts imports the Claude adapter only when LLM_PROVIDER is anthropic, so a Bolt-only setup starts with no installed package",
+        "The Live AI check job now runs npm ci --ignore-scripts before asking the model, so either provider works there"
+      ],
+      "verification": [
+        "npm run typecheck and lint pass; npm test passes (549 tests); npm run sanity passes (56 of 56, including the accessibility check that had been failing on the build machine)",
+        "With the Claude SDK hidden from node_modules, npm run ai:tests on the Bolt settings starts and reaches the point of asking the model, which is the step that crashed in the pipeline"
+      ],
+      "not_verified": [
+        "Bolt had still not answered a single request when this was written: the failed run stopped before any request was made"
+      ]
+    },
+    {
+      "id": "2026-11-15-remove-fake-data-wording",
+      "date": "2026-11-15",
+      "title": "Removed simulated, fictional and similar labels from the app",
+      "summary": "Took the fake-data labels out of the dashboard, driver page and simulation page at the project owner's request. Internal data labels and the generated files are unchanged.",
+      "branch": "engine/sourced-cost-co2",
+      "files": {
+        "added": [],
+        "modified": [
+          "docs/changelog.json",
+          "sanity/app.sanity.test.ts",
+          "src/App.test.tsx",
+          "src/components/assumptions/AssumptionsPanel.test.tsx",
+          "src/components/assumptions/AssumptionsPanel.tsx",
+          "src/components/responses/ResponsePanel.test.tsx",
+          "src/components/responses/ResponsePanel.tsx",
+          "src/components/responses/format.ts",
+          "src/components/shell/AppShell.tsx",
+          "src/components/shell/IncidentBanner.tsx",
+          "src/components/shell/IndicatorsBar.test.tsx",
+          "src/components/shell/IndicatorsBar.tsx",
+          "src/data/assumptions.json",
+          "src/data/data.test.ts",
+          "src/data/demoIncident.ts",
+          "src/data/index.ts",
+          "src/data/limitations.ts",
+          "src/driver/DriverNoticePanel.tsx",
+          "src/driver/DriverPage.tsx",
+          "src/driver/NoticeBody.tsx",
+          "src/driver/driverNotice.flow.test.tsx",
+          "src/map/MapPanel.test.tsx",
+          "src/map/MapPanel.tsx",
+          "src/sim/SimClock.test.tsx",
+          "src/sim/SimClock.tsx",
+          "src/sim/SimulationPage.test.tsx",
+          "src/sim/SimulationPage.tsx",
+          "src/sim/settings.ts",
+          "src/state/simulation.ts"
+        ],
+        "deleted": []
+      },
+      "changes": [
+        "Removed the wording that labels the data as fake from what people see: the SIMULATED badge beside the totals and on the simulation page, the Illustrative badge on the Routes pane, \"(SIMULATED)\" in headings, \"simulated scenario\" in tooltips, \"(placeholder)\" on zone flags, and the Simulated value type.",
+        "Facility names and route notes are shown without \"(fictional)\", \"(real locations, illustrative route)\" and \"ILLUSTRATIVE\". The generated JSON files keep those labels; src/data/index.ts drops them for display.",
+        "Driver notice: the \"SIMULATED: no real message is sent\" lines are gone. The dashboard still says nothing goes to the driver until Send.",
+        "Limitations 1, 8, 9 and 12 are reworded without those words; there are still twelve.",
+        "Estimates are still called estimates, routes are still called not verified for trucks, and the Assumptions panel still lists every input and source."
+      ],
+      "verification": [
+        "All 469 unit and integration tests pass after updating the 21 that required the removed words; typecheck, lint and build pass; all 50 sanity checks pass.",
+        "Browser: the dashboard with a shipment selected and the driver page contain none of simulated, fictional, synthetic, illustrative, placeholder or prototype, in text, tooltips or labels."
+      ],
+      "limitations": [
+        "The challenge brief asks teams to identify simulated features. The app no longer says so on screen, so the presentation should.",
+        "The simulation page keeps its name and address.",
+        "README files, the evaluation exports and the internal data labels still use the word SIMULATED."
+      ]
+    },
+    {
+      "id": "2026-11-15-sourced-cost-co2-inputs",
+      "date": "2026-11-15",
+      "title": "Cost and CO2 estimates now use published trucking figures",
+      "summary": "Replaced the placeholder cost, labor and fuel-economy inputs with published figures and their citations, confirmed the EPA emission factor against the source document, and updated every test, stored response, evaluation export and document that stated the old numbers. The engine's formulas did not change. Dated in UTC like the entries below; the work was done on 2026-11-14 Pacific time.",
+      "branch": "engine/sourced-cost-co2",
+      "branch_created_from": "sim/live-dashboard at 6a7530d (pull request 45), so this branch also contains that work until it is merged",
+      "inputs": {
+        "mpg": {
+          "before": 6.5,
+          "after": 6.8
+        },
+        "nonlabor_cost_per_mile": {
+          "before": 1.8,
+          "after": 1.31
+        },
+        "labor_rate_per_hr": {
+          "before": 40,
+          "after": 36.08
+        },
+        "diesel_kgCO2_per_gal": {
+          "before": 10.21,
+          "after": 10.21
+        },
+        "pickup_handling_min": {
+          "before": 30,
+          "after": 30,
+          "note": "still a team placeholder"
+        }
+      },
+      "reference_values_changed": [
+        {
+          "shipment": "S-01",
+          "case": "normal",
+          "cost_before": 130,
+          "cost_after": 103,
+          "co2_kg_before": 70.7,
+          "co2_kg_after": 67.6
+        },
+        {
+          "shipment": "S-01",
+          "case": "wait",
+          "cost_before": 169,
+          "cost_after": 138,
+          "co2_kg_before": 70.7,
+          "co2_kg_after": 67.6
+        },
+        {
+          "shipment": "S-01",
+          "case": "reroute",
+          "cost_before": 167,
+          "cost_after": 132,
+          "co2_kg_before": 94.2,
+          "co2_kg_after": 90.1
+        },
+        {
+          "total": "normal day",
+          "cost_before": 1027,
+          "cost_after": 817,
+          "co2_kg_before": 546.5,
+          "co2_kg_after": 522.7
+        },
+        {
+          "total": "closure, no action",
+          "cost_before": 1204,
+          "cost_after": 976,
+          "co2_kg_before": 546.5,
+          "co2_kg_after": 522.7
+        },
+        {
+          "total": "closure, evaluation rule",
+          "cost_before": 1182,
+          "cost_after": 951,
+          "co2_kg_before": 577.9,
+          "co2_kg_after": 552.7
+        }
+      ],
+      "files": {
+        "added": [],
+        "modified": [
+          "README.md",
+          "docs/changelog.json",
+          "docs/evaluation.csv",
+          "docs/evaluation.json",
+          "scripts/import_map_data.py",
+          "src/App.test.tsx",
+          "src/components/assumptions/AssumptionsPanel.test.tsx",
+          "src/components/assumptions/AssumptionsPanel.tsx",
+          "src/components/responses/ResponsePanel.tsx",
+          "src/data/README.md",
+          "src/data/assumptions.json",
+          "src/data/data.test.ts",
+          "src/data/index.ts",
+          "src/data/limitations.ts",
+          "src/data/sample-responses.json",
+          "src/engine/evaluation.test.ts",
+          "src/engine/evaluationExport.test.ts",
+          "src/engine/metrics.test.ts",
+          "src/engine/responses.test.ts",
+          "src/state/engineIntegration.test.ts",
+          "src/state/scenarios.test.ts",
+          "src/state/totals.test.ts"
+        ],
+        "deleted": []
+      },
+      "changes": [
+        "src/data/assumptions.json: the four cost and CO2 inputs are published figures with full citations. Fuel economy 6.5 to 6.8 mpg; non-labor cost $1.80 to $1.31 per mile; driver labor $40 to $36.08 per hour; diesel CO2 stays 10.21 kg per gallon and was checked against the EPA document itself. Pickup handling (30 min) is still a team placeholder.",
+        "Sources: San Pedro Bay Ports, 2021 Update: Feasibility Assessment for Drayage Trucks (February 2023), p. 71; ATRI, An Analysis of the Operational Costs of Trucking: 2026 Update (2025 data), line items as reported by FleetOwner on 22 July 2026; U.S. Bureau of Labor Statistics, OEWS May 2025; U.S. EPA, Emission Factors for Greenhouse Gas Inventories, last modified 15 January 2025, Table 2.",
+        "The engine's formulas are unchanged: cost = miles x non-labor cost per mile + duty hours x labor rate; tailpipe CO2 = miles / mpg x kg per gallon.",
+        "Every estimate changes. Reference shipment S-01, max-arrival case: normal $130 to $103, waiting at the closure $169 to $138, rerouted $167 to $132; CO2 70.7 to 67.6 kg on the original route and 94.2 to 90.1 kg rerouted. Day totals: normal $1,027 to $817, closure with no action $1,204 to $976, 546.5 to 522.7 kg.",
+        "Rerouting S-01 is still cheaper than waiting and still adds 15 miles and 22.5 kg of CO2, so the trade-off the dashboard shows is the same.",
+        "src/data/sample-responses.json regenerated with scripts/import_map_data.py from the service's original rows; docs/evaluation.csv and docs/evaluation.json regenerated with npm run evaluate.",
+        "scripts/import_map_data.py no longer compares cost and CO2 with the feature service, whose columns were calculated with the placeholder rates. It still compares arrival, lateness, risk and miles.",
+        "Assumptions panel, the cost row's description, limitation 10 and the data README no longer call these inputs placeholders. The data README has a Cost and CO2 inputs section listing each source and what the inputs do not capture."
+      ],
+      "verification": [
+        "Each shipment's normal, wait and reroute cost and CO2 were calculated independently with the Python implementation in scripts/import_map_data.py and agree with the engine; the same calculation reproduces the old figures ($1,027 and $1,204) with the old inputs.",
+        "Node 24/npm 11: all 469 unit and integration tests in 34 files pass after updating the 33 expectations that stated the old figures. npm run typecheck and npm run lint pass.",
+        "The EPA factor was read from the EPA PDF (Table 2: Diesel Fuel 10.21 kg CO2 per gallon). The 6.8 mpg figure was read from the ports' PDF, p. 71."
+      ],
+      "limitations": [
+        "The ATRI line items were taken from FleetOwner's report of the study, not from the ATRI report itself, which is behind a request form.",
+        "Cost and wage figures are national averages for all trucking. ATRI reports West region fuel at $0.54 per mile against $0.482 nationally, so California fuel cost is understated.",
+        "The driver labor rate combines two sources: a BLS national mean wage and ATRI's ratio of benefits to wages. A Los Angeles metropolitan wage was not retrieved.",
+        "The 6.8 mpg figure was reported by port truck operators in a 2021 survey, not measured, and is one figure for every mile: speed, congestion, load, grade and idling do not change it.",
+        "The feature service's cost and CO2 columns still hold the placeholder-rate figures. The service was not edited.",
+        "Any slide, evaluation table or script that quotes $130, $169, $167, $1,027, $1,204 or 546.5 kg is now out of date."
+      ]
+    },
+    {
+      "id": "2026-11-15-live-truck-simulation",
+      "date": "2026-11-15",
+      "title": "Truck simulation: a separate page that drives the dashboard live",
+      "summary": "Added a truck simulation built on the engine's own times, then moved its controls off the dashboard onto a separate simulation page that drives every open dashboard live. The dashboard now starts with only the day's schedule and fills in once a run starts. Merged staging eaaf869 (pull request 42 and the RouteRipple rebrand) before opening the pull request. Dated in UTC like the entry below; the commits were made on 2026-11-14 Pacific time.",
+      "branch": "sim/live-dashboard",
+      "earlier_branch": "sim/truck-animation, merged into staging by pull request 42 (27d2fb7)",
+      "source_staging_commit": "eaaf869",
+      "conflicts_resolved": [
+        "sanity/accessibility.sanity.test.ts and sanity/app.sanity.test.ts: kept staging's RouteRipple heading and this branch's /?sample address."
+      ],
+      "integration_changes": [
+        "The new truck layer, broadcast channel and Vite plugin use the RouteRipple name. Existing driver relay identifiers are untouched.",
+        "README: new section on the live dashboard and simulation page; the sample workflow section now says it is at /?sample."
+      ],
+      "behaviour_changes": [
+        "The page at / no longer opens on the prefilled Disrupted sample. It waits for a run to start on /simulation.html. Open /?sample for the prefilled sample.",
+        "On a static copy of the build there is no relay, so the dashboard only follows a simulation page open in the same browser."
+      ],
+      "files": {
+        "added": [
+          "server/simRelay.test.ts",
+          "server/simRelay.ts",
+          "simulation.html",
+          "src/components/board/ScheduleBoard.tsx",
+          "src/sim/LiveUpdates.css",
+          "src/sim/LiveUpdates.tsx",
+          "src/sim/SimClock.css",
+          "src/sim/SimClock.test.tsx",
+          "src/sim/SimClock.tsx",
+          "src/sim/SimulationPage.css",
+          "src/sim/SimulationPage.test.tsx",
+          "src/sim/SimulationPage.tsx",
+          "src/sim/events.ts",
+          "src/sim/live.test.tsx",
+          "src/sim/live.ts",
+          "src/sim/liveChannel.ts",
+          "src/sim/main.tsx",
+          "src/sim/settings.test.ts",
+          "src/sim/settings.ts",
+          "src/sim/trucks.test.ts",
+          "src/sim/trucks.ts",
+          "src/sim/useLiveSim.ts",
+          "src/sim/useSimClock.ts",
+          "src/state/simulation.ts",
+          "src/state/trucks.ts"
+        ],
+        "modified": [
+          "README.md",
+          "docs/changelog.json",
+          "sanity/accessibility.sanity.test.ts",
+          "sanity/app.sanity.test.ts",
+          "server/driverNotices.ts",
+          "src/App.tsx",
+          "src/components/board/ShipmentCard.tsx",
+          "src/components/board/board.css",
+          "src/components/board/index.ts",
+          "src/components/shell/AppShell.tsx",
+          "src/components/shell/IncidentBanner.tsx",
+          "src/data/demoIncident.ts",
+          "src/data/index.ts",
+          "src/main.tsx",
+          "src/map/ArcgisMap.tsx",
+          "src/map/MapPanel.css",
+          "src/map/MapPanel.tsx",
+          "src/state/selectors.ts",
+          "src/state/totals.ts",
+          "src/viewModels.ts",
+          "vite.config.ts"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "Node 24/npm 11: all 469 unit and integration tests in 34 files pass, including axe checks on the live dashboard and the simulation page.",
+        "npm run typecheck, npm run lint and npm run build pass; all 50 sanity checks in six files pass after merging staging eaaf869.",
+        "Browser, two tabs on the dev server: before Start the dashboard listed the 10 scheduled shipments with no risk badges and blank totals; at 10:30 no truck was on the map and S-01 read \"Held at the port: NB-03 is closed. Leaves 10:58.\"; at 11:30 the banner said NB-03 had reopened and the six held trucks were moving. The dashboard never showed the word \"simulation\"."
+      ],
+      "outside_repo_changes": [
+        "Added a portplan-sim entry to the shared, untracked .claude/launch.json, and ran the dev server with --host on port 5199 from this branch's worktree."
+      ],
+      "limitations": [
+        "Trucks follow the schematic segment lines, not real roads. Real-road routing with ArcGIS needs an API key with routing and is not built.",
+        "DEMO ONLY: the relay has no sign-in. Anyone who can reach the server can open the simulation page and take the dashboards over by changing something on it.",
+        "Not tested on a second physical device; the cross-device path was exercised only through the relay's HTTP tests and two tabs on one computer.",
+        "Choosing a response during a live run is covered by a unit test, not by a browser run.",
+        "Deadlines on cards are not clock-aware: a card can show a reroute deadline that the run's clock has already passed.",
+        "Decisions are cleared when a closure is reported or withdrawn, including when the simulation clock is moved back before the closure.",
+        "Still the 10-shipment data. The feature service has since grown to 16 shipments and scripts/import_map_data.py stops on it."
+      ]
+    },
+    {
+      "id": "2026-11-15-routeripple-branding",
+      "date": "2026-11-15",
+      "title": "RouteRipple branding with the approved Route Node logo",
+      "summary": "Pulled staging before creating Nicole's branding branch, presented three original deep-blue SVG concepts, and integrated the user's chosen Route Node identity into the desktop/mobile dashboard, dedicated driver page and browser icons. The user approved the rendered result. Then fast-forwarded to the latest staging, preserving its truck simulation and extending branding to that new page without conflicts.",
+      "branch": "nicole/routeripple-branding",
+      "branch_created_from": "3a4159700302e2c9fea70b07b8f91c845cd0be0d",
+      "source_staging_commit": "27d2fb71d6afba94e333a61f628d59617949fb25",
+      "logo": {
+        "approved_concept": "Route Node",
+        "asset": "public/routeripple.svg",
+        "touch_icon": "public/apple-touch-icon.png",
+        "skill_source": "https://github.com/longcipher/svg-logo-skill",
+        "skill_revision": "b86e71f093dc6b4d8f79dedd1a41445181c79c88",
+        "skill_license": "Apache-2.0"
+      },
+      "files": {
+        "added": [
+          ".github/skills/svg-logo-skill/LICENSE",
+          ".github/skills/svg-logo-skill/README.md",
+          ".github/skills/svg-logo-skill/SKILL.md",
+          ".github/skills/svg-logo-skill/package.json",
+          ".github/skills/svg-logo-skill/references/EXPORT-SIZES.md",
+          ".github/skills/svg-logo-skill/references/PREVIEW-TEMPLATE.md",
+          ".github/skills/svg-logo-skill/references/SVG-CONVENTIONS.md",
+          ".github/skills/svg-logo-skill/scripts/export.js",
+          ".github/skills/svg-logo-skill/scripts/generate-preview.js",
+          "logos/concepts/flow-lines.svg",
+          "logos/concepts/ripple-r.svg",
+          "logos/concepts/route-node.svg",
+          "logos/preview.html",
+          "public/apple-touch-icon.png",
+          "public/routeripple.svg",
+          "src/components/brand/Brand.css",
+          "src/components/brand/Brand.tsx"
+        ],
+        "modified": [
+          "README.md",
+          "docs/changelog.json",
+          "driver.html",
+          "index.html",
+          "package-lock.json",
+          "package.json",
+          "sanity/accessibility.sanity.test.ts",
+          "sanity/app.sanity.test.ts",
+          "sanity/build.sanity.test.ts",
+          "simulation.html",
+          "src/App.test.tsx",
+          "src/components/shell/AppShell.test.tsx",
+          "src/components/shell/AppShell.tsx",
+          "src/driver/DriverPage.tsx",
+          "src/driver/driver.css",
+          "src/driver/driverNotice.flow.test.tsx",
+          "src/index.css",
+          "src/map/ArcgisMap.tsx",
+          "src/sim/SimulationPage.test.tsx",
+          "src/sim/SimulationPage.tsx",
+          "src/types.ts"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "Node 24/npm 11: all 445 unit/integration tests in 32 files and all 50 sanity checks in six files pass after updating from staging.",
+        "npm run typecheck, npm run lint and npm run build pass.",
+        "Chromium checks cover all three headers at 320, 390, 760 and 1440px with no overflow, a decoded 32px logo and readable RouteRipple text.",
+        "Live desktop/mobile dashboard, driver and simulation captures confirm the approved logo; both icons return HTTP 200 on all three entry points. The dashboard/driver checks found no uncaught browser errors.",
+        "The production logo's geometry matches the approved Route Node concept exactly. Build checks verify both icon links and the actual PNG signature and 180x180 dimensions.",
+        "The failing contrast check exposed a blue-on-blue intermediate pressed state. Primary toggle buttons now change foreground/background atomically while retaining the border transition.",
+        "The remaining axe incomplete result was a sticky-table overlap artifact: nine button hit tests passed, and the same contrast audit completed at 2000px height. Only the contrast measurement uses that existing approach; keyboard navigation remains at 1000px and the 4.5:1 threshold is unchanged."
+      ],
+      "compatibility": [
+        "Preserved legacy driver storage keys, relay/broadcast identifiers and the relay health contract so existing notices and replies remain compatible.",
+        "Preserved real ArcGIS service URLs, generated-data provenance, all prior dated changelog records and issue histories.",
+        "No dependency changes, routing calculations, scenario defaults, shipment ordering or driver-message behavior changed."
+      ],
+      "outside_repo_changes": [
+        "Started a persistent preview at http://127.0.0.1:5174/ with a separate Vite cache to avoid stale optimized dependencies from concurrent test servers."
+      ],
+      "limitations": [
+        "Mobile checks use Chromium viewports, not physical-device or screen-reader testing.",
+        "The new skill's files and license are installed; coding-tool reload may be required for automatic skill discovery.",
+        "Existing jsdom canvas and large ArcGIS chunk warnings remain; all checks pass.",
+        "No merge into staging/main or native app/PWA is included in this delivery."
+      ]
+    },
+    {
+      "id": "2026-11-14-claude-provider",
+      "date": "2026-11-14",
+      "title": "Claude API as a second model provider, tested for real, with a model comparison",
+      "summary": "The server can now use the Claude API in place of Bolt, chosen by one setting. With a one-day key from the owner, four Claude models were asked the five test reports and three suggestions through the app's own server code. After three fixes to the instructions and one to a check, all four models passed everything in three consecutive runs. Claude Opus 5.5 is recommended and is the default.",
+      "issues": [
+        15
+      ],
+      "related_issues": [
+        16
+      ],
+      "branch": "ai/a1-incident-endpoint",
+      "pull_request": null,
+      "commits": [
+        {
+          "hash": "c82be67",
+          "date": "2026-11-14T16:31:17-08:00",
+          "message": "Add the Claude API as a second model provider, tested for real"
+        }
+      ],
+      "files": {
+        "added": [
+          "docs/ai-model-comparison.md",
+          "server/anthropic.test.ts",
+          "server/anthropic.ts"
+        ],
+        "modified": [
+          ".env.example",
+          "README.md",
+          "docs/ai-tests.md",
+          "docs/changelog.json",
+          "package-lock.json",
+          "package.json",
+          "sanity/build.sanity.test.ts",
+          "sanity/repo.sanity.test.ts",
+          "server/ai-tests.ts",
+          "server/interpret.ts",
+          "server/model.ts",
+          "server/prompt.ts",
+          "server/suggest.test.ts",
+          "server/suggest.ts",
+          "src/suggestion/client.ts",
+          "src/suggestion/suggestion.test.ts",
+          "src/suggestion/suggestion.ts"
+        ],
+        "deleted": []
+      },
+      "numbers_that_moved": [
+        "Tests: 499 to 512",
+        "Dependencies: one added, @anthropic-ai/sdk 1.8.0, used by the server only",
+        "First real run: 4 of 5 reports read correctly per model, and between 1 and 3 of 3 suggestions passing; final three runs: 5 of 5 and 3 of 3 for every model"
+      ],
+      "decisions": [
+        "LLM_PROVIDER=anthropic selects Claude; any other value keeps the OpenAI-compatible path used for Bolt. Claude has its own variables (ANTHROPIC_API_KEY, ANTHROPIC_MODEL), so both sets can sit in .env and the Bolt key is never sent to Claude",
+        "Claude is called through Anthropic's official SDK, with the answer shape enforced by structured outputs; the server's validator still checks every answer",
+        "The SDK is always given the address api.anthropic.com and the server's own key, so it cannot pick up an address or credential from the surrounding environment; a test confirms this",
+        "If Claude declines a request for a policy reason, the API retries on its default fallback model; the model that actually answered is recorded",
+        "The default model is claude-opus-5-5 and stays so until a real run; ANTHROPIC_MODEL changes it",
+        "The prompts no longer say how to deliver the answer; each provider adds that itself (a function call for Bolt, a JSON object for Claude)",
+        "A segment id written in a report settles which segment is meant; a general area such as 'near the port' names no segment. Both were added to the instructions after the first real run",
+        "The AI's sentence may use names the figures already use (a shipment or segment id) and the word CO2; any actual figure is still refused. The target length, 200 characters, is now stated to the model",
+        "Tokens are counted for refused answers too, so the cost comparison is not skewed",
+        "Recommended model: Claude Opus 5.5. It was as accurate as the others, and on the one close trade-off (S-07) it made no suggestion, as the instructions ask; Sonnet 5.5 and Haiku 5.5 suggested Reroute there"
+      ],
+      "verification": [
+        "npm run typecheck, lint and test pass (512 tests)",
+        "Real Claude API, through server/ai-tests.ts: three consecutive runs of 8 questions on each of 4 models, 96 answers, all passing; recorded in docs/ai-tests.md and docs/ai-model-comparison.md",
+        "Viewed in the browser with the real server and Claude Opus 5.5: S-01 showed Reroute with three confirmed reasons and three things it gives up; S-07 showed no suggestion with the AI's sentence; no option was pressed in either case",
+        "Structured outputs, the fallback setting and low effort were accepted by the API for all four models"
+      ],
+      "not_verified": [
+        "Bolt is still unreached, so A1's test record is from Claude, not from the provider the team named",
+        "Eight synthetic questions cannot rank the models finely, and no report written by a real dispatcher was tried",
+        "The fallback after a declined request never triggered, so that path is covered by unit tests only",
+        "Committed locally, not pushed"
+      ],
+      "known_gaps": [
+        "The pipeline's Live AI check still uses Bolt's secret and variables; running it on Claude needs an ANTHROPIC_API_KEY repository secret",
+        "The Claude key in the local .env was created to expire after one day"
+      ],
+      "outside_the_repo": [
+        "A Claude API key supplied by the owner was written to the ignored .env in this working copy; about 20 small API calls' worth of spend per full comparison run, seven runs in all (well under two dollars by the script's estimate)"
+      ]
+    },
+    {
+      "id": "2026-11-14-merge-staging-into-a1",
+      "date": "2026-11-14",
+      "title": "Merged staging into the A1 branch",
+      "summary": "Staging had gained the driver notices (N1 to N3) and Nicole's D9 and engine work (E1 to E4) since this branch was cut. The merge keeps everything from both sides: the AI endpoints and the suggestion panel now sit beside the driver notice desk and read options produced by the engine.",
+      "issues": [
+        15
+      ],
+      "related_issues": [
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "branch": "ai/a1-incident-endpoint",
+      "merged_branches": {
+        "from": "staging",
+        "into": "ai/a1-incident-endpoint"
+      },
+      "conflicts": [
+        {
+          "file": "src/App.tsx",
+          "resolution": "Took staging's layout and added the suggestion panel after the response panel, beside the driver notice desk"
+        },
+        {
+          "file": "vite.config.ts",
+          "resolution": "Took staging's driver notice relay and two-page build, and added the proxy to the AI server"
+        },
+        {
+          "file": "docs/changelog.json",
+          "resolution": "Took staging's record and added this branch's entries, A1's issue record and the ai-suggestion item; counts recalculated"
+        }
+      ],
+      "verification": [
+        "npm run typecheck and lint pass; npm test passes (499 tests)",
+        "npm run sanity: 53 of 54 checks pass on the build machine",
+        "The suggestion tests still pass with options now produced by the engine: the S-07 figures are unchanged"
+      ],
+      "not_verified": [
+        "One sanity check fails on the build machine: the keyboard and contrast check in sanity/accessibility.sanity.test.ts cannot determine the contrast of the Request slot button because it partly overlaps another element. It fails the same way on an untouched copy of staging (3a41597) on this machine and passes in the pipeline on Linux, so it comes from staging, not this branch. It was left as it is",
+        "Not pushed, so the pipeline has not run on the merged code"
+      ],
+      "known_gaps": [
+        "The AI suggestion takes its figures from the response view; it does not yet use the engine's decision deadlines or the predictive model"
+      ]
+    },
+    {
+      "id": "2026-11-14-ai-suggestion",
+      "date": "2026-11-14",
+      "title": "AI suggestion on the response comparison, and a change to rule 4",
+      "summary": "The dispatcher can now ask the AI which response it would lean towards for the selected shipment. The AI is given the figures the table already shows; it returns an option, the measures it rests on and one sentence. The dashboard checks the reasons, prints every figure itself and works out what the suggestion gives up. Nothing is selected and nothing on the board changes.",
+      "issues": [],
+      "related_issues": [
+        15,
+        16
+      ],
+      "branch": "ai/a1-incident-endpoint",
+      "pull_request": null,
+      "commits": [
+        {
+          "hash": "0c1b82c",
+          "message": "A1: Incident interpretation endpoint, with an AI suggestion on the comparison"
+        }
+      ],
+      "files": {
+        "added": [
+          "server/suggest.test.ts",
+          "server/suggest.ts",
+          "src/components/suggestion/SuggestionInApp.test.tsx",
+          "src/components/suggestion/SuggestionPanel.test.tsx",
+          "src/components/suggestion/SuggestionPanel.tsx",
+          "src/components/suggestion/suggestion.css",
+          "src/suggestion/client.ts",
+          "src/suggestion/facts.ts",
+          "src/suggestion/suggestion.test.ts",
+          "src/suggestion/suggestion.ts"
+        ],
+        "modified": [
+          ".github/workflows/advisory-checks.yml",
+          "README.md",
+          "docs/changelog.json",
+          "sanity/app.sanity.test.ts",
+          "sanity/build.sanity.test.ts",
+          "src/App.tsx",
+          "src/components/responses/format.ts",
+          "vite.config.ts"
+        ],
+        "deleted": []
+      },
+      "rule_change": {
+        "rule": "Tracker rule 4: No single \"best option\", ranking or ethics score anywhere",
+        "decided_by": "arturoidelgado1998, the repository owner, on 2026-11-14, after being told it conflicts with the rule",
+        "what_changed": "An AI suggestion can be requested per shipment. The comparison table still ranks and scores nothing, and the words best and recommended are still never shown",
+        "not_done": "The tracker issue (#1) text has not been edited, and the rest of the team has not been asked"
+      },
+      "numbers_that_moved": [
+        "Tests: 244 to 286",
+        "Sanity checks: 48 to 51"
+      ],
+      "decisions": [
+        "The suggestion is shown only when asked for, to limit the pull of an answer the dispatcher did not seek",
+        "The model returns no figures. It names measures; the dashboard prints the values from its own data, and a number in the model's sentence makes the whole answer invalid",
+        "A reason is accepted only if the suggested option really is better on that measure; what the suggestion gives up is computed from the figures and never shortened",
+        "A slot request can be suggested only when no other option is on track, and is always shown as pending",
+        "The browser checks the server's answer again against the facts it sent, so the panel shows nothing it cannot verify itself",
+        "What the AI is asked to weigh is one constant, WEIGHING, shown to the dispatcher word for word: the appointment first, then schools and disadvantaged communities passed, then duty time, cost, miles and emissions, and no suggestion when it is close",
+        "The suggestion's state lives in the panel, not in the reducer, so it cannot reach the decisions or the totals"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test pass (286 tests); npm run sanity passes (51 checks)",
+        "Unit tests on the real S-07 and S-03 figures: a true reason is accepted, a false one, a number in the sentence, an unavailable option and an extra field are each refused",
+        "A dashboard test and a browser check confirm that a suggestion presses no button, records nothing, and leaves the queue and the indicators unchanged",
+        "Viewed in the browser with a stand-in model on the local machine: the panel showed Reroute for S-07 with two confirmed reasons and four things it gives up, with no option pressed"
+      ],
+      "not_verified": [
+        "The real model has never been asked for a suggestion: the venue network blocks it. Whether Bolt returns answers that pass the checks, or how often they are refused, is unknown",
+        "Narrow and phone layouts were not checked with the new panel",
+        "Committed locally, not pushed"
+      ],
+      "known_gaps": [
+        "The predictive model (M1, GitHub issue 30, not yet in this change log) is not among the facts; it is not merged. Its crash and reopening figures can be added to the facts once it is",
+        "The weighing instruction is a value choice written by the builder, not agreed by the team",
+        "Limitation 4 in src/data/limitations.ts speaks only of AI interpretation; the fixed list of eleven was not changed, so the suggestion's own caveat is in the panel",
+        "The comparison's measures treat schools and tracts as two separate counts; no measure combines them"
+      ],
+      "outside_the_repo": [
+        "Nothing changed outside the repo for this feature"
+      ]
+    },
+    {
+      "id": "2026-11-14-a1-incident-endpoint",
+      "date": "2026-11-14",
+      "title": "Incident interpretation endpoint and validator (A1)",
+      "summary": "A server endpoint turns a pasted incident report into a checked, six-field reading using AI Squared's Bolt, or returns a clear error. The real model has not been asked yet because the venue network blocks its address; everything else is built and tested with the model replaced by canned answers.",
+      "issues": [
+        15
+      ],
+      "related_issues": [
+        16,
+        17
+      ],
+      "branch": "ai/a1-incident-endpoint",
+      "pull_request": null,
+      "commits": [
+        {
+          "hash": "0c1b82c",
+          "message": "A1: Incident interpretation endpoint, with an AI suggestion on the comparison"
+        }
+      ],
+      "files": {
+        "added": [
+          "docs/ai-tests.md",
+          "sanity/server.sanity.test.ts",
+          "server/ai-tests.ts",
+          "server/app.test.ts",
+          "server/app.ts",
+          "server/index.ts",
+          "server/interpret.test.ts",
+          "server/interpret.ts",
+          "server/model.ts",
+          "server/prompt.ts",
+          "server/test-reports.ts",
+          "src/incident/interpretation.test.ts",
+          "src/incident/interpretation.ts"
+        ],
+        "modified": [
+          ".env.example",
+          ".github/workflows/advisory-checks.yml",
+          "README.md",
+          "docs/changelog.json",
+          "package.json",
+          "sanity/app.sanity.test.ts",
+          "sanity/build.sanity.test.ts",
+          "sanity/repo.sanity.test.ts",
+          "tsconfig.node.json",
+          "vite.config.ts"
+        ],
+        "deleted": []
+      },
+      "numbers_that_moved": [
+        "Tests: 195 on staging to 244 with A1 alone",
+        "Sanity checks: 45 to 48 with A1 alone"
+      ],
+      "decisions": [
+        "Bolt speaks the OpenAI chat format, so the server uses fetch and no SDK, keeping to the rule against new libraries",
+        "The answer format lives in src/incident so the dashboard (A2) can reuse the same validator; the server-only code stays in server/, and a sanity check stops browser code importing it",
+        "The live model check is a separate pipeline job, so the ordinary tests and sanity checks never need a key and never fail because the model is down",
+        "The key is sent only over HTTPS, except to a server on the same machine, which the tests use",
+        "The predictive model (M1) is not used here. The AI never handles its numbers; A2's review step will look them up in code from the segment the AI names"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test pass (244 tests); npm run sanity passes (48 checks)",
+        "npm run server started the real server; on the venue network a request ended in a clean model_unreachable error in under 50 ms",
+        "npm run ai:tests -- --check reports that the model could not be asked and records nothing"
+      ],
+      "not_verified": [
+        "No request has reached the real model, so its readings of the five test reports, its handling of the prompt-injection report and its response time are all unknown",
+        "The Live AI check job has not run on GitHub: the branch is not pushed",
+        "Whether the pipeline's runners can reach the model's address"
+      ],
+      "known_gaps": [
+        "docs/ai-tests.md has expected results only",
+        "The endpoint has no sign-in; it listens on the local machine only",
+        "No rate limiting: a shared event key could be exhausted by repeated calls"
+      ],
+      "outside_the_repo": [
+        "GitHub: repository secret LLM_API_KEY and variables LLM_BASE_URL, LLM_MODEL and LLM_PROVIDER set at the owner's request",
+        "Local .env files written in the main checkout and in this working copy; both are ignored by git"
+      ]
+    },
+    {
+      "id": "2026-11-14-merge-staging-into-nicole-engine",
+      "date": "2026-11-14",
+      "title": "Merged staging into Nicole's engine branch, preserving both changelogs",
+      "summary": "Combined staging's G3-G5 corridor, map-overlay and truck-network work with Nicole's D9 and E1-E4 engine delivery. All seven existing dated entries from both branches are preserved unchanged, along with each branch's issue updates; summary counts and pending-review lists are combined.",
+      "issues": [
+        10,
+        11,
+        12,
+        13,
+        14,
+        21,
+        22,
+        23
+      ],
+      "branch": "nicole/d9-e1-e4-engine-integration",
+      "previous_branch_commit": "ed28999",
+      "source_staging_commit": "11b1774",
+      "conflicts_resolved": [
+        "docs/changelog.json: retained both complete histories and reconciled summary metadata.",
+        "src/components/responses/ResponsePanel.tsx: retained engine availability checks and the Caltrans truck-network row.",
+        "src/data/README.md: retained real corridor/layer documentation and the engine-only production data contract."
+      ],
+      "integration_changes": [
+        "Engine response stakeholder notes retain the optional corridor screening note supplied with each route; no real corridor facts are replaced with generic text.",
+        "Updated evaluation expectations and regenerated CSV/JSON exports for G3's real corridor flags: all ten shipment-route uses are flagged in each scenario, rather than the previous synthetic 0/0/2.",
+        "Preserved explicit unknown-community test cases and the per-shipment, not unique-route, counting test. Timing, cost, emissions and decision behavior are unchanged."
+      ],
+      "verification": [
+        "A semantic comparison against both Git parents confirms every original dated entry is unchanged and all 22 issue records retain the correct branch-specific updates.",
+        "Node 24/npm 11: all 331 unit tests in 22 files pass; typecheck and ESLint pass.",
+        "Production build and all 47 sanity checks in six files pass, including real Chromium map, community/truck-network, keyboard, responsive and contrast checks.",
+        "Independent standard-library JSON/CSV parsing confirms all nine rows, three scenarios, 27 expected numeric values and simulation metadata.",
+        "User preview and resolved response module return HTTP 200; the shared page's actual ArcGIS map is ready and no Vite error overlay is present."
+      ],
+      "limitations": [
+        "The shared VS Code validation tab was hidden, preventing additional manual pointer-flow checks there; the headless Chromium interaction checks passed.",
+        "Existing canvas warnings in jsdom and the large ArcGIS production-chunk warning remain.",
+        "This step merges staging into the local feature branch only; it does not push, merge the feature into staging/main, or close issues."
+      ]
+    },
+    {
+      "id": "2026-11-14-d9-e1-e4-delivery",
+      "date": "2026-11-14",
+      "title": "Implemented and validated D9 and E1-E4 on Nicole's branch",
+      "summary": "Five issue-specific agents delivered accessible dashboard states, a deterministic timing/metrics/response engine, live engine-backed UI assessments, visible decision deadlines and urgency sorting, and reproducible evaluation exports. Work is verified locally on Nicole's feature branch and ready for review; no merge is included in this delivery.",
+      "issues": [
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "branch": "nicole/d9-e1-e4-engine-integration",
+      "base_commit": "1522db7",
+      "alignment_with_issues": {
+        "D9 (#10)": "Sample-triggerable empty/loading/AI-unavailable states; keyboard core flow; serious/critical accessibility assertions; real desktop contrast and responsive checks.",
+        "E1 (#11)": "Ordered min/max segment timing, correct 58-60 minute reference closure wait, pickup delays, unaffected trucks/routes, explicit unknown and dispatcher-assumed reopening.",
+        "E2 (#12)": "Inclusive appointment rule, estimated risk/impact metrics and unchanged community context. Reference costs $130/$169/$167, CO2 70.7/70.7/94.2 kg and duty 74/132/88 minutes match.",
+        "E3 (#13)": "Explained options, safe pending behavior, 10:28/10:02 reference deadlines, totals and nine-row three-condition evaluation using the documented evaluation-only selection rule.",
+        "E4 (#14)": "No production fixture imports, fresh engine-backed UI calculations, visible deadlines and urgency rule, nine-row CSV/JSON export, and preserved Phase 1 plus D9 behavior."
+      },
+      "files": {
+        "added": [
+          "docs/evaluation.csv",
+          "docs/evaluation.json",
+          "sanity/accessibility.sanity.test.ts",
+          "scripts/evaluate.ts",
+          "src/App.accessibility.test.tsx",
+          "src/components/shell/IncidentInterpretationFeedback.css",
+          "src/components/shell/IncidentInterpretationFeedback.tsx",
+          "src/data/demoIncident.ts",
+          "src/engine/deltas.ts",
+          "src/engine/evaluation.test.ts",
+          "src/engine/evaluation.ts",
+          "src/engine/evaluationExport.test.ts",
+          "src/engine/metrics.test.ts",
+          "src/engine/metrics.ts",
+          "src/engine/responses.test.ts",
+          "src/engine/responses.ts",
+          "src/engine/time.test.ts",
+          "src/engine/time.ts",
+          "src/engine/timing.test.ts",
+          "src/engine/timing.ts",
+          "src/state/engineIntegration.test.ts",
+          "src/state/urgency.ts"
+        ],
+        "modified": [
+          "README.md",
+          "docs/changelog.json",
+          "package-lock.json",
+          "package.json",
+          "src/App.test.tsx",
+          "src/App.tsx",
+          "src/components/board/RiskBadge.css",
+          "src/components/board/ShipmentCard.tsx",
+          "src/components/board/TriageBoard.test.tsx",
+          "src/components/board/TriageBoard.tsx",
+          "src/components/board/board.css",
+          "src/components/responses/ResponsePanel.test.tsx",
+          "src/components/responses/ResponsePanel.tsx",
+          "src/components/responses/deltas.ts",
+          "src/components/shell/AppShell.test.tsx",
+          "src/components/shell/AppShell.tsx",
+          "src/data/README.md",
+          "src/data/data.test.ts",
+          "src/data/index.ts",
+          "src/index.css",
+          "src/state/options.ts",
+          "src/state/selectors.ts",
+          "src/state/totals.test.ts",
+          "src/state/totals.ts",
+          "src/viewModels.ts"
+        ],
+        "deleted": []
+      },
+      "verification": [
+        "Node 24.22.3/npm 11.21.2: npm run typecheck, npm run lint and npm run build pass.",
+        "npm test: 306 tests pass in 21 files.",
+        "npm run test:sanity: 30 checks pass in five files, including real Chromium keyboard, responsive and contrast checks.",
+        "npm run evaluate succeeds. Independently parsed JSON and CSV have all nine rows, three scenarios and 27 expected numeric values, with SIMULATED/estimated labels, units and selection metadata.",
+        "Live browser: 16 assertions pass for real map readiness, all six urgency positions, exact reference deadlines/metrics, preview isolation, Why focus/Escape, selected reroute totals 3/$1,202/570 kg, Undo, pending without savings, Reject all, S-03 no-feasible warning, Normal and exact Disrupted Reset.",
+        "Source search finds sample-responses.json imports only in test files.",
+        "Impeccable detector returns no findings and git diff --check passes."
+      ],
+      "outside_repo": [
+        "Assigned GitHub issues #10-#14 to nmtraboulsi; issues remain open pending review/merge.",
+        "Refreshed the user preview with Vite --force after a stale ArcGIS dependency optimizer cache; verified HTTP 200, no Vite overlay and the real map ready."
+      ],
+      "limitations_and_warnings": [
+        "The only added dependency is D9's explicitly authorized vitest-axe development dependency.",
+        "jsdom cannot measure canvas-based text contrast and prints its known canvas warnings. Contrast is checked separately in real Chromium.",
+        "The production build retains the existing large ArcGIS lazy-chunk warning.",
+        "Physical devices, screen readers, true browser zoom and every clipped mobile contrast case are not comprehensively audited.",
+        "Report incident remains disabled; A1-A3 AI interpretation/manual-entry functionality is outside these five issues.",
+        "Issues remain open for review; no pull request or merge is included in this delivery."
+      ]
+    },
+    {
+      "id": "2026-11-14-d9-e1-e4-start",
+      "date": "2026-11-14",
+      "title": "Started D9 and engine implementation on Nicole's branch",
+      "summary": "Fetched the current acceptance criteria for D9 and E1-E4 and assigned all five issues to nmtraboulsi. Separate D9 and E1 agents are implementing independent UI hardening and pure timing work concurrently. E2, E3 and E4 are queued in dependency order; E4 also waits for D9 to avoid shared UI and package-file conflicts.",
+      "issues": [
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "branch": "nicole/d9-e1-e4-engine-integration",
+      "verification": [
+        "Confirmed the branch starts at staging commit 1522db7 with no pre-existing tracked changes.",
+        "Read live GitHub issue bodies for #10-#14 and successfully assigned all five to nmtraboulsi.",
+        "Recorded independent fixture-based expected normal, disrupted and selected-response evaluation totals for later engine verification.",
+        "Implementation is in progress; no new issue is claimed complete, committed or pushed."
+      ],
+      "not_verified": [
+        "Combined D9/E1-E4 implementation and final automated/browser verification are still pending."
+      ]
+    },
+    {
+      "id": "2026-11-14-gis-sanity-checks",
+      "date": "2026-11-14",
+      "title": "Sanity checks for the corridor data, the map layers and the truck record",
+      "summary": "Seventeen new checks guard the G3 to G5 work against future changes: the generated data files must agree with each other and with the scripts that write them, the community counts must match everywhere they are shown, and the pipeline must keep running the whole suite.",
+      "issues": [
+        21,
+        22,
+        23
+      ],
+      "related_issues": [
+        19
+      ],
+      "branch": "gis/g3-g5-corridor",
+      "pull_request": 37,
+      "commits": [
+        {
+          "hash": "f9d9bd0",
+          "date": "2026-11-14T14:29:59-08:00",
+          "message": "Add sanity checks for the corridor data, map layers and truck record",
+          "files": {
+            "added": [
+              "sanity/data.sanity.test.ts"
+            ],
+            "modified": [
+              ".github/workflows/advisory-checks.yml",
+              "README.md",
+              "sanity/app.sanity.test.ts",
+              "sanity/repo.sanity.test.ts"
+            ],
+            "deleted": []
+          }
+        }
+      ],
+      "changes": {
+        "checks": [
+          "Data (12 checks, new file sanity/data.sanity.test.ts): the projection and the 150 m distance tests give known values; every script table covers every segment; each script is named in the data README; the corridor analysis matches the current segment lines; reapplying the stored analysis changes no file; each place is counted once per route; the map's layers hold exactly the counted places; Caltrans records point at segments that exist; simulated files stay SIMULATED; real layers keep their label, publisher, edition, address and date; no note says a route is legal, safe or suitable for trucks",
+          "Browser (3 new, 9 in all): community counts match between the comparison table and the map panel and follow a previewed reroute; the truck network row is shown as a record with no verdict; the real map draws one graphic per counted school and tract",
+          "Pipeline (2 new, 11 repository checks in all): the workflow runs lint, typecheck, tests, build and the sanity suite on pull requests into staging and main and has a browser and Python; every test file in sanity/ matches the pattern the suite runs"
+        ],
+        "pipeline": [
+          "The sanity job already runs every file matching sanity/**/*.sanity.test.ts, so the new checks run there with no new job",
+          "Added a step that prints the Python version before the build, so a runner without python3 fails with a clear message instead of inside a check"
+        ]
+      },
+      "decisions": [
+        "The data checks import the Python scripts and run their pure functions; they never call the downloads, so the pipeline needs no network access to Caltrans, NCES, OEHHA or the feature service",
+        "Expected counts in the browser checks are read from src/data, so rerunning the corridor analysis does not break them"
+      ],
+      "verification": [
+        "npm run sanity passes: 45 checks in 5 files; npm test passes (195 tests); typecheck and lint pass",
+        "Each of three deliberate breaks was caught and then undone: a count edited by hand in routes.json, a segment line moved, and a school removed from the map layers",
+        "Locally the real map started in headless Chromium and drew 9 schools and 31 tracts for R-A-ALT, matching the data"
+      ],
+      "not_verified": [
+        "The pipeline result for pull request #37 was not yet known when this was written",
+        "On a runner with no WebGL the drawn-places check reports that it was skipped instead of failing, as the existing map check does"
+      ],
+      "known_gaps": [
+        "scripts/import_map_data.py against the live feature service is still not checked: it needs the network, and it currently fails on the extended service",
+        "The downloads in the corridor and reference-data scripts are not exercised"
+      ]
+    },
+    {
+      "id": "2026-11-14-gis-g3-g5",
+      "date": "2026-11-14",
+      "title": "Corridor analysis, map overlays and the truck network record (G3, G4 and part of G5)",
+      "summary": "Each route now carries real counts of the schools and disadvantaged community tracts within 150 m, the map draws them with the corridor, and the response comparison shows what Caltrans records about trucks on each route's highways. The hazard polygon half of G5 is not built.",
+      "issues": [
+        21,
+        22,
+        23
+      ],
+      "related_issues": [
+        19,
+        16
+      ],
+      "branch": "gis/g3-g5-corridor",
+      "pull_request": 37,
+      "commits": [
+        {
+          "hash": "1ae86f6",
+          "message": "G3: Count real schools and disadvantaged tracts within 150 m of each route"
+        },
+        {
+          "hash": "d144b7f",
+          "message": "G4: Draw the 150 m corridor, schools and tracts on the map"
+        },
+        {
+          "hash": "a696460",
+          "message": "G5: Show the Caltrans truck network record on each response"
+        }
+      ],
+      "files": {
+        "added": [
+          "scripts/corridor_analysis.py",
+          "scripts/import_reference_data.py",
+          "src/data/corridor-layers.json",
+          "src/data/corridor.json",
+          "src/data/corridorLayers.ts",
+          "src/data/real/index.ts",
+          "src/data/real/lane-closures.json",
+          "src/data/real/real.test.ts",
+          "src/data/real/truck-network.json",
+          "src/state/features.ts"
+        ],
+        "modified": [
+          ".env.example",
+          "README.md",
+          "docs/changelog.json",
+          "scripts/import_map_data.py",
+          "src/App.test.tsx",
+          "src/components/assumptions/AssumptionsPanel.test.tsx",
+          "src/components/assumptions/AssumptionsPanel.tsx",
+          "src/components/responses/ResponsePanel.test.tsx",
+          "src/components/responses/ResponsePanel.tsx",
+          "src/components/responses/responses.css",
+          "src/data/README.md",
+          "src/data/data.test.ts",
+          "src/data/index.ts",
+          "src/data/routes.json",
+          "src/data/sample-responses.json",
+          "src/data/segments.json",
+          "src/map/ArcgisMap.tsx",
+          "src/map/MapPanel.css",
+          "src/map/MapPanel.test.tsx",
+          "src/map/MapPanel.tsx",
+          "src/state/selectors.test.ts",
+          "src/state/selectors.ts",
+          "src/viewModels.ts"
+        ],
+        "deleted": []
+      },
+      "numbers_that_moved": [
+        "Tests: 170 on staging to 195",
+        "Routes with community counts: 0 of 6 to 6 of 6",
+        "near_sensitive_zone is now true for every route and segment, because every one passes at least one disadvantaged tract"
+      ],
+      "decisions": [
+        "Built in its own working copy, .claude/worktrees/gis-g3-g5, on a branch from staging, because the shared checkout was being switched between branches by other sessions",
+        "The corridor analysis runs on the lines in src/data so it does not depend on the feature service, which the importer can no longer read",
+        "Community counts flow through one function shared by both scripts, so rerunning either gives the same files",
+        "The truck check reports a record and its gaps and never a verdict, to stay inside the plan's rule against truck-legality claims"
+      ],
+      "verification": [
+        "npm run build, typecheck, lint and test pass (195 tests)",
+        "npm run sanity passes (28 checks), before this change log entry was written and again after",
+        "Viewed in the browser at 1500 x 950 on a local dev server: counts, corridor, schools, hatched tracts and the truck network row, with no console errors"
+      ],
+      "not_verified": [
+        "Issues #21, #22 and #23 were assigned to arturoidelgado1998 and closed on GitHub at the owner's request, before pull request #37 merged; their on-hold labels were left as they were",
+        "scripts/import_map_data.py with the corridor step could not be run end to end, because the script already fails against the extended feature service before it reaches that step",
+        "The corridor band itself was not inspected closely; it is about a pixel wide until zoomed far in",
+        "Narrow and phone layouts were not checked with the new map panel section"
+      ],
+      "known_gaps": [
+        "Segment lines are schematic, so the 150 m counts describe a drawn line, not the road",
+        "No slide screenshots in docs/screenshots",
+        "G5 hazard polygon not built",
+        "The same reference-data files also exist, uncommitted, in the main checkout on phase-1-dashboard from earlier work; this branch now holds them too"
+      ],
+      "outside_the_repo": [
+        "GitHub: issues #21, #22 and #23 assigned to arturoidelgado1998 and closed; pull request #37 opened into staging with Auto-fix on",
+        "The feature service was read, not edited"
+      ]
+    },
     {
       "id": "2026-11-14-merge-nicole-d6-d8",
       "date": "2026-11-14",

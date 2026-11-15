@@ -9,6 +9,7 @@ import shipmentsJson from './shipments.json'
 import {
   REFERENCE_SHIPMENT_ID,
   assumptions,
+  corridor,
   facilities,
   getBaseline,
   getFacility,
@@ -36,8 +37,15 @@ describe('sample data files', () => {
     for (const file of [facilitiesJson, segmentsJson, routesJson, shipmentsJson, assumptionsJson, sampleResponsesJson]) {
       expect(file.label).toBe('SIMULATED')
     }
+    // Cost and CO2 inputs come from published sources; pickup handling is still a team assumption.
     expect(assumptionsJson.placeholder).toBe(true)
-    expect(Object.values(assumptionsJson.placeholders).every((v) => v === true)).toBe(true)
+    expect(assumptionsJson.placeholders).toEqual({
+      pickup_handling_min: true,
+      mpg: false,
+      nonlabor_cost_per_mile: false,
+      labor_rate_per_hr: false,
+      diesel_kgCO2_per_gal: false,
+    })
   })
 
   it('facilities satisfy Facility', () => {
@@ -98,17 +106,25 @@ describe('sample data files', () => {
 
   it('assumptions satisfy Assumptions with sources for every value', () => {
     expect(assumptions).toMatchObject({
-      mpg: 6.5,
-      nonlabor_cost_per_mile: 1.8,
-      labor_rate_per_hr: 40,
+      mpg: 6.8,
+      nonlabor_cost_per_mile: 1.31,
+      labor_rate_per_hr: 36.08,
       diesel_kgCO2_per_gal: 10.21,
     })
     expect(typeof assumptions.pickup_handling_min).toBe('number')
     for (const k of ['pickup_handling_min', 'mpg', 'nonlabor_cost_per_mile', 'labor_rate_per_hr', 'diesel_kgCO2_per_gal']) {
       expect(assumptions.sources[k]).toMatch(/\S/)
-      expect(assumptionsJson.placeholders[k as keyof typeof assumptionsJson.placeholders]).toBe(true)
     }
+    // Every sourced input names who published it and when; none is still called a placeholder.
     expect(assumptions.sources.diesel_kgCO2_per_gal).toContain('EPA GHG Emission Factors Hub, 2025')
+    expect(assumptions.sources.mpg).toContain('Feasibility Assessment for Drayage Trucks')
+    expect(assumptions.sources.nonlabor_cost_per_mile).toContain('Operational Costs of Trucking')
+    expect(assumptions.sources.labor_rate_per_hr).toContain('Bureau of Labor Statistics')
+    for (const k of ['mpg', 'nonlabor_cost_per_mile', 'labor_rate_per_hr', 'diesel_kgCO2_per_gal']) {
+      expect(assumptions.sources[k]).not.toMatch(/placeholder/i)
+      expect(assumptions.sources[k]).toMatch(/20\d\d/)
+    }
+    expect(assumptions.sources.pickup_handling_min).toMatch(/^Team assumption/)
   })
 
   it('sample incident is the NB-03 closure', () => {
@@ -127,7 +143,8 @@ describe('counts and route totals', () => {
     expect(facilities.filter((f) => f.type === 'port')).toHaveLength(1)
     const warehouses = facilities.filter((f) => f.type === 'warehouse')
     expect(warehouses).toHaveLength(3)
-    for (const w of warehouses) expect(w.name).toMatch(/\(fictional\)/)
+    // The files keep the "(fictional)" label; the app shows plain names.
+    for (const w of warehouses) expect(w.name).not.toMatch(/fictional/i)
     expect(shipments).toHaveLength(10)
     expect(new Set(shipments.map((s) => s.id)).size).toBe(10)
   })
@@ -162,18 +179,62 @@ describe('counts and route totals', () => {
     }
   })
 
-  it('keeps sensitive-zone fields as placeholders', () => {
+  it('carries the corridor analysis: real places counted beside every route', () => {
     for (const r of routes) {
-      expect(r.schools_150m).toBeNull()
-      expect(r.dac_tracts).toBeNull()
-      expect(r.max_diesel_pm_pctl).toBeNull()
+      const counted = corridor.routes[r.id]
+      expect(counted).toBeDefined()
+      expect(r.schools_150m).toBe(counted.schools.length)
+      expect(r.dac_tracts).toEqual(counted.dac_tracts)
+      expect(r.max_diesel_pm_pctl).toBe(counted.max_diesel_pm_pctl)
+      expect(r.near_sensitive_zone).toBe(counted.schools.length > 0 || counted.dac_tracts.length > 0)
+      // A route counts each place once, however many of its segments pass it.
+      const schools = new Set(r.segment_ids.flatMap((id) => corridor.segments[id].schools))
+      const tracts = new Set(r.segment_ids.flatMap((id) => corridor.segments[id].dac_tracts))
+      expect(counted.schools).toEqual([...schools].sort())
+      expect(counted.dac_tracts).toEqual([...tracts].sort())
+      if (r.near_sensitive_zone) {
+        expect(r.sensitive_zone_note).toMatch(/within 150 m$/)
+      }
+      // The hand-drawn zones from the feature service are no longer used.
+      expect(r.sensitive_zone_note).not.toMatch(/SYNTHETIC/)
     }
-    const flagged = routes.filter((r) => r.near_sensitive_zone)
-    expect(flagged.length).toBeGreaterThanOrEqual(1)
-    for (const r of flagged) {
-      expect(r.kind).toBe('alternative')
-      // Hand-drawn zones from the feature service, until the corridor analysis (G3).
-      expect(r.sensitive_zone_note).toMatch(/SYNTHETIC/)
+    for (const s of segments) {
+      expect(s.near_sensitive_zone).toBe(corridor.segments[s.id].near_sensitive_zone)
+    }
+  })
+
+  it('names the source, publisher, edition and download date of each real layer', () => {
+    expect(corridor.buffer_m).toBe(150)
+    expect(corridor.meaning).toMatch(/not measured exposure/)
+    expect(corridor.basis).toMatch(/Kozawa, Fruin and Winer \(2009\)/)
+    expect(corridor.sources.map((s) => s.id)).toEqual(['schools', 'dac_tracts'])
+    for (const source of corridor.sources) {
+      expect(source.publisher).toMatch(/\S/)
+      expect(source.edition).toMatch(/\d{4}/)
+      expect(source.url).toMatch(/^https:\/\//)
+      expect(source.retrieved).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    }
+  })
+
+  it('shows the trade-off the dispatcher weighs: a reroute that passes more schools', () => {
+    const original = corridor.routes['R-B-ORIG']
+    const alternative = corridor.routes['R-B-ALT']
+    expect(alternative.schools_150m).toBeGreaterThan(original.schools_150m)
+    expect(alternative.dac_tracts.length).toBeGreaterThan(original.dac_tracts.length)
+  })
+
+  it('mirrors each route in its response options', () => {
+    for (const s of shipments) {
+      const original = getRoute(s.assigned_route_id)!
+      const alternative = getRoutesForDestination(s.destination_id).find((r) => r.kind === 'alternative')!
+      for (const option of getResponseOptions(s.id, 'disrupted')) {
+        if (option.kind === 'wait') expect(option.passes_sensitive_zone).toBe(original.near_sensitive_zone)
+        if (option.kind === 'reroute' && option.miles !== null) {
+          expect(option.passes_sensitive_zone).toBe(alternative.near_sensitive_zone)
+          expect(option.stakeholder_notes).toContain(alternative.sensitive_zone_note)
+          expect(option.stakeholder_notes.join(' ')).not.toMatch(/SYNTHETIC/)
+        }
+      }
     }
   })
 })
@@ -198,30 +259,31 @@ describe('reference shipment S-01', () => {
     expect(departure).toBe(10 * 60)
   })
 
-  // Cost and driver duty use the max-arrival case. The min case reproduces the
-  // team plan's table ($121 normal, $161 wait, $158 reroute).
-  it('normal: 11:00 to 11:14, meets window, 45 mi, $130, 70.7 kg', () => {
+  // Cost and driver duty use the max-arrival case, with the sourced inputs in
+  // assumptions.json. The team plan's table ($121, $161, $158) and the feature
+  // service's rows ($130, $169, $167) used the earlier placeholder rates.
+  it('normal: 11:00 to 11:14, meets window, 45 mi, $103, 67.6 kg', () => {
     expect(getShipmentSummary(s.id, 'normal')).toEqual({
       risk: 'ON_TRACK', arrival_min: '11:00', arrival_max: '11:14', lateness_min: 0, lateness_max: 0,
       reason: expect.any(String), affected: false,
     })
-    expect(getBaseline(s.id)).toEqual({ miles: 45, cost: 130, co2_kg: 70.7, driver_duty_min: 74 })
+    expect(getBaseline(s.id)).toEqual({ miles: 45, cost: 103, co2_kg: 67.6, driver_duty_min: 74 })
   })
 
-  it('disrupted options match the feature service', () => {
+  it('disrupted options: timing as in the feature service, cost and CO2 from the sourced inputs', () => {
     const [wait, reroute, slot] = getResponseOptions(s.id, 'disrupted')
     expect(wait).toMatchObject({
       kind: 'wait', arrival_min: '12:00', arrival_max: '12:12', lateness_min: 30, lateness_max: 42,
-      risk: 'LATE', miles: 45, cost: 169, co2_kg: 70.7, driver_duty_min: 132,
+      risk: 'LATE', miles: 45, cost: 138, co2_kg: 67.6, driver_duty_min: 132,
     })
     expect(reroute).toMatchObject({
       kind: 'reroute', arrival_min: '11:15', arrival_max: '11:28', lateness_min: 0, lateness_max: 0,
-      risk: 'ON_TRACK', miles: 60, cost: 167, co2_kg: 94.2, driver_duty_min: 88, passes_sensitive_zone: true,
+      risk: 'ON_TRACK', miles: 60, cost: 132, co2_kg: 90.1, driver_duty_min: 88, passes_sensitive_zone: true,
     })
     expect(slot).toMatchObject({
       kind: 'request_slot', arrival_min: null, arrival_max: null, lateness_min: null, lateness_max: null,
       miles: null, cost: null, co2_kg: null, driver_duty_min: null, requires_confirmation: true,
-      status: 'Pending confirmation; original deadline still applies', risk: 'LATE',
+      status: 'pending_confirmation', risk: 'LATE',
     })
     expect(getShipmentSummary(s.id, 'disrupted')).toMatchObject({ risk: 'LATE', arrival_max: '12:12', affected: true })
   })
@@ -274,7 +336,7 @@ describe('summaries and options', () => {
         if (o.kind === 'request_slot') {
           expect(o.risk).toBe(summary.risk)
           expect(o.requires_confirmation).toBe(true)
-          expect(o.status).toBe('Pending confirmation; original deadline still applies')
+          expect(o.status).toBe('pending_confirmation')
           expect([o.miles, o.cost, o.co2_kg, o.arrival_min, o.driver_duty_min]).toEqual([null, null, null, null, null])
         }
         if (o.kind === 'reroute') {

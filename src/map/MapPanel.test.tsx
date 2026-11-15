@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import { corridor } from '../data/index.ts'
 import type { Facility, Route, RoadSegment } from '../types.ts'
 import { MapPanel, type MapPanelProps } from './MapPanel.tsx'
 
@@ -9,6 +10,7 @@ vi.mock('./ArcgisMap.tsx', () => ({
     highlightedRouteIds: object
     incidentSegmentId: string | null
     candidateSegmentId: string | null
+    corridorRouteId?: string | null
     onError?: () => void
   }) => (
     <div
@@ -16,6 +18,7 @@ vi.mock('./ArcgisMap.tsx', () => ({
       data-routes={JSON.stringify(props.highlightedRouteIds)}
       data-incident={props.incidentSegmentId ?? ''}
       data-candidate={props.candidateSegmentId ?? ''}
+      data-corridor={props.corridorRouteId ?? ''}
     >
       <button type="button" onClick={props.onError}>
         Simulate map failure
@@ -85,9 +88,9 @@ function routeList(name: RegExp) {
 }
 
 describe('MapPanel', () => {
-  it('shows the illustrative note, the legend and the empty state when nothing is highlighted', () => {
+  it('shows the route note, the legend and the empty state when nothing is highlighted', () => {
     renderPanel()
-    expect(screen.getByText('Illustrative')).toBeInTheDocument()
+    expect(screen.queryByText('Illustrative')).toBeNull()
     expect(screen.getByText(/not verified for trucks/)).toBeInTheDocument()
     expect(screen.getByText('Select a shipment to see its routes')).toBeInTheDocument()
     expect(screen.getByRole('list', { name: 'Map legend' })).toBeInTheDocument()
@@ -169,7 +172,7 @@ describe('MapPanel', () => {
     expect(routeList(heading)).toBeInTheDocument()
     expect(screen.queryByRole('list', { name: /Chosen route/ })).toBeNull()
     expect(screen.getByText('Est. 6.1 mi')).toBeInTheDocument()
-    expect(screen.getByText(/Distances are simulated estimates/)).toBeInTheDocument()
+    expect(screen.getByText(/Distances are estimates/)).toBeInTheDocument()
   })
 
   it('marks the closed segment with text', () => {
@@ -214,5 +217,78 @@ describe('MapPanel', () => {
     renderPanel({ selectedShipmentId: 'S1', highlightedRouteIds: { original: 'R1' } })
     expect(screen.getByText(/Harbor Blvd/)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Harbor Blvd/ })).not.toBeInTheDocument()
+  })
+
+  describe('community near the route (corridor analysis)', () => {
+    const counted: Route[] = [
+      { ...route('R1', 'original', ['A', 'B']), schools_150m: 1, dac_tracts: ['6037000001', '6037000002'] },
+      { ...route('R2', 'alternative', ['A', 'C']), schools_150m: 4, dac_tracts: ['6037000003'] },
+    ]
+
+    it('shows nothing until a route with counts is highlighted', () => {
+      renderPanel({ routes: counted })
+      expect(screen.queryByRole('region', { name: 'Community near the route' })).not.toBeInTheDocument()
+      expect(screen.getByRole('list', { name: 'Map legend' })).not.toHaveTextContent('School')
+    })
+
+    it('shows nothing for routes the analysis has not counted', () => {
+      renderPanel({ selectedShipmentId: 'S1', highlightedRouteIds: { original: 'R1', alternative: 'R2' } })
+      expect(screen.queryByRole('region', { name: 'Community near the route' })).not.toBeInTheDocument()
+    })
+
+    it('shows the original route by default, with the same counts the route carries', async () => {
+      renderPanel({
+        routes: counted,
+        selectedShipmentId: 'S1',
+        highlightedRouteIds: { original: 'R1', alternative: 'R2' },
+      })
+      const community = screen.getByRole('region', { name: 'Community near the route' })
+      expect(community).toHaveTextContent('Within 150 m of R1: 1 school and 2 disadvantaged tracts.')
+      expect(community).toHaveTextContent('proximity, not measured exposure')
+      expect((await screen.findByTestId('arcgis-map')).dataset.corridor).toBe('R1')
+    })
+
+    it('follows a previewed or chosen route', async () => {
+      renderPanel({
+        routes: counted,
+        selectedShipmentId: 'S1',
+        highlightedRouteIds: { original: 'R1', alternative: 'R2', chosen: 'R2' },
+      })
+      expect(screen.getByRole('region', { name: 'Community near the route' })).toHaveTextContent(
+        'Within 150 m of R2: 4 schools and 1 disadvantaged tract.',
+      )
+      expect((await screen.findByTestId('arcgis-map')).dataset.corridor).toBe('R2')
+    })
+
+    it('names the publisher, edition and download date of every real layer, and adds legend entries', () => {
+      renderPanel({
+        routes: counted,
+        selectedShipmentId: 'S1',
+        highlightedRouteIds: { original: 'R1', alternative: 'R2' },
+      })
+      const sources = within(screen.getByRole('list', { name: 'Sources of the real layers' })).getAllByRole('listitem')
+      expect(sources).toHaveLength(corridor.sources.length)
+      corridor.sources.forEach((source, i) => {
+        expect(sources[i]).toHaveTextContent(source.name)
+        expect(sources[i]).toHaveTextContent(source.publisher)
+        expect(sources[i]).toHaveTextContent(source.edition)
+        expect(sources[i]).toHaveTextContent(`downloaded ${source.retrieved}`)
+      })
+      const legend = screen.getByRole('list', { name: 'Map legend' })
+      for (const entry of ['150 m corridor', 'School', 'Disadvantaged tract']) {
+        expect(legend).toHaveTextContent(entry)
+      }
+    })
+
+    it('keeps the counts and sources when the map cannot load', async () => {
+      renderPanel({
+        routes: counted,
+        selectedShipmentId: 'S1',
+        highlightedRouteIds: { original: 'R1', alternative: 'R2' },
+      })
+      fireEvent.click(await screen.findByRole('button', { name: 'Simulate map failure' }))
+      expect(screen.getByRole('region', { name: 'Community near the route' })).toHaveTextContent('Within 150 m of R1')
+      expect(screen.getByRole('list', { name: 'Sources of the real layers' })).toBeInTheDocument()
+    })
   })
 })

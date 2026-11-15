@@ -8,7 +8,9 @@ files the app loads, and pre-calculates the sample responses with the
 team plan's rules (the same rules the engine will implement in E1 to E3).
 
 It then checks its results against the service's own rows for all three
-scenarios and exits non-zero if anything disagrees.
+scenarios (arrival, lateness, risk and miles) and exits non-zero if anything
+disagrees. The service's cost and CO2 columns were calculated with earlier
+placeholder rates and are not compared.
 
 Usage (Python 3.9+, standard library only):
 
@@ -16,8 +18,16 @@ Usage (Python 3.9+, standard library only):
     python3 scripts/import_map_data.py --check   # fetch and verify only
 
 All values are SIMULATED. Routes are illustrative and not verified for trucks.
+
+The one exception is the community counts. When src/data/corridor.json exists
+(written by scripts/corridor_analysis.py), each route's schools and
+disadvantaged tracts within 150 m come from it: REAL locations beside an
+ILLUSTRATIVE route, replacing the service's two hand-drawn SYNTHETIC zones.
+If the segment lines have changed since that analysis ran, its counts are left
+out and this script says so; rerun the corridor analysis to bring them back.
 """
 
+import hashlib
 import json
 import pathlib
 import re
@@ -47,7 +57,8 @@ ROUTES = [
 ORIGIN = "PORT-LB"
 REFERENCE_SHIPMENT = "S-01"
 
-# Placeholder assumptions (team to confirm). Kept in assumptions.json.
+# Pickup handling is still a team placeholder. The cost and CO2 inputs are
+# published figures kept, with their sources, in assumptions.json.
 PICKUP_HANDLING_MIN = 30
 TRUCK_LEAD_MIN = 15  # truck is available this long before the cargo is ready
 
@@ -93,6 +104,88 @@ def lateness_words(late_min, late_max):
     if late_min > 0:
         return f"{span(late_min, late_max, 'min')} late"
     return f"May be up to {late_max} min late"
+
+
+# ------------------------------------------------------ community counts
+
+
+def fingerprint(segments):
+    """Changes whenever a segment line changes, so a stale corridor analysis is caught."""
+    lines = {s["id"]: s["geometry"]["coordinates"] for s in segments}
+    return hashlib.sha256(json.dumps(lines, sort_keys=True).encode()).hexdigest()[:16]
+
+
+def community_note(schools, tracts, buffer_m=150):
+    """The sentence the dashboard shows for real community counts."""
+
+    def plural(n, one, many):
+        return f"{n} {one if n == 1 else many}"
+
+    return (
+        f"{plural(schools, 'school', 'schools')} and "
+        f"{plural(tracts, 'disadvantaged tract', 'disadvantaged tracts')} within {buffer_m} m "
+        "(real locations, illustrative route)"
+    )
+
+
+def apply_corridor(files, corridor):
+    """Copy the corridor analysis into segments, routes and the sample responses.
+
+    Works on the same dictionaries whether they were just built from the feature
+    service or read back from src/data, so both scripts give the same files.
+    """
+    segments = files["segments.json"]["items"]
+    routes = {r["id"]: r for r in files["routes.json"]["items"]}
+    buffer_m = corridor["buffer_m"]
+
+    for segment in segments:
+        near = corridor["segments"][segment["id"]]
+        segment["near_sensitive_zone"] = near["near_sensitive_zone"]
+        segment["sensitive_zone_note"] = (
+            community_note(len(near["schools"]), len(near["dac_tracts"]), buffer_m)
+            if near["near_sensitive_zone"]
+            else ""
+        )
+
+    old_notes = {route_id: route["sensitive_zone_note"] for route_id, route in routes.items()}
+    for route_id, route in routes.items():
+        counted = corridor["routes"][route_id]
+        route["near_sensitive_zone"] = counted["near_sensitive_zone"]
+        route["sensitive_zone_note"] = counted["note"] if counted["near_sensitive_zone"] else ""
+        route["schools_150m"] = counted["schools_150m"]
+        route["dac_tracts"] = counted["dac_tracts"]
+        route["max_diesel_pm_pctl"] = counted["max_diesel_pm_pctl"]
+
+    disrupted = files["sample-responses.json"]["scenarios"]["disrupted"]
+    for shipment in files["shipments.json"]["items"]:
+        original = routes[shipment["assigned_route_id"]]
+        alternative = next(
+            r for r in routes.values() if r["destination"] == shipment["destination_id"] and r["kind"] == "alternative"
+        )
+        for option in disrupted[shipment["id"]]["options"]:
+            if option["kind"] == "wait":
+                option["passes_sensitive_zone"] = original["near_sensitive_zone"]
+            elif option["kind"] == "reroute" and option["miles"] is not None:
+                option["passes_sensitive_zone"] = alternative["near_sensitive_zone"]
+                notes = [n for n in option["stakeholder_notes"] if n not in (old_notes[alternative["id"]], alternative["sensitive_zone_note"])]
+                if alternative["sensitive_zone_note"]:
+                    notes.append(alternative["sensitive_zone_note"])
+                option["stakeholder_notes"] = notes
+
+
+def load_corridor(files):
+    """The stored corridor analysis, or None when it is missing or out of date."""
+    path = OUT / "corridor.json"
+    if not path.exists():
+        return None
+    corridor = json.loads(path.read_text())
+    if corridor["geometry_fingerprint"] != fingerprint(files["segments.json"]["items"]):
+        print(
+            "WARNING: the segment lines have changed since the corridor analysis ran, so its community counts "
+            "were left out. Run: python3 scripts/corridor_analysis.py"
+        )
+        return None
+    return corridor
 
 
 # ------------------------------------------------------------- the rules
@@ -421,6 +514,9 @@ def build():
             "scenarios": {"normal": normal, "disrupted": disrupted},
         },
     }
+    corridor = load_corridor(files)
+    if corridor:
+        apply_corridor(files, corridor)
     return files, rows, routes, computed
 
 
@@ -452,8 +548,10 @@ def verify(rows, routes, computed):
         check(tag, "lateness (max)", result["late_max"], int(r["lateness_max_min"]))
         check(tag, "risk", risk_text[result["risk"]], r["risk"])
         check(tag, "miles", result["miles"], r["miles"])
-        check(tag, "CO2 kg", round(result["co2_exact"], 2), round(r["co2_kg"], 2))
-        check(tag, "cost (max)", round(result["cost_exact"], 2), round(r["cost_max_usd"], 2))
+        # The service's co2_kg and cost_max_usd columns were calculated with the
+        # earlier placeholder rates ($1.80 per mile, $40 per hour, 6.5 mpg). The
+        # app now uses the sourced inputs in assumptions.json, so those two
+        # columns are no longer compared. Timing, risk and miles still are.
         check(tag, "route miles", routes[r["route_id"]]["total_miles"], r["miles"])
     return problems
 

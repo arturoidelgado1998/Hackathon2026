@@ -1,0 +1,360 @@
+/* Driver notice (issue #34): the notice text, the dispatcher's Send panel
+   and the phone-sized driver page. Uses the tokens from src/index.css.
+   State is always carried by words and an icon, never by colour alone. */
+
+/* --- The notice text, shared by the preview and the driver page --- */
+
+.driver-notice {
+  display: grid;
+  gap: var(--pp-space-3);
+  margin: 0;
+}
+
+.driver-notice__item dt {
+  font-size: var(--pp-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pp-text-muted);
+}
+
+.driver-notice__item dd {
+  margin: var(--pp-space-1) 0 0;
+  overflow-wrap: anywhere;
+}
+
+.driver-notice__item--instruction {
+  padding: var(--pp-space-3);
+  border-left: 3px solid var(--pp-accent);
+  border-radius: var(--pp-radius-sm);
+  background: var(--pp-accent-soft);
+}
+
+.driver-notice__instruction {
+  font-size: var(--pp-text-lg);
+  font-weight: 600;
+}
+
+.driver-notice__steps {
+  margin: var(--pp-space-2) 0 0;
+  padding-left: 1.25rem;
+}
+
+.driver-notice__steps li + li {
+  margin-top: var(--pp-space-1);
+}
+
+.driver-notice__caution {
+  display: flex;
+  gap: var(--pp-space-2);
+  align-items: flex-start;
+  margin-top: var(--pp-space-2);
+  color: var(--pp-warning);
+  font-weight: 500;
+}
+
+.driver-notice__caution .pp-icon {
+  flex: none;
+  margin-top: 0.15em;
+}
+
+.driver-notice__muted {
+  color: var(--pp-text-muted);
+}
+
+/* --- Dispatcher's Send panel, above the response comparison --- */
+
+.driver-panel {
+  margin-bottom: var(--pp-space-4);
+  padding: var(--pp-space-3);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  background: var(--pp-surface-muted);
+}
+
+.driver-panel__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pp-space-3);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.driver-panel__title {
+  font-size: var(--pp-text-md);
+  font-weight: 600;
+}
+
+.driver-panel__status {
+  display: flex;
+  gap: var(--pp-space-1);
+  align-items: center;
+  font-size: var(--pp-text-sm);
+  color: var(--pp-text-muted);
+}
+
+.driver-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pp-space-3);
+  align-items: center;
+}
+
+.driver-panel__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--pp-control-height);
+  color: var(--pp-accent);
+  font-size: var(--pp-text-sm);
+  text-underline-offset: 0.2em;
+}
+
+.driver-panel__preview {
+  margin-top: var(--pp-space-2);
+  font-size: var(--pp-text-sm);
+}
+
+.driver-panel__preview summary {
+  padding: var(--pp-space-2) 0;
+  cursor: pointer;
+}
+
+.driver-panel__preview .driver-notice {
+  margin-top: var(--pp-space-2);
+  padding: var(--pp-space-3);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  background: var(--pp-surface);
+}
+
+.driver-panel__note {
+  margin-top: var(--pp-space-2);
+  font-size: var(--pp-text-xs);
+  color: var(--pp-text-muted);
+}
+
+/* --- Driver page: one column, sized for a phone --- */
+
+.driver-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pp-space-3);
+  max-width: 30rem;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: var(--pp-space-4);
+  font-size: var(--pp-text-lg);
+}
+
+.driver-page__product {
+  font-size: var(--pp-text-lg);
+  font-weight: 700;
+}
+
+.driver-page__title {
+  font-size: 1.375rem;
+  line-height: 1.2;
+}
+
+.driver-page__simulated {
+  padding: var(--pp-space-2) var(--pp-space-3);
+  border: 1px dashed var(--pp-border-strong);
+  border-radius: var(--pp-radius);
+  background: var(--pp-surface);
+  font-size: var(--pp-text-sm);
+  font-weight: 600;
+}
+
+.driver-page__main {
+  flex: 1;
+}
+
+.driver-page__status {
+  display: flex;
+  gap: var(--pp-space-2);
+  align-items: flex-start;
+  margin-bottom: var(--pp-space-3);
+  padding: var(--pp-space-3);
+  border-radius: var(--pp-radius);
+  font-size: var(--pp-text-md);
+}
+
+.driver-page__status .pp-icon {
+  flex: none;
+  margin-top: 0.1em;
+}
+
+.driver-page__status--active {
+  background: var(--pp-ok-soft);
+  color: var(--pp-ok);
+}
+
+.driver-page__status--revision {
+  background: var(--pp-warning-soft);
+  color: var(--pp-warning);
+}
+
+.driver-page__card {
+  padding: var(--pp-space-4);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  background: var(--pp-surface);
+}
+
+.driver-page__card--revision {
+  border-style: dashed;
+  border-color: var(--pp-border-strong);
+  background: var(--pp-surface-muted);
+  color: var(--pp-text-muted);
+}
+
+.driver-page__card--revision .driver-notice__item--instruction {
+  border-left-color: var(--pp-border-strong);
+  background: transparent;
+}
+
+.driver-page__card--revision .driver-notice__instruction {
+  text-decoration: line-through;
+}
+
+.driver-page__card--revision .driver-notice__caution {
+  color: inherit;
+}
+
+.driver-page__earlier {
+  margin-bottom: var(--pp-space-3);
+  font-size: var(--pp-text-sm);
+  font-weight: 600;
+}
+
+.driver-page__empty {
+  padding: var(--pp-space-4);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  background: var(--pp-surface);
+}
+
+.driver-page__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pp-space-2);
+  margin: var(--pp-space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.driver-page__links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4rem;
+  min-height: var(--pp-control-height);
+  padding: 0 var(--pp-space-3);
+  border: 1px solid var(--pp-border-strong);
+  border-radius: var(--pp-radius);
+  background: var(--pp-surface);
+  color: var(--pp-accent);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.driver-page__footer {
+  padding-top: var(--pp-space-3);
+  border-top: 1px solid var(--pp-border);
+  font-size: var(--pp-text-sm);
+  color: var(--pp-text-muted);
+}
+
+/* --- Phone delivery (issue #35) --- */
+
+.driver-panel__note .pp-icon {
+  vertical-align: -0.15em;
+}
+
+.driver-panel__url {
+  overflow-wrap: anywhere;
+  font-size: var(--pp-text-sm);
+  color: var(--pp-text);
+  user-select: all;
+}
+
+.driver-page__connection {
+  display: flex;
+  gap: var(--pp-space-2);
+  align-items: flex-start;
+  font-size: var(--pp-text-sm);
+  color: var(--pp-text-muted);
+}
+
+.driver-page__connection .pp-icon {
+  flex: none;
+  margin-top: 0.1em;
+}
+
+.driver-page__connection--lost {
+  padding: var(--pp-space-3);
+  border-radius: var(--pp-radius);
+  background: var(--pp-danger-soft);
+  color: var(--pp-danger);
+  font-size: var(--pp-text-md);
+}
+
+/* --- Driver reply (issue #36) --- */
+
+.driver-panel__reply {
+  display: flex;
+  gap: var(--pp-space-2);
+  align-items: flex-start;
+  margin-top: var(--pp-space-2);
+  padding: var(--pp-space-2) var(--pp-space-3);
+  border-radius: var(--pp-radius-sm);
+  background: var(--pp-ok-soft);
+  color: var(--pp-ok);
+  font-size: var(--pp-text-sm);
+}
+
+.driver-panel__reply .pp-icon {
+  flex: none;
+  margin-top: 0.2em;
+}
+
+.driver-panel__reply--concern {
+  background: var(--pp-warning-soft);
+  color: var(--pp-warning);
+}
+
+.driver-page__reply {
+  margin-top: var(--pp-space-3);
+  padding: var(--pp-space-4);
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  background: var(--pp-surface);
+}
+
+.driver-page__reply-title {
+  font-size: var(--pp-text-md);
+  font-weight: 600;
+}
+
+.driver-page__reply-buttons {
+  display: grid;
+  gap: var(--pp-space-2);
+  margin-top: var(--pp-space-3);
+}
+
+.driver-page__reply-buttons .pp-button {
+  justify-content: center;
+  min-height: 3rem;
+  font-size: var(--pp-text-lg);
+}
+
+.driver-page__reply-status {
+  margin-top: var(--pp-space-3);
+  font-size: var(--pp-text-md);
+}
+
+.driver-page__reply-note {
+  margin-top: var(--pp-space-1);
+  font-size: var(--pp-text-sm);
+  color: var(--pp-text-muted);
+}

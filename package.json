@@ -1,5 +1,5 @@
 {
-  "name": "portplan",
+  "name": "routeripple",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,11 +8,15 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b --noEmit",
     "lint": "eslint .",
+    "evaluate": "node scripts/evaluate.ts",
     "test": "vitest run",
     "test:sanity": "vitest run --config vitest.sanity.config.ts",
-    "sanity": "npm run build && npm run test:sanity"
+    "sanity": "npm run build && npm run test:sanity",
+    "server": "node --env-file-if-exists=.env server/index.ts",
+    "ai:tests": "node --env-file-if-exists=.env server/ai-tests.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "1.8.0",
     "@arcgis/core": "5.1.27",
     "@arcgis/map-components": "5.1.27",
     "@esri/calcite-components": "5.1.2",
@@ -37,6 +41,7 @@
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.72.2",
     "vite": "^8.3.8",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.0",
+    "vitest-axe": "^0.1.0"
   }
 }
