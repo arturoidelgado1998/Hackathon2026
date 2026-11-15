@@ -34,7 +34,12 @@ describe('SimulationPage', () => {
   it('opens on the sample closure, paused, with every shipment listed', async () => {
     const map = await open()
     expect(screen.getByRole('heading', { name: 'NB-03 closed 10:00 to 11:10' })).toBeInTheDocument()
+    // The road is drawn closed only between its closing and reopening times.
+    expect(map).toHaveAttribute('data-incident', '')
+    fireEvent.change(slider(), { target: { value: '630' } })
     expect(map).toHaveAttribute('data-incident', 'NB-03')
+    fireEvent.change(slider(), { target: { value: '680' } })
+    expect(map).toHaveAttribute('data-incident', '')
     expect(map).toHaveAttribute('data-trucks', '10')
     expect(screen.getAllByRole('row')).toHaveLength(11)
     expect(within(rowFor('S-01')).getByText('30 to 42 min late')).toBeInTheDocument()
@@ -57,6 +62,7 @@ describe('SimulationPage', () => {
     expect(within(rowFor('S-01')).getByText('Rerouted')).toBeInTheDocument()
     expect(within(rowFor('S-01')).getByText('11:15 to 11:28')).toBeInTheDocument()
     fireEvent.change(screen.getByLabelText('Closed segment'), { target: { value: 'WEST-405' } })
+    fireEvent.change(slider(), { target: { value: '630' } })
     expect(map).toHaveAttribute('data-incident', 'WEST-405')
     expect(link()).toContain('segment=WEST-405')
     expect(link()).toContain('response=reroute')
@@ -66,6 +72,7 @@ describe('SimulationPage', () => {
   it('a teammate’s link restores the same setup', async () => {
     const map = await open('?closure=1&segment=EB-405&start=09%3A30&reopen=10%3A15&response=wait&case=fast&speed=15')
     expect(screen.getByRole('heading', { name: 'EB-405 closed 09:30 to 10:15' })).toBeInTheDocument()
+    fireEvent.change(slider(), { target: { value: '585' } })
     expect(map).toHaveAttribute('data-incident', 'EB-405')
     expect(screen.getByLabelText('Draw trucks at')).toHaveValue('fast')
     expect(screen.getByRole('combobox', { name: 'Speed' })).toHaveValue('15')

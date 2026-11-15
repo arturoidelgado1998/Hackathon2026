@@ -69,7 +69,7 @@ function readBody(req: IncomingMessage): Promise<string | null> {
 }
 
 /** Addresses another device on the network can use; [] on a local-only server. */
-function lanUrls(listening: AddressInfo | string | null): string[] {
+export function lanUrls(listening: AddressInfo | string | null): string[] {
   if (listening === null || typeof listening === 'string') return []
   const { address, port } = listening
   const wildcard = address === '::' || address === '0.0.0.0'

@@ -34,7 +34,7 @@ export interface ArcgisMapProps {
   candidateSegmentId: string | null
   /** The route whose 150 m corridor, schools and tracts are drawn; null for none. */
   corridorRouteId?: string | null
-  /** Simulated truck positions at the clock time; drawn on their own layer. */
+  /** Truck positions to draw, on their own layer. */
   trucks?: TruckState[]
   /** The selected shipment's truck is drawn larger. */
   selectedShipmentId?: string | null
@@ -141,7 +141,7 @@ export default function ArcgisMap({
     const layer = new GraphicsLayer({ title: 'PortPlan routes' })
     layerRef.current = layer
     // Trucks sit on their own layer so the clock can move them without redrawing the routes.
-    const truckLayer = new GraphicsLayer({ title: 'PortPlan trucks (simulated)' })
+    const truckLayer = new GraphicsLayer({ title: 'PortPlan trucks' })
     truckLayerRef.current = truckLayer
 
     const onClick = async (event: Event) => {

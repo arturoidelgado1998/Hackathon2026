@@ -5,7 +5,7 @@ import {
   assumptions,
   getResponseOptions,
   getRoute,
-  sampleIncident,
+  getActiveIncident,
   segments,
   shipments,
 } from '../data/index.ts'
@@ -23,7 +23,7 @@ export function buildTruckPlans(
   decisions: Record<string, Decision> = {},
   timingCase: TimingCase = 'slow',
 ): TruckPlan[] {
-  const incident = scenario === 'disrupted' ? sampleIncident : null
+  const incident = scenario === 'disrupted' ? getActiveIncident() : null
   return shipments.map((shipment) => {
     const decision = decisions[shipment.id]
     const reroute =

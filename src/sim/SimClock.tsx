@@ -3,6 +3,54 @@ import { SIM_SPEEDS, type SimClock as Clock, type SimSpeed } from './useSimClock
 import { countTrucks, describeTruck, type TimingCase, type TruckPlan, type TruckState } from './trucks.ts'
 import './SimClock.css'
 
+const hhmm = (minutes: number) => formatTime(Math.floor(minutes))
+
+interface TruckSummaryProps {
+  time: number
+  plans: TruckPlan[]
+  states: TruckState[]
+  segmentName: (segmentId: string) => string
+  timingCase: TimingCase
+}
+
+/** Where the trucks are, in text: counts and one sentence per truck. */
+function TruckSummary({ time, plans, states, segmentName, timingCase }: TruckSummaryProps) {
+  const counts = countTrucks(states)
+  const now = hhmm(time)
+  return (
+    <>
+      <ul className="pp-sim__counts" aria-label={`Trucks at ${now}`}>
+        <li>
+          <strong className="pp-num">{counts.at_port}</strong> at the port
+        </li>
+        <li>
+          <strong className="pp-num">{counts.moving}</strong> on the road
+        </li>
+        <li className={counts.waiting > 0 ? 'pp-sim__count--waiting' : undefined}>
+          <strong className="pp-num">{counts.waiting}</strong> waiting at a closure
+        </li>
+        <li>
+          <strong className="pp-num">{counts.arrived}</strong> arrived
+        </li>
+      </ul>
+      <details className="pp-sim__details">
+        <summary>Where each truck is at {now}</summary>
+        <ul className="pp-sim__trucks">
+          {plans.map((plan, i) => (
+            <li key={plan.shipment_id}>
+              <strong>{plan.shipment_id}</strong> {describeTruck(plan, states[i], segmentName)}
+            </li>
+          ))}
+        </ul>
+      </details>
+      <p className="pp-sim__note">
+        SIMULATED positions from the engine’s travel times, drawn at the {timingCase} end of each
+        range. Not live tracking.
+      </p>
+    </>
+  )
+}
+
 export interface SimClockProps {
   clock: Clock
   /** Clock window, minutes since midnight. */
@@ -13,13 +61,9 @@ export interface SimClockProps {
   segmentName: (segmentId: string) => string
   /** Which end of the travel-time range the trucks are drawn at. */
   timingCase?: TimingCase
-  /** Link to the full simulation page, shown on the dashboard. */
-  pageHref?: string
 }
 
-const hhmm = (minutes: number) => formatTime(Math.floor(minutes))
-
-/** Play, pause and scrub the simulated day; says where every truck is in text. */
+/** The simulation page's clock: play, pause and scrub the simulated day. */
 export function SimClock({
   clock,
   start,
@@ -28,9 +72,7 @@ export function SimClock({
   states,
   segmentName,
   timingCase = 'slow',
-  pageHref,
 }: SimClockProps) {
-  const counts = countTrucks(states)
   const now = hhmm(clock.time)
   return (
     <section className="pp-sim" aria-label="Truck simulation">
@@ -73,39 +115,7 @@ export function SimClock({
         <span>{hhmm(start)}</span>
         <span>{hhmm(end)}</span>
       </div>
-      <ul className="pp-sim__counts" aria-label={`Trucks at ${now}`}>
-        <li>
-          <strong className="pp-num">{counts.at_port}</strong> at the port
-        </li>
-        <li>
-          <strong className="pp-num">{counts.moving}</strong> on the road
-        </li>
-        <li className={counts.waiting > 0 ? 'pp-sim__count--waiting' : undefined}>
-          <strong className="pp-num">{counts.waiting}</strong> waiting at a closure
-        </li>
-        <li>
-          <strong className="pp-num">{counts.arrived}</strong> arrived
-        </li>
-      </ul>
-      <details className="pp-sim__details">
-        <summary>Where each truck is at {now}</summary>
-        <ul className="pp-sim__trucks">
-          {plans.map((plan, i) => (
-            <li key={plan.shipment_id}>
-              <strong>{plan.shipment_id}</strong> {describeTruck(plan, states[i], segmentName)}
-            </li>
-          ))}
-        </ul>
-      </details>
-      <p className="pp-sim__note">
-        SIMULATED positions from the engine’s travel times, drawn at the {timingCase} end of each
-        range. Not live tracking.
-      </p>
-      {pageHref && (
-        <p className="pp-sim__more">
-          <a href={pageHref}>Open the simulation page</a> to change the closure and share a setup.
-        </p>
-      )}
+      <TruckSummary time={clock.time} plans={plans} states={states} segmentName={segmentName} timingCase={timingCase} />
     </section>
   )
 }

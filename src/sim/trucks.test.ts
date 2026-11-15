@@ -9,8 +9,10 @@ import {
   shipments,
 } from '../data/index.ts'
 import { formatTime, parseTime } from '../engine/time.ts'
+import { runSimulation } from '../state/simulation.ts'
 import { buildTruckPlans } from '../state/trucks.ts'
 import type { Decision, LonLat } from '../types.ts'
+import { DEFAULT_SETTINGS } from './settings.ts'
 import { countTrucks, pointAlong, simWindow, truckStateAt } from './trucks.ts'
 
 const at = (hhmm: string) => parseTime(hhmm)
@@ -103,29 +105,42 @@ describe('the reference shipment S-01', () => {
     expect(truckStateAt(slow, at('11:14'), segments).status).toBe('arrived')
   })
 
-  it('disrupted, fast case: waits at NB-03 from 10:10 to 11:10 and arrives 12:00', () => {
+  it('disrupted, fast case: held at the port until 11:00, reaches NB-03 as it reopens, arrives 12:00', () => {
     const truck = plan(buildTruckPlans('disrupted', {}, 'fast'), 'S-01')
-    expect(truckStateAt(truck, at('10:09'), segments)).toMatchObject({ status: 'moving', segment_id: 'PORT-01' })
-    for (const time of ['10:10', '10:40', '11:09']) {
+    expect(truck).toMatchObject({ departure: at('10:00'), leaves: at('11:00'), held_for: 'NB-03' })
+    for (const time of ['10:00', '10:30', '10:59']) {
       expect(truckStateAt(truck, at(time), segments)).toMatchObject({
-        status: 'waiting',
-        segment_id: 'NB-03',
-        fraction: 0,
-        wait_until: at('11:10'),
+        status: 'at_port',
+        held_for: 'NB-03',
+        wait_until: at('11:00'),
       })
     }
+    expect(truckStateAt(truck, at('11:00'), segments)).toMatchObject({ status: 'moving', segment_id: 'PORT-01' })
     expect(truckStateAt(truck, at('11:10'), segments)).toMatchObject({ status: 'moving', segment_id: 'NB-03', fraction: 0 })
     expect(truckStateAt(truck, at('11:40'), segments)).toMatchObject({ status: 'moving', segment_id: 'WH-A-APPR' })
     expect(truckStateAt(truck, at('12:00'), segments).status).toBe('arrived')
   })
 
-  it('disrupted, slow case: reaches NB-03 at 10:12 and arrives 12:12', () => {
+  it('disrupted, slow case: held at the port until 10:58 and arrives 12:12', () => {
     const truck = plan(buildTruckPlans('disrupted', {}, 'slow'), 'S-01')
-    expect(truckStateAt(truck, at('10:11'), segments)).toMatchObject({ status: 'moving', segment_id: 'PORT-01' })
-    expect(truckStateAt(truck, at('10:12'), segments)).toMatchObject({ status: 'waiting', segment_id: 'NB-03' })
+    expect(truck.leaves).toBe(at('10:58'))
+    expect(truckStateAt(truck, at('10:57'), segments)).toMatchObject({ status: 'at_port', held_for: 'NB-03' })
+    expect(truckStateAt(truck, at('10:58'), segments)).toMatchObject({ status: 'moving', segment_id: 'PORT-01' })
+    expect(truckStateAt(truck, at('11:10'), segments)).toMatchObject({ status: 'moving', segment_id: 'NB-03' })
     expect(truckStateAt(truck, at('11:48'), segments)).toMatchObject({ status: 'moving', segment_id: 'WH-A-APPR' })
     expect(truckStateAt(truck, at('12:11'), segments).status).toBe('moving')
     expect(truckStateAt(truck, at('12:12'), segments).status).toBe('arrived')
+  })
+
+  it('a truck already on the road when the closure starts queues at it; later ones are held at the port', () => {
+    // NB-03 closes at 10:05: S-01 left at 10:00 and is caught; S-02 is ready at 10:15 and is held.
+    const run = runSimulation({ ...DEFAULT_SETTINGS, start: '10:05', timingCase: 'fast' })
+    const caught = plan(run.plans, 'S-01')
+    expect(caught).toMatchObject({ leaves: at('10:00'), held_for: null })
+    expect(truckStateAt(caught, at('10:30'), segments)).toMatchObject({ status: 'waiting', segment_id: 'NB-03', wait_until: at('11:10') })
+    const held = plan(run.plans, 'S-02')
+    expect(held).toMatchObject({ held_for: 'NB-03', leaves: at('11:00') })
+    expect(truckStateAt(held, at('10:30'), segments)).toMatchObject({ status: 'at_port', held_for: 'NB-03' })
   })
 
   it('rerouted: takes R-A-ALT and arrives 11:15 to 11:28', () => {
@@ -216,7 +231,7 @@ describe('the clock window and counts', () => {
       expect(counts.at_port + counts.moving + counts.waiting + counts.arrived).toBe(shipments.length)
     }
     const during = countTrucks(plans.map((truck) => truckStateAt(truck, at('10:45'), segments)))
-    // S-01, S-02, S-03, S-04 and S-07 have reached NB-03 by 10:45; S-05 is still on PORT-01.
-    expect(during).toEqual({ at_port: 2, moving: 2, waiting: 5, arrived: 1 })
+    // Six trucks are held at the port for the closure, two are not due yet, S-09 is moving, S-08 has arrived.
+    expect(during).toEqual({ at_port: 8, moving: 1, waiting: 0, arrived: 1 })
   })
 })

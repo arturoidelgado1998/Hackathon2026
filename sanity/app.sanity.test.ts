@@ -132,12 +132,16 @@ async function openApp({ realMap = false } = {}) {
   failedLoads = []
   page.on('pageerror', (error) => pageErrors.push(error.message))
   page.on('response', (response) => {
-    if (response.url().startsWith(origin) && response.status() >= 400) {
+    // This preview runs without the project's Vite config, so it has no
+    // simulation relay. The dashboard asks for it once and carries on without.
+    const isSimRelay = new URL(response.url()).pathname.startsWith('/api/sim-state')
+    if (response.url().startsWith(origin) && response.status() >= 400 && !isSimRelay) {
       failedLoads.push(`${response.status()} ${response.url()}`)
     }
   })
   if (!realMap) await page.route('**/assets/ArcgisMap-*.js', (route) => route.abort())
-  await page.goto(origin)
+  // The prefilled sample; without ?sample the page waits for live updates.
+  await page.goto(`${origin}/?sample`)
   await page.getByRole('heading', { level: 1, name: 'PortPlan' }).waitFor()
 }
 
