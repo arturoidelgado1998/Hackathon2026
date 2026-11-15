@@ -22,6 +22,7 @@ import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer.js'
 import { useEffect, useRef, useState } from 'react'
 import { corridorSchools, corridorTracts } from '../data/corridorLayers.ts'
 import { corridor } from '../data/index.ts'
+import type { TruckState } from '../sim/trucks.ts'
 import type { Facility, RoadSegment, Route } from '../types.ts'
 
 export interface ArcgisMapProps {
@@ -33,6 +34,10 @@ export interface ArcgisMapProps {
   candidateSegmentId: string | null
   /** The route whose 150 m corridor, schools and tracts are drawn; null for none. */
   corridorRouteId?: string | null
+  /** Simulated truck positions at the clock time; drawn on their own layer. */
+  trucks?: TruckState[]
+  /** The selected shipment's truck is drawn larger. */
+  selectedShipmentId?: string | null
   onSegmentClick?: (segmentId: string) => void
   /** Called if the view cannot start, so the panel can fall back. */
   onError?: () => void
@@ -110,11 +115,14 @@ export default function ArcgisMap({
   incidentSegmentId,
   candidateSegmentId,
   corridorRouteId = null,
+  trucks,
+  selectedShipmentId = null,
   onSegmentClick,
   onError,
 }: ArcgisMapProps) {
   const mapRef = useRef<MapElement | null>(null)
   const layerRef = useRef<GraphicsLayer | null>(null)
+  const truckLayerRef = useRef<GraphicsLayer | null>(null)
   const clickRef = useRef(onSegmentClick)
   const errorRef = useRef(onError)
   const [ready, setReady] = useState(false)
@@ -132,6 +140,9 @@ export default function ArcgisMap({
     let cancelled = false
     const layer = new GraphicsLayer({ title: 'PortPlan routes' })
     layerRef.current = layer
+    // Trucks sit on their own layer so the clock can move them without redrawing the routes.
+    const truckLayer = new GraphicsLayer({ title: 'PortPlan trucks (simulated)' })
+    truckLayerRef.current = truckLayer
 
     const onClick = async (event: Event) => {
       if (!clickRef.current) return
@@ -161,6 +172,7 @@ export default function ArcgisMap({
         // which can crop the ends of a route.
         element.constraints.snapToZoom = false
         element.map?.add(layer)
+        element.map?.add(truckLayer)
         element.addEventListener('arcgisViewClick', onClick)
         setReady(true)
       })
@@ -172,8 +184,11 @@ export default function ArcgisMap({
       cancelled = true
       element.removeEventListener('arcgisViewClick', onClick)
       element.map?.remove(layer)
+      element.map?.remove(truckLayer)
       layer.destroy()
+      truckLayer.destroy()
       layerRef.current = null
+      truckLayerRef.current = null
     }
   }, [])
 
@@ -331,6 +346,52 @@ export default function ArcgisMap({
     candidateSegmentId,
     corridorRouteId,
   ])
+
+
+  // Trucks: redrawn on every clock tick, without touching the routes or the view.
+  useEffect(() => {
+    const layer = truckLayerRef.current
+    if (!ready || !layer) return
+    // Trucks at the same spot (a queue at the closure) share one marker and label.
+    const groups = new Map<string, TruckState[]>()
+    for (const truck of trucks ?? []) {
+      if (!truck.position || (truck.status !== 'moving' && truck.status !== 'waiting')) continue
+      const key = `${truck.status}:${truck.position[0].toFixed(4)},${truck.position[1].toFixed(4)}`
+      groups.set(key, [...(groups.get(key) ?? []), truck])
+    }
+    const graphics: Graphic[] = []
+    for (const group of groups.values()) {
+      const [lon, lat] = group[0].position!
+      const waiting = group[0].status === 'waiting'
+      const selected = group.some((truck) => truck.shipment_id === selectedShipmentId)
+      const color = waiting ? COLOR.closed : group.some((t) => t.rerouted) ? COLOR.alternative : COLOR.original
+      const point = { type: 'point' as const, longitude: lon, latitude: lat }
+      const ids = group.map((truck) => truck.shipment_id).join(', ')
+      // A long queue gets a count; the list under the map names every truck.
+      const who = group.length > 2 ? `${group.length} trucks` : ids
+      graphics.push(
+        new Graphic({
+          geometry: point,
+          symbol: {
+            type: 'simple-marker',
+            // Shape as well as colour: a square is held at a closure, a triangle is moving.
+            style: waiting ? 'square' : 'triangle',
+            size: selected ? 16 : 12,
+            color: [...color],
+            outline: { color: [255, 255, 255], width: selected ? 2.5 : 1.5 },
+          },
+          attributes: { truckIds: ids },
+        } as never),
+        new Graphic({
+          geometry: point,
+          symbol: label(waiting ? `${who} held` : who, color, waiting ? -18 : 11),
+          attributes: { truckIds: ids },
+        } as never),
+      )
+    }
+    layer.removeAll()
+    layer.addMany(graphics)
+  }, [ready, trucks, selectedShipmentId])
 
   return (
     <arcgis-map
